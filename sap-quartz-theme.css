@@ -1,0 +1,103 @@
+/* sap-quartz-theme.css
+   Signature (classic SAP GUI) - Beige / Brown theme
+   Enhanced for performance and offline usage.
+*/
+
+/* Root colors for Signature theme */
+:root{
+  --sig-bg: #efe6d8;          /* page background */
+  --sig-card: #fff8ef;        /* card background */
+  --sig-shell: #bfa980;       /* shell / sidebar */
+  --sig-shell-dark: #a88755;
+  --sig-text: #2d2a25;        /* main text */
+  --sig-muted: #6b5b4a;       /* muted */
+  --sig-border: #e6dac8;
+  --sig-accent: #a37d2a;      /* accent / blue replaced */
+  --sig-success: #107e3e;
+  --sig-warning: #e9730c;
+  --sig-error: #bb0000;
+  --sap-radius: 6px;
+  --sap-font: "Tahoma", "Arial", sans-serif;
+}
+
+/* Reset & base */
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--sig-bg);font-family:var(--sap-font);color:var(--sig-text);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit}
+
+/* Shell / Sidebar */
+.quartz-sidebar{
+  width:260px;
+  min-width:220px;
+  background:linear-gradient(180deg,var(--sig-shell),var(--sig-shell-dark));
+  color:#fff;
+  padding:10px 8px;
+  border-right:1px solid rgba(0,0,0,0.06);
+  height:100vh;
+  overflow:auto;
+}
+.quartz-brand{display:flex;align-items:center;gap:10px;padding:8px}
+.quartz-brand-title{font-weight:700;font-size:16px;color:rgba(255,255,255,0.95)}
+.quartz-nav-link{
+  display:flex;align-items:center;padding:10px;border-radius:4px;margin:6px 4px;color:rgba(255,255,255,0.9);font-size:14px
+}
+.quartz-nav-link:hover{background:rgba(255,255,255,0.06)}
+.quartz-nav-link.active{background:rgba(255,255,255,0.12);border-left:4px solid rgba(255,255,255,0.2)}
+
+/* Main header */
+.quartz-header{
+  background:linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,255,255,0.9));
+  border-bottom:1px solid var(--sig-border);
+  padding:12px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:10;
+}
+.quartz-header h2{margin:0;font-size:18px;font-weight:700;color:var(--sig-text)}
+.quartz-text-muted{color:var(--sig-muted);font-size:13px}
+
+/* Cards */
+.fiori-card{background:var(--sig-card);border:1px solid var(--sig-border);border-radius:8px;box-shadow:0 1px 0 rgba(0,0,0,0.03);overflow:hidden}
+.fiori-card-header{padding:12px;border-bottom:1px solid var(--sig-border);display:flex;justify-content:space-between;align-items:center}
+.fiori-card-content{padding:14px}
+
+/* KPI Cards */
+.kpi{display:flex;flex-direction:column;padding:12px;border-radius:8px;background:linear-gradient(180deg,#fff,#fff8ef)}
+.kpi .kpi-title{font-size:13px;color:var(--sig-muted);margin-bottom:6px}
+.kpi .kpi-value{font-size:24px;font-weight:700;color:var(--sig-text)}
+
+/* Table visuals (SAP-like grid) */
+.table-shell{width:100%;border-collapse:collapse;font-size:13px}
+.table-shell th,.table-shell td{padding:10px;border-bottom:1px solid var(--sig-border);vertical-align:middle;text-align:left}
+.table-shell th{background:transparent;color:var(--sig-text);font-weight:600}
+.row-muted{color:var(--sig-muted)}
+
+/* Heatmap / badges */
+.fiori-status{padding:4px 8px;border-radius:4px;font-weight:700;border:1px solid transparent;font-size:12px}
+.status-success{background:#f5fae5;color:var(--sig-success);border-color:#89c402}
+.status-warning{background:#fff4e5;color:var(--sig-warning);border-color:var(--sig-warning)}
+.status-error{background:#fde6e9;color:var(--sig-error);border-color:var(--sig-error)}
+
+/* Sidebar small buttons */
+.sidebar-btn{display:block;background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px;border-radius:6px;color:#fff;margin:6px 4px}
+
+/* Panels & layout */
+.container {display:flex;min-height:calc(100vh - 52px)}
+.main-content{flex:1;padding:14px;overflow:auto}
+.header-actions{display:flex;gap:8px;align-items:center}
+
+/* Small refresh button */
+.btn{display:inline-block;padding:8px 10px;border-radius:6px;border:1px solid var(--sig-border);background:linear-gradient(180deg,#fff,#fff7ea);font-weight:600;cursor:pointer}
+.btn.small{padding:6px 8px;font-size:13px}
+
+/* Alerts list */
+.alert-item{background:#fff6f6;border:1px solid #f4d7d7;padding:8px;border-radius:6px;margin-bottom:8px;color:#6a2b2b}
+
+/* Mobile responsive: collapse sidebar */
+@media (max-width:900px){
+  .quartz-sidebar{display:none}
+  .container{flex-direction:column}
+}
+
+/* Utility */
+.muted{color:var(--sig-muted);font-size:13px}

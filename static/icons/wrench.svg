@@ -1,0 +1,29 @@
+<svg width="16" height="16" viewBox="0 0 16 16"
+     xmlns="http://www.w3.org/2000/svg">
+  <!-- Gear Circle -->
+  <circle cx="10.5" cy="5.5" r="3" 
+          stroke="#003366" stroke-width="1.2" fill="none"/>
+
+  <!-- Gear Spokes -->
+  <line x1="10.5" y1="2.3" x2="10.5" y2="1" 
+        stroke="#003366" stroke-width="1.2"/>
+  <line x1="10.5" y1="10" x2="10.5" y2="9"
+        stroke="#003366" stroke-width="1.2"/>
+  <line x1="7.2" y1="5.5" x2="6" y2="5.5"
+        stroke="#003366" stroke-width="1.2"/>
+  <line x1="14.9" y1="5.5" x2="13.7" y2="5.5"
+        stroke="#003366" stroke-width="1.2"/>
+
+  <!-- Wrench body -->
+  <path d="M3 12L6.5 8.5
+           M6.5 8.5L8 10
+           M3 12L4.5 13.5
+           M4.5 13.5L8 10"
+        stroke="#003366" stroke-width="1.2" fill="none"/>
+
+  <!-- Wrench head -->
+  <path d="M2 10.5
+           C1.2 9.8 1.2 8.6 2 7.8
+           L3.3 9"
+        stroke="#003366" stroke-width="1.2" fill="none"/>
+</svg>

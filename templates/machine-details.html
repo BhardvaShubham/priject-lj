@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Machine Details — Industrial Hub</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="/static/css/sap90.css"/>
+</head>
+
+<body>
+<div class="app-shell">
+
+  <!-- Sidebar -->
+  <aside class="app-sidebar">
+    <div class="brand">
+      <div class="logo">IMCS</div>
+      <img src="/static/icons/logo-imcs.svg" alt="IMCS Logo" class="logo-img"/>
+      <div>
+        <div class="title">Industrial Hub</div>
+        <div class="muted small">Machine Details</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <a href="/dashboard"><img src="/static/icons/home.svg" class="nav-icon"/> Overview</a>
+      <a class="active" href="/machinery"><img src="/static/icons/machine.svg" class="nav-icon"/> Machinery</a>
+      <a href="/maintenance"><img src="/static/icons/wrench.svg" class="nav-icon"/> Maintenance</a>
+      <a href="/alerts"><img src="/static/icons/alert.svg" class="nav-icon"/> Alerts</a>
+      <a href="/reports"><img src="/static/icons/chart.svg" class="nav-icon"/> Reports</a>
+    </nav>
+
+    <button id="themeCycleBtn" class="btn full">Theme</button>
+  </aside>
+
+  <!-- Main -->
+  <main class="app-main">
+
+    <header class="app-header">
+      <div class="brand">
+        <div class="sap-badge">IMCS</div>
+        <div>
+          <div class="hdr-title" id="m_name">Machine</div>
+          <div class="muted small" id="m_type">Loading…</div>
+          
+        </div>
+      </div>
+    </header>
+
+    <div class="container">
+
+      <div class="flex-row">
+
+        <div class="card flex-2">
+          <div class="card-title">Efficiency (30 days)</div>
+          <img id="trendImg" class="chart-img" src="" alt="Trend chart"/>
+        </div>
+
+        <div class="card flex-1">
+          <div class="card-title">Status</div>
+          <div id="m_status" class="large">—</div>
+          <div class="muted small">Updated: <span id="m_last">—</span></div>
+        </div>
+
+      </div>
+
+      <div class="card">
+        <div class="card-title">Sensors</div>
+        <div id="sensorList" class="muted small">Loading…</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Recent Performance</div>
+        <div id="perfList" class="muted small">Loading…</div>
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<script>
+  /* Ensure machine_id is always a valid JS value.
+     If server did not pass machine_id, default to 0 (or null as preferred).
+     tojson ensures proper JSON encoding (numbers/null).
+  */
+  window.machine_id = {{ machine_id|default(0)|tojson }};
+</script>
+
+<script src="/static/js/app.js"></script>
+<script src="/static/js/machine.js"></script>
+</body>
+</html>

@@ -1,0 +1,238 @@
+/* ============================================================
+   SAP GUI 90s THEME (4.6C Style) — 100% Flat Classic Look
+============================================================ */
+
+body {
+    margin: 0;
+    font-family: Tahoma, Arial, sans-serif;
+    background: #CFCFCF;
+    color: #000;
+}
+
+/* ----------- Layout Shell ----------- */
+.app-shell {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    background: #DFDFDF;
+}
+
+/* ----------- Sidebar (SAP tree) ----------- */
+.app-sidebar {
+    width: 260px;
+    background: #ECECEC;
+    border-right: 1px solid #A0A0A0;
+    display: flex;
+    flex-direction: column;
+    padding: 6px;
+}
+
+.brand {
+    margin-bottom: 14px;
+}
+
+.logo {
+    font-weight: bold;
+    font-size: 24px;
+    color: #004080;
+}
+
+.title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #003366;
+}
+
+/* Sidebar navigation with icons */
+.nav a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    color: #003399;
+    text-decoration: none;
+    border: 1px solid transparent;
+    margin-bottom: 2px;
+    font-size: 14px;
+}
+
+.nav a img {
+    width: 16px;
+    height: 16px;
+}
+
+.nav a.active {
+    background: #D0D8E8;
+    border: 1px solid #8BA2C0;
+}
+
+/* ----------- Top Header (SAP gradient) ----------- */
+.app-header {
+    background: linear-gradient(#DDE7F2, #C8D4E2);
+    padding: 6px;
+    border-bottom: 1px solid #8FA7C2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.hdr-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #003366;
+}
+
+.sap-badge {
+    background: #003366;
+    color: white;
+    padding: 2px 6px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* ----------- Main View ----------- */
+.app-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    padding: 10px;
+    overflow-y: auto;
+}
+
+/* ----------- Cards (SAP panels) ----------- */
+.card {
+    background: #EFEFEF;
+    border: 1px solid #A0A0A0;
+    padding: 6px;
+    margin-bottom: 10px;
+}
+
+.card-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #002244;
+    border-bottom: 1px solid #A0A0A0;
+    margin-bottom: 6px;
+    padding-bottom: 2px;
+}
+
+/* ----------- KPI Row ----------- */
+.kpi-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.kpi {
+    flex: 1;
+    background: #F5F5F5;
+}
+
+.kpi .label {
+    font-size: 12px;
+    color: #444;
+}
+
+.kpi .value {
+    font-size: 22px;
+    font-weight: bold;
+    color: #003366;
+}
+
+/* ----------- Table (SAP style) ----------- */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.table thead {
+    background: #D0D0D0;
+    border-bottom: 2px solid #A0A0A0;
+}
+
+.table thead th {
+    padding: 4px;
+    text-align: left;
+}
+
+.table tbody td {
+    padding: 4px;
+    border-bottom: 1px solid #D5D5D5;
+}
+
+.table tbody tr:nth-child(even) {
+    background: #F3F3F3;
+}
+
+/* ----------- Buttons ----------- */
+.btn {
+    padding: 4px 10px;
+    background: #D7DFEF;
+    border: 1px solid #7A8BA8;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.btn:hover {
+    background: #C3D0E5;
+}
+
+/* ----------- Charts ----------- */
+.chart-img {
+    width: 100%;
+    height: auto;
+    border: 1px solid #A0A0A0;
+}
+
+/* ----------- Footer ----------- */
+.footer {
+    padding: 4px;
+    background: #D0D0D0;
+    border-top: 1px solid #A0A0A0;
+    font-size: 12px;
+    color: #444;
+}
+
+/* =======================================================
+      SAP TAB STRIP (for Machine Details)
+======================================================= */
+
+.tab-strip {
+    display: flex;
+    border-bottom: 1px solid #7A8BA8;
+    margin-bottom: 8px;
+}
+
+.tab-btn {
+    padding: 4px 10px;
+    background: #E2E2E2;
+    border: 1px solid #7A8BA8;
+    border-bottom: none;
+    cursor: pointer;
+    font-size: 13px;
+    margin-right: 2px;
+}
+
+.tab-btn.active {
+    background: #FFFFFF;
+    border-bottom: 1px solid #FFFFFF;
+    font-weight: bold;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.logo-img {
+    width: 100%;
+    height: auto;
+    display: block;
+}

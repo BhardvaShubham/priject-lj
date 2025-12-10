@@ -1,0 +1,119 @@
+/* theme.css
+   Belize Light + Belize Dark + Signature fallback
+   Exact SAP Belize colors where indicated (A: exact SAP palette)
+   Lightweight, offline-friendly, and optimized for low-bandwidth.
+*/
+
+/* ---------- Base tokens (used across themes) ---------- */
+:root{
+    --sap-primary: #0a6ed1;         /* SAP blue (official) */
+    --sap-primary-600: #0856aa;
+    --sap-foreground: #1f2d3d;
+    --sap-muted: #6b7280;
+    --sap-bg: #f7f7f7;
+    --sap-card: #ffffff;
+    --sap-border: #e6ecf2;
+    --sap-radius: 8px;
+    --sap-font: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --sap-shadow: 0 1px 0 rgba(16,24,40,0.03);
+    --ui-gap: 12px;
+    --ui-small: 13px;
+    --ui-medium: 15px;
+  }
+  
+  /* ---------- Belize Light (default) ---------- */
+  [data-theme="belize-light"]{
+    --bg: var(--sap-bg);
+    --card-bg: var(--sap-card);
+    --header-bg: linear-gradient(180deg,#ffffff,#f3f7fb);
+    --sidebar-bg: #ffffff;
+    --accent: var(--sap-primary);
+    --accent-600: var(--sap-primary-600);
+    --text: var(--sap-foreground);
+    --muted: var(--sap-muted);
+    --border: var(--sap-border);
+    --shadow: var(--sap-shadow);
+  }
+  
+  /* ---------- Belize Dark (deep) ---------- */
+  [data-theme="belize-dark"]{
+    --bg: #0f1724;                /* deep blue-black */
+    --card-bg: #111827;           /* dark card */
+    --header-bg: linear-gradient(180deg,#0b1726,#07101a);
+    --sidebar-bg: #0b1220;
+    --accent: #2ea3ff;            /* slightly lighter blue for dark */
+    --accent-600: #1c8be6;
+    --text: #e6eef8;
+    --muted: #9aa6b2;
+    --border: rgba(255,255,255,0.06);
+    --shadow: 0 1px 0 rgba(0,0,0,0.6);
+  }
+  
+  /* ---------- Signature fallback (classic beige) ---------- */
+  [data-theme="signature"]{
+    --bg: #efe6d8;
+    --card-bg: #fff8ef;
+    --header-bg: linear-gradient(180deg,#fffaf0,#f2e8d6);
+    --sidebar-bg: linear-gradient(180deg,#a37d2a,#8f6f23);
+    --accent: #a37d2a;
+    --accent-600: #7a5b1f;
+    --text: #2d2a25;
+    --muted: #6b5b4a;
+    --border: #e6dac8;
+    --shadow: 0 1px 0 rgba(0,0,0,0.03);
+  }
+  
+  /* ---------- Global layout + utilities ---------- */
+  html,body{height:100%;margin:0;background:var(--bg);font-family:var(--sap-font);color:var(--text);-webkit-font-smoothing:antialiased}
+  *{box-sizing:border-box}
+  
+  /* App shell */
+  .app-shell{display:flex;min-height:100vh;gap:var(--ui-gap)}
+  .app-sidebar{width:260px;min-width:200px;background:var(--sidebar-bg);padding:16px;border-right:1px solid var(--border);color:var(--text)}
+  .app-main{flex:1;display:flex;flex-direction:column;min-height:100vh}
+  
+  /* Header */
+  .app-header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:var(--header-bg);border-bottom:1px solid var(--border);box-shadow:var(--shadow)}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand .logo{width:44px;height:28px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;background:var(--accent);color:#fff;font-weight:800}
+  .brand .title{font-size:16px;font-weight:700}
+  .header-actions{display:flex;gap:8px;align-items:center}
+  
+  /* Theme toggle (single button) */
+  .btn {display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card-bg);cursor:pointer;font-weight:600;font-size:var(--ui-small)}
+  .btn:active{transform:translateY(1px)}
+  .icon{width:18px;height:18px;display:inline-block;vertical-align:middle}
+  
+  /* Sidebar nav */
+  .nav{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+  .nav a{display:flex;align-items:center;gap:12px;padding:10px;border-radius:8px;color:var(--text);text-decoration:none;font-size:var(--ui-medium)}
+  .nav a .nav-icon{width:20px;height:20px;display:inline-block}
+  .nav a:hover{background:rgba(10,110,209,0.06)}
+  .nav a.active{background:linear-gradient(90deg, rgba(10,110,209,0.12), rgba(10,110,209,0.06));border-left:4px solid var(--accent);padding-left:8px}
+  
+  /* Content containers */
+  .container {padding:18px;display:flex;flex-direction:column;gap:16px}
+  .card{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:12px;box-shadow:var(--shadow)}
+  .kpi-row{display:flex;gap:12px;flex-wrap:wrap}
+  .kpi{flex:1;min-width:160px;padding:12px;border-radius:8px;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.02))}
+  .kpi .label{font-size:13px;color:var(--muted)}
+  .kpi .value{font-size:22px;font-weight:800;margin-top:6px}
+  
+  /* Table */
+  .table{width:100%;border-collapse:collapse;font-size:14px}
+  .table th,.table td{padding:10px;text-align:left;border-bottom:1px solid var(--border)}
+  .table th{font-weight:700;background:transparent;color:var(--muted)}
+  
+  /* Small responsive adjustments */
+  @media (max-width:900px){
+    .app-sidebar{display:none}
+    .kpi-row{flex-direction:column}
+  }
+  
+  /* Focus and accessibility */
+  :focus{outline:3px solid rgba(10,110,209,0.12);outline-offset:2px}
+  
+  /* Tiny helpers */
+  .muted{color:var(--muted);font-size:13px}
+  .center{display:flex;align-items:center;justify-content:center}
+  

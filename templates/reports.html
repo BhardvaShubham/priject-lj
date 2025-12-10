@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8"/>
+    <title>SAP – Reports & Analytics</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <link rel="stylesheet" href="/static/css/sap90.css"/>
+</head>
+
+<body>
+
+<div class="app-shell">
+
+    <!-- Sidebar -->
+    <aside class="app-sidebar">
+        <div class="brand">
+          <img src="/static/icons/logo-imcs.svg" alt="IMCS Logo" class="logo-img"/>
+            <div class="title">Industrial Hub</div>
+            <div class="muted small">Reports</div>
+        </div>
+
+        <nav class="nav">
+            <a href="/dashboard"><img src="/static/icons/home.svg"> Overview</a>
+            <a href="/machinery"><img src="/static/icons/machine.svg"> Machinery</a>
+            <a href="/maintenance"><img src="/static/icons/wrench.svg"> Maintenance</a>
+            <a href="/alerts"><img src="/static/icons/alert.svg"> Alerts</a>
+            <a class="active" href="/reports"><img src="/static/icons/chart.svg"> Reports</a>
+        </nav>
+
+        <button class="btn">Theme</button>
+    </aside>
+
+    <main class="app-main">
+
+        <header class="app-header">
+            <div class="brand">
+                <div class="sap-badge">IMCS</div>
+                <div class="hdr-title">Analytics & Trends</div>
+            </div>
+            <button class="btn" id="refreshBtn">
+              <img src="/static/icons/refresh.svg" class="icon" /> Refresh
+          </button>
+          
+        </header>
+
+        <div class="container">
+
+            <div class="card">
+                <div class="card-title">Overall Efficiency Trend</div>
+                <img src="/chart/summary.png" class="chart-img">
+            </div>
+
+            <div class="card">
+                <div class="card-title">Machine-Level Trend (Select from Machinery)</div>
+                <div class="muted small">Charts auto-generate from backend.</div>
+            </div>
+
+        </div>
+
+        <footer class="footer">IMCS· Reporting Engine</footer>
+
+    </main>
+
+</div>
+
+</body>
+</html>

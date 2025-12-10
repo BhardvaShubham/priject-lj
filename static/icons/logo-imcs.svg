@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="220" viewBox="0 0 800 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="IMCS — Industrial Machinery Control System logo">
+  <title>IMCS — Industrial Machinery Control System</title>
+
+  <!-- Colors -->
+  <!-- Primary deep industrial blue -->
+  <defs>
+    <style type="text/css"><![CDATA[
+      .primary { fill: #003366; }
+      .primary-stroke { stroke: #003366; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .secondary { fill: #6b7280; }
+      .badge-bg { fill: #ffffff; stroke: #cfcfcf; stroke-width: 2; }
+      .text-main { font-family: "Segoe UI", Tahoma, Arial, sans-serif; font-weight: 800; fill: #003366; }
+      .text-sub { font-family: "Segoe UI", Tahoma, Arial, sans-serif; font-weight: 600; fill: #6b7280; }
+    ]]></style>
+  </defs>
+
+  <!-- Badge (rounded square) -->
+  <g transform="translate(28,24)">
+    <rect x="0" y="0" width="160" height="160" rx="14" ry="14" class="badge-bg"/>
+    <!-- Inner circle for gear area -->
+    <circle cx="80" cy="70" r="36" class="primary" fill-opacity="0.06"/>
+    <!-- Gear teeth -->
+    <g transform="translate(80,70)">
+      <!-- draw 8 gear teeth using rotated rectangles -->
+      <g class="primary-stroke">
+        <path d="M-46 0 L-36 -8 L-28 -3 L-36 5 Z"/>
+        <path d="M46 0 L36 8 L28 3 L36 -5 Z"/>
+        <path d="M0 -46 L8 -36 L3 -28 L-5 -36 Z"/>
+        <path d="M0 46 L-8 36 L-3 28 L5 36 Z"/>
+        <path d="M-33 -33 L-25 -25 L-21 -28 L-29 -36 Z"/>
+        <path d="M33 33 L25 25 L21 28 L29 36 Z"/>
+        <path d="M-33 33 L-25 25 L-21 28 L-29 36 Z"/>
+        <path d="M33 -33 L25 -25 L21 -28 L29 -36 Z"/>
+      </g>
+
+      <!-- central gear circle -->
+      <circle cx="0" cy="0" r="16" class="primary-stroke" fill="#ffffff"/>
+    </g>
+
+    <!-- Signal waves (control/telemetry) on right of gear -->
+    <g transform="translate(120,62)">
+      <path d="M0 0 C10 -10, 24 -10, 34 0" class="primary-stroke" />
+      <path d="M6 20 C16 10, 34 10, 44 20" class="primary-stroke" />
+      <circle cx="0" cy="0" r="3" class="primary" />
+    </g>
+
+    <!-- small bolt/pipe line to suggest mechanical link -->
+    <path d="M24 120 L52 104" stroke="#003366" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Large acronym -->
+  <g transform="translate(220,56)">
+    <text x="0" y="60" font-size="72" class="text-main">IMCS</text>
+    <text x="0" y="110" font-size="18" class="text-sub">Industrial Machinery Control System</text>
+  </g>
+
+  <!-- Optional horizontal rule (subtle) under text -->
+  <line x1="220" y1="128" x2="600" y2="128" stroke="#e6e6e6" stroke-width="1"/>
+
+</svg>

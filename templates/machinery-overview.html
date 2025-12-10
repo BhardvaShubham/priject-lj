@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>SAP – Machinery Overview</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/static/css/sap90.css" />
+</head>
+
+<body>
+<div class="app-shell">
+
+    <!-- Sidebar -->
+    <aside class="app-sidebar">
+      <img src="/static/icons/logo-imcs.svg" alt="IMCS Logo" class="logo-img"/>
+        <div class="brand">
+            <div class="title">Industrial Hub</div>
+            <div class="muted small">Machinery</div>
+        </div>
+        <nav class="nav">
+            <a href="/dashboard"><img src="/static/icons/home.svg"> Overview</a>
+            <a class="active" href="/machinery"><img src="/static/icons/machine.svg"> Machinery</a>
+            <a href="/maintenance"><img src="/static/icons/wrench.svg"> Maintenance</a>
+            <a href="/alerts"><img src="/static/icons/alert.svg"> Alerts</a>
+            <a href="/reports"><img src="/static/icons/chart.svg"> Reports</a>
+        </nav>
+        <button class="btn" id="themeCycleBtn">Theme</button>
+    </aside>
+
+    <!-- Main -->
+    <main class="app-main">
+
+        <header class="app-header">
+            <div class="brand">
+                <div class="sap-badge">IMCS</div>
+                <div class="hdr-title">Machinery Directory</div>
+            </div>
+            <button class="btn" id="refreshBtn">
+              <img src="/static/icons/refresh.svg" class="icon" /> Refresh
+          </button>
+          
+        </header>
+
+        <div class="container">
+
+            <div class="card">
+                <div class="card-title">Search Machinery</div>
+                <input id="searchInput" class="input" placeholder="Search by name, type or location" style="width:100%;padding:6px;">
+            </div>
+
+            <div class="card">
+                <div class="card-title">Registered Machines</div>
+                <table class="table" id="machinesTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Eff%</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="5">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <footer class="footer">IMCS· Machinery List</footer>
+
+    </main>
+
+</div>
+
+<script src="/static/js/app.js"></script>
+<script src="/static/js/machinery.js"></script>
+</body>
+</html>

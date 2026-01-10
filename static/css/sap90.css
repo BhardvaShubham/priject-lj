@@ -236,3 +236,227 @@ body {
     height: auto;
     display: block;
 }
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  .modal.hidden { display: none; }
+  
+  .modal-box {
+    background: #ECECEC;
+    border: 1px solid #808080;
+    width: 360px;
+    padding: 10px;
+  }
+  
+  .modal-header,
+  .modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .modal-body .input {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+  .btn img {
+    filter: grayscale(100%);
+  }
+  
+  .btn:hover img {
+    filter: none;
+  }
+
+/* =======================================================
+   ENHANCED ENTERPRISE STYLING
+======================================================= */
+
+/* Enhanced KPI Cards */
+.kpi-enhanced {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.kpi-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #0a6ed1, #4a9eff);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.kpi-enhanced:hover::before {
+  opacity: 1;
+}
+
+/* Chart Cards */
+.chart-card-enhanced {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: box-shadow 0.3s;
+}
+
+.chart-card-enhanced:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Analytics Grid */
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.analytics-item {
+  background: linear-gradient(135deg, #F5F5F5 0%, #EFEFEF 100%);
+  border: 1px solid #D5D5D5;
+  padding: 12px;
+  border-radius: 4px;
+  transition: transform 0.2s;
+}
+
+.analytics-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Sensor Cards */
+.sensor-card {
+  background: linear-gradient(135deg, #F9F9F9 0%, #F5F5F5 100%);
+  border: 1px solid #D5D5D5;
+  padding: 12px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.sensor-card:hover {
+  border-color: #0a6ed1;
+  box-shadow: 0 2px 6px rgba(10, 110, 209, 0.2);
+}
+
+/* Alert Items */
+.alert-item {
+  transition: all 0.2s;
+}
+
+.alert-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Maintenance Items */
+.maintenance-item {
+  transition: all 0.2s;
+}
+
+.maintenance-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Location Cards */
+.location-card {
+  transition: all 0.2s;
+  background: linear-gradient(135deg, #F5F5F5 0%, #EFEFEF 100%);
+}
+
+.location-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border-color: #0a6ed1;
+}
+
+/* Enhanced Table */
+.table tbody tr {
+  transition: background-color 0.2s;
+}
+
+.table tbody tr:hover {
+  background-color: #E6F2FF !important;
+  cursor: pointer;
+}
+
+/* Loading States */
+.loading {
+  position: relative;
+  color: transparent;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border: 2px solid #0a6ed1;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.status-badge.running {
+  background: #d4edda;
+  color: #107e3e;
+}
+
+.status-badge.idle {
+  background: #fff3cd;
+  color: #e9730c;
+}
+
+.status-badge.down {
+  background: #f8d7da;
+  color: #bb0000;
+}
+
+.status-badge.maintenance {
+  background: #e2e3e5;
+  color: #6c757d;
+}
+
+/* Smooth Scroll */
+.container {
+  scroll-behavior: smooth;
+}
+
+/* Print Styles */
+@media print {
+  .app-sidebar,
+  .btn,
+  .chart-export-btn {
+    display: none;
+  }
+  
+  .card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+  

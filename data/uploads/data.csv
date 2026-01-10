@@ -1,0 +1,5 @@
+timestamp,machine_id,machine_name,plant_id,location,operator_id,shift,machine_state,rpm,temperature_c,pressure_bar,vibration_mm_s,voltage_v,current_a,power_kw,energy_kwh,oil_level_pct,humidity_pct,load_pct,cycle_time_sec,output_units,defect_units,efficiency_pct,mtbf_hours,mttr_minutes,alarm_code,alarm_severity,maintenance_due,maintenance_type,carbon_emission_kg,network_latency_ms
+
+2026-01-01 08:00:00,MCH-001,CNC_Mill_01,PLANT-01,Ahmedabad,OP-101,Morning,Running,3200,68.5,5.2,2.1,415,12.4,8.9,2.4,78,42,72,45,120,2,91.5,420,18,None,None,No,None,4.2,12
+2026-01-01 08:01:00,MCH-001,CNC_Mill_01,PLANT-01,Ahmedabad,OP-101,Morning,Running,3180,69.1,5.3,2.3,416,12.6,9.1,2.6,77,41,74,46,118,3,90.8,420,18,None,None,No,None,4.3,11
+2026-01-01 08:02:00,MCH-001,CNC_Mill_01,PLANT-01,Ahmedabad,OP-101,Morning,Warning,3100,74.8,5.9,3.6,418,13.8,10.5,3.1,70,45,82,49,112,6,86.2,420,18,TEMP_HIGH,Medium,Yes,Preventive,5.1,15

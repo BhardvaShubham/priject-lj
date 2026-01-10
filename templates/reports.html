@@ -1,68 +1,299 @@
 <!doctype html>
 <html lang="en">
-
 <head>
-    <meta charset="utf-8"/>
-    <title>SAP – Reports & Analytics</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <link rel="stylesheet" href="/static/css/sap90.css"/>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>IMCS - Reports</title>
+
+  <!-- Load layout CSS synchronously (NO preload swap) -->
+  <link rel="stylesheet" href="/static/css/sap90.css">
+
+  <style>
+    .app-shell {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      background: #DFDFDF;
+    }
+
+    .app-sidebar {
+      width: 260px;
+      background: #ECECEC;
+      padding: 6px;
+      border-right: 1px solid #A0A0A0;
+      flex-shrink: 0;
+    }
+
+    
+
+    /* CLS-safe chart container */
+    .chart-wrap {
+      width: 100%;
+      aspect-ratio: 10 / 3;
+      min-height: 220px;
+      background: #F2F2F2;
+      border: 1px solid #A0A0A0;
+    }
+
+    .chart-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 12px;
+    }
+
+    .chart-card {
+      background: #EFEFEF;
+      border: 1px solid #A0A0A0;
+    }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+      height: 280px;
+      background: #F9F9F9;
+      border: 1px solid #D5D5D5;
+      padding: 8px;
+    }
+
+    .chart-container canvas {
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .chart-fallback {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .csv-drop-zone {
+      border: 2px dashed #A0A0A0;
+      border-radius: 4px;
+      padding: 24px;
+      text-align: center;
+      background: #F9F9F9;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .csv-drop-zone:hover,
+    .csv-drop-zone.drag-over {
+      border-color: #0a6ed1;
+      background: #E6F2FF;
+    }
+
+    .drop-zone-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .drop-zone-text {
+      color: #003366;
+      font-size: 14px;
+    }
+  </style>
 </head>
 
 <body>
-
 <div class="app-shell">
 
-    <!-- Sidebar -->
-    <aside class="app-sidebar">
-        <div class="brand">
-          <img src="/static/icons/logo-imcs.svg" alt="IMCS Logo" class="logo-img"/>
-            <div class="title">Industrial Hub</div>
-            <div class="muted small">Reports</div>
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="app-sidebar">
+    <div class="brand">
+      <img src="/static/icons/logo-imcs.svg" class="logo-img" alt="IMCS"/>
+      <div class="title">Industrial Hub</div>
+      <div class="muted small">Reports</div>
+    </div>
+
+    <nav class="nav">
+      <a href="/dashboard"><img src="/static/icons/home.svg" width="16"> Overview</a>
+      <a href="/machinery"><img src="/static/icons/machine.svg" width="16"> Machinery</a>
+      <a href="/maintenance"><img src="/static/icons/wrench.svg" width="16"> Maintenance</a>
+      <a href="/alerts"><img src="/static/icons/alert.svg" width="16"> Alerts</a>
+      <a class="active" href="/reports"><img src="/static/icons/chart.svg" width="16"> Reports</a>
+    </nav>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <main class="app-main">
+    <header class="app-header">
+      <div class="brand">
+        <div class="sap-badge">IMCS</div>
+        <div class="hdr-title">Analytics & Trends</div>
+      </div>
+      <button class="btn" id="refreshBtn">
+        <img src="/static/icons/refresh.svg" width="16"> Refresh
+      </button>
+    </header>
+
+    <div class="container">
+
+      <!-- ===== SUMMARY CHART ===== -->
+      <div class="card">
+        <div class="card-title">Overall Efficiency Trend</div>
+
+        <div class="chart-wrap">
+          <img
+            id="summaryChart"
+            src="/chart/summary.png"
+            alt="Overall efficiency trend"
+            decoding="async"
+          />
         </div>
+      </div>
 
-        <nav class="nav">
-            <a href="/dashboard"><img src="/static/icons/home.svg"> Overview</a>
-            <a href="/machinery"><img src="/static/icons/machine.svg"> Machinery</a>
-            <a href="/maintenance"><img src="/static/icons/wrench.svg"> Maintenance</a>
-            <a href="/alerts"><img src="/static/icons/alert.svg"> Alerts</a>
-            <a class="active" href="/reports"><img src="/static/icons/chart.svg"> Reports</a>
-        </nav>
-
-        <button class="btn">Theme</button>
-    </aside>
-
-    <main class="app-main">
-
-        <header class="app-header">
-            <div class="brand">
-                <div class="sap-badge">IMCS</div>
-                <div class="hdr-title">Analytics & Trends</div>
+      <!-- ===== CSV VISUALIZATION ===== -->
+      <div class="card">
+        <div class="card-title">CSV Data Analysis</div>
+        <div id="csvDropZoneReports" class="csv-drop-zone">
+          <div class="drop-zone-content">
+            <img src="/static/icons/chart.svg" width="48" height="48" style="opacity:0.5; margin-bottom:8px;">
+            <div class="drop-zone-text">
+              <strong>Drop CSV file here for analysis</strong><br>
+              <span class="muted small">Supports time series, numeric data, and more</span>
             </div>
-            <button class="btn" id="refreshBtn">
-              <img src="/static/icons/refresh.svg" class="icon" /> Refresh
-          </button>
-          
-        </header>
-
-        <div class="container">
-
-            <div class="card">
-                <div class="card-title">Overall Efficiency Trend</div>
-                <img src="/chart/summary.png" class="chart-img">
-            </div>
-
-            <div class="card">
-                <div class="card-title">Machine-Level Trend (Select from Machinery)</div>
-                <div class="muted small">Charts auto-generate from backend.</div>
-            </div>
-
+            <input type="file" id="csvFileInputReports" accept=".csv" style="display:none;">
+          </div>
         </div>
+        <div id="csvChartsContainer" style="display:none;">
+          <div class="charts-grid" style="margin-top:12px;">
+            <div class="card chart-card">
+              <div class="card-title">CSV Line Chart</div>
+              <div class="chart-container">
+                <canvas id="csvLineChart"></canvas>
+              </div>
+            </div>
+            <div class="card chart-card">
+              <div class="card-title">CSV Bar Chart</div>
+              <div class="chart-container">
+                <canvas id="csvBarChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="csvInfoReports" class="muted small" style="margin-top:8px;"></div>
+      </div>
 
-        <footer class="footer">IMCS· Reporting Engine</footer>
+      <!-- ===== PERFORMANCE METRICS ===== -->
+      <div class="card">
+        <div class="card-title">Performance Metrics (Last 30 Days)</div>
+        <div class="chart-container">
+          <canvas id="performanceChartReports"></canvas>
+          <img id="performanceChartFallbackReports" src="/chart/performance.png" alt="Performance" class="chart-fallback" style="display:none;">
+        </div>
+      </div>
 
-    </main>
+      <!-- ===== STATUS HEATMAP ===== -->
+      <div class="card">
+        <div class="card-title">Machine Status Heatmap by Location</div>
+        <div class="chart-wrap">
+          <img id="heatmapChart" src="/chart/heatmap.png" alt="Status Heatmap" decoding="async">
+        </div>
+      </div>
 
+    </div>
+  </main>
 </div>
+
+<!-- ================= SCRIPTS ================= -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="/static/js/app.js" defer></script>
+<script src="/static/js/charts.js" defer></script>
+<script src="/static/js/csv-viz.js" defer></script>
+<script src="/static/js/reports.js" defer></script>
+
+<script>
+  // Initialize CSV upload for reports
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (window.IMCSCSV) {
+      await window.IMCSCSV.initDB();
+    }
+
+    const dropZone = document.getElementById('csvDropZoneReports');
+    const fileInput = document.getElementById('csvFileInputReports');
+    const csvCharts = document.getElementById('csvChartsContainer');
+    const csvInfo = document.getElementById('csvInfoReports');
+
+    if (dropZone && window.IMCSCSV) {
+      dropZone.addEventListener('click', () => fileInput.click());
+      
+      fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (file) await handleCSVUpload(file);
+      });
+
+      window.IMCSCSV.handleFileDrop(
+        dropZone,
+        async (result) => {
+          csvInfo.textContent = `✓ ${result.data.filename} loaded (${result.data.row_count} rows)`;
+          csvCharts.style.display = 'block';
+          
+          // Visualize with multiple chart types
+          window.IMCSCSV.visualizeCSVData(result.data, 'csvLineChart', 'line');
+          window.IMCSCSV.visualizeCSVData(result.data, 'csvBarChart', 'bar');
+        },
+        (error) => {
+          csvInfo.textContent = `✗ ${error}`;
+          csvInfo.style.color = '#bb0000';
+        }
+      );
+    }
+
+    async function handleCSVUpload(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const response = await fetch('/api/upload-csv', {
+          method: 'POST',
+          body: formData
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+          csvInfo.textContent = `✓ ${result.data.filename} loaded (${result.data.row_count} rows)`;
+          csvCharts.style.display = 'block';
+          window.IMCSCSV.visualizeCSVData(result.data, 'csvLineChart', 'line');
+          window.IMCSCSV.visualizeCSVData(result.data, 'csvBarChart', 'bar');
+        }
+      } catch (error) {
+        csvInfo.textContent = `✗ Upload failed: ${error.message}`;
+        csvInfo.style.color = '#bb0000';
+      }
+    }
+
+    // Load performance chart
+    const perfData = await window.IMCSCharts?.fetchChartData('/api/chart-data/summary');
+    if (perfData && window.IMCSCharts) {
+      window.IMCSCharts.renderPerformanceChart('performanceChartReports', perfData);
+    } else {
+      const fallback = document.getElementById('performanceChartFallbackReports');
+      if (fallback) fallback.style.display = 'block';
+    }
+
+    // Cache-bust images
+    const img = document.getElementById('summaryChart');
+    if (img) img.src = img.src + '?ts=' + Date.now();
+    
+    const heatmap = document.getElementById('heatmapChart');
+    if (heatmap) heatmap.src = heatmap.src.split('?')[0] + '?ts=' + Date.now();
+  });
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/static/sw.js').catch(()=>{});
+    });
+  }
+</script>
 
 </body>
 </html>

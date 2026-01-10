@@ -1,0 +1,1 @@
+{"columns": ["Machine", "Status", "Temperature"], "rows": [{"Machine": "CNC Machine 1", "Status": "Normal", "Temperature": "42\u00b0C"}], "row_count": 1, "filename": "machine-data-2025-09-28_1.csv"}

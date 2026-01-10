@@ -2,91 +2,1391 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <title>Machine Details — Industrial Hub</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <link rel="stylesheet" href="/static/css/sap90.css"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IMCS - Machine Details</title>
+
+  <!-- Load layout CSS normally -->
+  <link rel="stylesheet" href="/static/css/sap90.css">
+
+  <style>
+    /* ===== TOP-LEVEL ENTERPRISE UI ENHANCEMENTS ===== */
+    .app-shell {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      background: linear-gradient(135deg, #E8E8E8 0%, #DFDFDF 100%);
+    }
+
+    .app-sidebar {
+      width: 260px;
+      background: linear-gradient(180deg, #F5F5F5 0%, #ECECEC 100%);
+      padding: 6px;
+      border-right: 2px solid #C0C0C0;
+      flex-shrink: 0;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+    }
+
+    .logo-img {
+      width: 36px;
+      height: 36px;
+      display: block;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    }
+
+    /* Enhanced Chart Containers with Glassmorphism */
+    .chart-wrap {
+      width: 100%;
+      aspect-ratio: 8 / 3;
+      min-height: 220px;
+      background: linear-gradient(135deg, #FFFFFF 0%, #F8F8F8 100%);
+      border: 1px solid #D0D0D0;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8);
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .chart-wrap:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    .chart-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .flex-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .flex-2 {
+      flex: 2;
+    }
+
+    .flex-1 {
+      flex: 1;
+    }
+
+    .large {
+      font-size: 36px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #003366 0%, #004080 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 2px 4px rgba(0,51,102,0.2);
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+      height: 320px;
+      background: linear-gradient(135deg, #FFFFFF 0%, #FAFAFA 100%);
+      border: 1px solid #E0E0E0;
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      transition: all 0.3s ease;
+    }
+
+    .chart-container:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border-color: #C0C0C0;
+    }
+
+    .chart-container canvas {
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .chart-fallback {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .chart-card {
+      background: linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 100%);
+      border: 1px solid #D0D0D0;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      transition: all 0.3s ease;
+    }
+
+    .chart-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+    }
+
+    .chart-export-btn, .chart-fullscreen-btn {
+      float: right;
+      background: rgba(10, 110, 209, 0.1);
+      border: 1px solid rgba(10, 110, 209, 0.3);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 4px 8px;
+      margin-left: 4px;
+      opacity: 0.7;
+      transition: all 0.2s ease;
+      color: #0a6ed1;
+    }
+
+    .chart-export-btn:hover, .chart-fullscreen-btn:hover {
+      opacity: 1;
+      background: rgba(10, 110, 209, 0.2);
+      transform: scale(1.05);
+    }
+
+    /* Enhanced Analytics Grid */
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .analytics-item {
+      background: linear-gradient(135deg, #FFFFFF 0%, #F8F8F8 100%);
+      padding: 16px;
+      border: 1px solid #E0E0E0;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .analytics-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, #0a6ed1 0%, #004080 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .analytics-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border-color: #C0C0C0;
+    }
+
+    .analytics-item:hover::before {
+      opacity: 1;
+    }
+
+    .analytics-label {
+      font-size: 11px;
+      color: #666;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .analytics-value {
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #003366 0%, #004080 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Enhanced Sensor Cards */
+    .sensor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 12px;
+    }
+
+    .sensor-card {
+      background: linear-gradient(135deg, #FFFFFF 0%, #F8F8F8 100%);
+      border: 1px solid #E0E0E0;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .sensor-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+      border-color: #C0C0C0;
+    }
+
+    .sensor-card .sensor-name {
+      font-weight: 700;
+      color: #003366;
+      margin-bottom: 10px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sensor-card .sensor-name::before {
+      content: '📊';
+      font-size: 16px;
+    }
+
+    .sensor-card .sensor-stats {
+      font-size: 12px;
+      color: #555;
+      line-height: 1.8;
+    }
+
+    .sensor-card .sensor-stats strong {
+      color: #003366;
+      font-weight: 600;
+    }
+
+    /* Enhanced Alert & Maintenance Lists */
+    .alert-list, .maintenance-list {
+      max-height: 320px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .alert-list::-webkit-scrollbar, .maintenance-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .alert-list::-webkit-scrollbar-track, .maintenance-list::-webkit-scrollbar-track {
+      background: #F0F0F0;
+      border-radius: 3px;
+    }
+
+    .alert-list::-webkit-scrollbar-thumb, .maintenance-list::-webkit-scrollbar-thumb {
+      background: #C0C0C0;
+      border-radius: 3px;
+    }
+
+    .alert-list::-webkit-scrollbar-thumb:hover, .maintenance-list::-webkit-scrollbar-thumb:hover {
+      background: #A0A0A0;
+    }
+
+    .alert-item, .maintenance-item {
+      padding: 12px;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #FFFFFF 0%, #FAFAFA 100%);
+      border-left: 4px solid #0a6ed1;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+    }
+
+    .alert-item:hover, .maintenance-item:hover {
+      transform: translateX(4px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .alert-item.critical {
+      border-left-color: #bb0000;
+      background: linear-gradient(135deg, #FFF5F5 0%, #FFE8E8 100%);
+    }
+
+    .alert-item.warning {
+      border-left-color: #e9730c;
+      background: linear-gradient(135deg, #FFF8F0 0%, #FFEEDD 100%);
+    }
+
+    /* Health Score Badge */
+    .health-score {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: linear-gradient(135deg, #0a6ed1 0%, #004080 100%);
+      color: white;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(10, 110, 209, 0.3);
+    }
+
+    .health-score.excellent {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+
+    .health-score.good {
+      background: linear-gradient(135deg, #0a6ed1 0%, #004080 100%);
+    }
+
+    .health-score.warning {
+      background: linear-gradient(135deg, #e9730c 0%, #ff9800 100%);
+      box-shadow: 0 4px 12px rgba(233, 115, 12, 0.3);
+    }
+
+    .health-score.critical {
+      background: linear-gradient(135deg, #bb0000 0%, #dc3545 100%);
+      box-shadow: 0 4px 12px rgba(187, 0, 0, 0.3);
+    }
+
+    /* Loading Animation */
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      border-radius: 8px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #E0E0E0;
+      border-top-color: #0a6ed1;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Fullscreen Chart Modal */
+    .chart-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 1000;
+      padding: 40px;
+      overflow: auto;
+    }
+
+    .chart-modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chart-modal-content {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 95%;
+      max-height: 95%;
+      position: relative;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .chart-modal-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: #f0f0f0;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .chart-modal-close:hover {
+      background: #e0e0e0;
+      transform: scale(1.1);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+      .analytics-grid {
+        grid-template-columns: 1fr;
+      }
+      .sensor-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 
 <body>
 <div class="app-shell">
 
-  <!-- Sidebar -->
+  <!-- SIDEBAR -->
   <aside class="app-sidebar">
     <div class="brand">
-      <div class="logo">IMCS</div>
       <img src="/static/icons/logo-imcs.svg" alt="IMCS Logo" class="logo-img"/>
-      <div>
-        <div class="title">Industrial Hub</div>
-        <div class="muted small">Machine Details</div>
-      </div>
+      <div class="title">Industrial Hub</div>
+      <div class="muted small">Machine Details</div>
     </div>
 
     <nav class="nav">
-      <a href="/dashboard"><img src="/static/icons/home.svg" class="nav-icon"/> Overview</a>
-      <a class="active" href="/machinery"><img src="/static/icons/machine.svg" class="nav-icon"/> Machinery</a>
-      <a href="/maintenance"><img src="/static/icons/wrench.svg" class="nav-icon"/> Maintenance</a>
-      <a href="/alerts"><img src="/static/icons/alert.svg" class="nav-icon"/> Alerts</a>
-      <a href="/reports"><img src="/static/icons/chart.svg" class="nav-icon"/> Reports</a>
+      <a href="/dashboard"><img src="/static/icons/home.svg" width="16"> Overview</a>
+      <a href="/machinery" class="active"><img src="/static/icons/machine.svg" width="16"> Machinery</a>
+      <a href="/maintenance"><img src="/static/icons/wrench.svg" width="16"> Maintenance</a>
+      <a href="/alerts"><img src="/static/icons/alert.svg" width="16"> Alerts</a>
+      <a href="/reports"><img src="/static/icons/chart.svg" width="16"> Reports</a>
     </nav>
 
-    <button id="themeCycleBtn" class="btn full">Theme</button>
+    <!-- <button id="themeCycleBtn" class="btn full">Theme</button> -->
   </aside>
 
-  <!-- Main -->
+  <!-- MAIN -->
   <main class="app-main">
-
     <header class="app-header">
       <div class="brand">
         <div class="sap-badge">IMCS</div>
         <div>
           <div class="hdr-title" id="m_name">Machine</div>
           <div class="muted small" id="m_type">Loading…</div>
-          
         </div>
       </div>
     </header>
 
     <div class="container">
 
+      <!-- ===== TOP ROW ===== -->
       <div class="flex-row">
 
+        <!-- MACHINE TREND -->
         <div class="card flex-2">
-          <div class="card-title">Efficiency (30 days)</div>
-          <img id="trendImg" class="chart-img" src="" alt="Trend chart"/>
+          <div class="card-title">Machine Performance (Last 20 samples)</div>
+          <div class="chart-wrap">
+            <img
+              id="machineChart"
+              src="/chart/machine/{{ machine_id }}.png"
+              alt="Machine performance chart"
+              decoding="async"
+              onerror="this.style.display='none'; this.nextElementSibling && (this.nextElementSibling.style.display='block');"
+            />
+            <div id="machineChartError" style="display:none; padding:20px; text-align:center; color:#666;">
+              <div>No chart data available</div>
+            </div>
+          </div>
         </div>
 
+        <!-- STATUS & HEALTH SCORE -->
         <div class="card flex-1">
-          <div class="card-title">Status</div>
+          <div class="card-title">Status & Health</div>
           <div id="m_status" class="large">—</div>
-          <div class="muted small">Updated: <span id="m_last">—</span></div>
+          <div id="health_score_container" style="margin-top: 12px;">
+            <div class="health-score" id="health_score">
+              <span>Health: </span>
+              <span id="health_value">—</span>
+            </div>
+          </div>
+          <div class="muted small" style="margin-top: 8px;">Updated: <span id="m_last">—</span></div>
         </div>
 
       </div>
 
-      <div class="card">
-        <div class="card-title">Sensors</div>
-        <div id="sensorList" class="muted small">Loading…</div>
+      <!-- ===== OEE & ANALYTICS ROW ===== -->
+      <div class="charts-grid">
+        <div class="card chart-card">
+          <div class="card-title">
+            Overall Equipment Effectiveness (OEE)
+            <button class="chart-fullscreen-btn" onclick="fullscreenChart('oeeGaugeChart')" title="Fullscreen">⛶</button>
+            <button class="chart-export-btn" onclick="exportChart('oeeGaugeChart')" title="Export">📥</button>
+          </div>
+          <div class="chart-container" style="height: 300px;">
+            <canvas id="oeeGaugeChart"></canvas>
+            <img id="oeeGaugeFallback" src="/chart/oee/{{ machine_id }}.png" alt="OEE Gauge" class="chart-fallback" style="display:none;" onerror="this.style.display='none';">
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Machine Analytics</div>
+          <div id="machineAnalytics" class="analytics-grid">
+            <div class="analytics-item">
+              <div class="analytics-label">Total Readings</div>
+              <div id="analytics_readings" class="analytics-value">—</div>
+            </div>
+            <div class="analytics-item">
+              <div class="analytics-label">Failure Rate</div>
+              <div id="analytics_failure" class="analytics-value">—%</div>
+            </div>
+            <div class="analytics-item">
+              <div class="analytics-label">Peak Hour</div>
+              <div id="analytics_peak" class="analytics-value">—</div>
+            </div>
+            <div class="analytics-item">
+              <div class="analytics-label">Maintenance Count</div>
+              <div id="analytics_maint" class="analytics-value">—</div>
+            </div>
+          </div>
+        </div>
       </div>
 
+      <!-- ===== ENHANCED PERFORMANCE TREND ===== -->
+      <div class="card chart-card">
+        <div class="card-title">
+          Performance History (Last 30 Days)
+          <button class="chart-fullscreen-btn" onclick="fullscreenChart('performanceHistoryChart')" title="Fullscreen">⛶</button>
+          <button class="chart-export-btn" onclick="exportChart('performanceHistoryChart')" title="Export">📥</button>
+        </div>
+        <div class="chart-container">
+          <canvas id="performanceHistoryChart"></canvas>
+          <div id="performanceHistoryLoading" class="loading-overlay" style="display:none;">
+            <div class="spinner"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PREDICTIVE ANALYTICS ===== -->
       <div class="card">
-        <div class="card-title">Recent Performance</div>
-        <div id="perfList" class="muted small">Loading…</div>
+        <div class="card-title">Predictive Analytics & Trends</div>
+        <div class="charts-grid">
+          <div class="chart-container" style="height: 250px;">
+            <canvas id="trendForecastChart"></canvas>
+          </div>
+          <div class="analytics-grid">
+            <div class="analytics-item">
+              <div class="analytics-label">Predicted Efficiency (7d)</div>
+              <div id="predicted_efficiency" class="analytics-value">—%</div>
+            </div>
+            <div class="analytics-item">
+              <div class="analytics-label">Trend Direction</div>
+              <div id="trend_direction" class="analytics-value">—</div>
+            </div>
+            <div class="analytics-item">
+              <div class="analytics-label">Risk Level</div>
+              <div id="risk_level" class="analytics-value">—</div>
+            </div>
+            <div class="analytics-item">
+              <div class="analytics-label">Maintenance Due</div>
+              <div id="maint_due" class="analytics-value">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SENSOR DETAILS ===== -->
+      <div class="card">
+        <div class="card-title">Sensor Details & Statistics</div>
+        <div id="sensorList" class="sensor-grid">
+          <div class="muted small">Loading sensors...</div>
+        </div>
+      </div>
+
+      <!-- ===== PERFORMANCE TABLE ===== -->
+      <div class="card">
+        <div class="card-title">Performance History</div>
+        <div style="overflow-x: auto;">
+          <table class="table" id="perfTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Efficiency</th>
+                <th>Min</th>
+                <th>Max</th>
+                <th>Readings</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="5">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== ALERTS & MAINTENANCE ===== -->
+      <div class="charts-grid">
+        <div class="card">
+          <div class="card-title">Recent Alerts</div>
+          <div id="machineAlerts" class="alert-list">
+            <div class="muted small">Loading alerts...</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Maintenance History</div>
+          <div id="machineMaintenance" class="maintenance-list">
+            <div class="muted small">Loading maintenance...</div>
+          </div>
+        </div>
       </div>
 
     </div>
-
   </main>
 </div>
 
+<!-- Chart Fullscreen Modal -->
+<div id="chartModal" class="chart-modal">
+  <div class="chart-modal-content">
+    <button class="chart-modal-close" onclick="closeChartModal()">×</button>
+    <canvas id="modalChart"></canvas>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-  /* Ensure machine_id is always a valid JS value.
-     If server did not pass machine_id, default to 0 (or null as preferred).
-     tojson ensures proper JSON encoding (numbers/null).
-  */
-  window.machine_id = {{ machine_id|default(0)|tojson }};
+  // Machine ID from server
+  window.machine_id = {% if machine_id %}{{ machine_id|tojson }}{% else %}0{% endif %};
 </script>
 
-<script src="/static/js/app.js"></script>
-<script src="/static/js/machine.js"></script>
+<script src="/static/js/app.js" defer></script>
+<script src="/static/js/charts-enhanced.js" defer></script>
+<script src="/static/js/machine.js" defer></script>
+
+<script>
+  // Chart export function
+  function exportChart(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const url = canvas.toDataURL('image/png', 1.0);
+    const link = document.createElement('a');
+    link.download = `${canvasId}_${new Date().toISOString().split('T')[0]}.png`;
+    link.href = url;
+    link.click();
+  }
+
+  // Fullscreen chart function
+  function fullscreenChart(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    
+    // Get modal
+    const modal = document.getElementById('chartModal');
+    if (!modal) return;
+
+    // Get chart instance
+    const chartInstance = window[canvasId + 'Instance'] || 
+                         window.performanceHistoryChartInstance ||
+                         window.oeeGaugeChartInstance ||
+                         window.trendForecastChartInstance;
+    
+    if (!chartInstance || !window.Chart) {
+      // Fallback: just show the canvas
+      const modalCanvas = document.getElementById('modalChart');
+      if (modalCanvas && canvas) {
+        const ctx = modalCanvas.getContext('2d');
+        modalCanvas.width = canvas.width * 2;
+        modalCanvas.height = canvas.height * 2;
+        ctx.drawImage(canvas, 0, 0, modalCanvas.width, modalCanvas.height);
+      }
+    } else {
+      // Recreate chart in modal with larger size
+      const modalCanvas = document.getElementById('modalChart');
+      if (modalCanvas) {
+        // Destroy existing modal chart if any
+        if (window.modalChartInstance) {
+          window.modalChartInstance.destroy();
+        }
+
+        const chartData = JSON.parse(JSON.stringify(chartInstance.data));
+        const chartOptions = JSON.parse(JSON.stringify(chartInstance.options));
+        chartOptions.responsive = true;
+        chartOptions.maintainAspectRatio = true;
+        chartOptions.plugins = chartOptions.plugins || {};
+        chartOptions.plugins.title = chartOptions.plugins.title || {};
+        chartOptions.plugins.title.font = chartOptions.plugins.title.font || {};
+        chartOptions.plugins.title.font.size = 18;
+        
+        window.modalChartInstance = new Chart(modalCanvas, {
+          type: chartInstance.config.type,
+          data: chartData,
+          options: chartOptions
+        });
+      }
+    }
+
+    // Show modal
+    modal.classList.add('active');
+    
+    // Close on escape key
+    const closeOnEscape = (e) => {
+      if (e.key === 'Escape') {
+        closeChartModal();
+        document.removeEventListener('keydown', closeOnEscape);
+      }
+    };
+    document.addEventListener('keydown', closeOnEscape);
+  }
+
+  function closeChartModal() {
+    const modal = document.getElementById('chartModal');
+    if (modal) {
+      modal.classList.remove('active');
+      // Destroy modal chart instance
+      if (window.modalChartInstance) {
+        window.modalChartInstance.destroy();
+        window.modalChartInstance = null;
+      }
+    }
+  }
+
+  // Close modal on background click
+  document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('chartModal');
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          closeChartModal();
+        }
+      });
+    }
+  });
+
+  // Calculate health score
+  function calculateHealthScore(details) {
+    if (!details) return { score: 0, level: 'unknown' };
+    
+    let score = 100;
+    const factors = [];
+
+    // OEE factor (30% weight)
+    if (details.oee && details.oee.oee !== undefined) {
+      const oeeValue = parseFloat(details.oee.oee) || 0;
+      const oeeScore = oeeValue;
+      score -= (100 - oeeScore) * 0.3;
+      factors.push({ name: 'OEE', value: oeeValue });
+    }
+
+    // Failure rate factor (25% weight)
+    if (details.analytics && details.analytics.failure_rate !== undefined) {
+      const failureRate = parseFloat(details.analytics.failure_rate) || 0;
+      score -= failureRate * 0.25;
+      factors.push({ name: 'Failure Rate', value: failureRate });
+    }
+
+    // Active alerts factor (20% weight)
+    if (details.alerts && Array.isArray(details.alerts)) {
+      const criticalAlerts = details.alerts.filter(a => 
+        (a.severity || '').toLowerCase() === 'critical'
+      ).length;
+      score -= criticalAlerts * 5 * 0.2;
+      factors.push({ name: 'Critical Alerts', value: criticalAlerts });
+    }
+
+    // Maintenance overdue factor (15% weight)
+    if (details.maintenance && Array.isArray(details.maintenance)) {
+      const overdue = details.maintenance.filter(m => 
+        m.status === 'overdue' || m.status === 'pending'
+      ).length;
+      score -= overdue * 3 * 0.15;
+      factors.push({ name: 'Overdue Maintenance', value: overdue });
+    }
+
+    // Performance trend factor (10% weight)
+    if (details.performance && Array.isArray(details.performance) && details.performance.length >= 2) {
+      const recent = details.performance.slice(0, 7);
+      const older = details.performance.slice(7, 14);
+      if (older.length > 0) {
+        const recentAvg = recent.reduce((sum, p) => sum + (parseFloat(p.efficiency) || 0), 0) / recent.length;
+        const olderAvg = older.reduce((sum, p) => sum + (parseFloat(p.efficiency) || 0), 0) / older.length;
+        const trend = recentAvg - olderAvg;
+        if (trend < -5) score -= 5 * 0.1; // Declining performance
+        factors.push({ name: 'Performance Trend', value: trend.toFixed(1) });
+      }
+    }
+
+    score = Math.max(0, Math.min(100, score));
+    
+    let level = 'good';
+    if (score >= 90) level = 'excellent';
+    else if (score >= 70) level = 'good';
+    else if (score >= 50) level = 'warning';
+    else level = 'critical';
+
+    return { score: Math.round(score), level, factors };
+  }
+
+  // Predictive analytics
+  function calculatePredictiveAnalytics(performance) {
+    if (!performance || !Array.isArray(performance) || performance.length < 7) {
+      return {
+        predicted: null,
+        trend: 'stable',
+        risk: 'low',
+        maintenanceDue: 'N/A'
+      };
+    }
+
+    // Simple linear regression for prediction
+    const recent = performance.slice(0, 7).map(p => parseFloat(p.efficiency) || 0);
+    const n = recent.length;
+    const sumX = n * (n - 1) / 2;
+    const sumY = recent.reduce((a, b) => a + b, 0);
+    const sumXY = recent.reduce((sum, val, idx) => sum + idx * val, 0);
+    const sumX2 = recent.reduce((sum, _, idx) => sum + idx * idx, 0);
+    
+    const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+    const intercept = (sumY - slope * sumX) / n;
+    
+    // Predict 7 days ahead
+    const predicted = Math.max(0, Math.min(100, intercept + slope * (n + 6)));
+    
+    // Determine trend
+    let trend = 'stable';
+    if (slope > 1) trend = 'increasing';
+    else if (slope < -1) trend = 'decreasing';
+    
+    // Risk assessment
+    let risk = 'low';
+    if (predicted < 50 || slope < -2) risk = 'high';
+    else if (predicted < 70 || slope < -1) risk = 'medium';
+    
+    // Maintenance due calculation (simplified)
+    const avgEfficiency = sumY / n;
+    let maintenanceDue = '30+ days';
+    if (avgEfficiency < 60) maintenanceDue = 'Immediate';
+    else if (avgEfficiency < 70) maintenanceDue = '7 days';
+    else if (avgEfficiency < 80) maintenanceDue = '14 days';
+    else if (avgEfficiency < 90) maintenanceDue = '21 days';
+
+    return {
+      predicted: Math.round(predicted),
+      trend,
+      risk,
+      maintenanceDue,
+      slope: slope.toFixed(2)
+    };
+  }
+
+  // Escape HTML to prevent XSS
+  function escapeHtml(text) {
+    if (text == null) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Load enhanced machine data
+  async function loadEnhancedMachineData() {
+    const mid = window.machine_id;
+    if (!mid || mid === 0) {
+      console.error('Invalid machine ID');
+      return;
+    }
+
+    try {
+      // Load analytics
+      try {
+        const analyticsRes = await fetch(`/api/machine/${mid}/analytics`);
+        if (analyticsRes.ok) {
+          const analytics = await analyticsRes.json();
+          
+          if (analytics && !analytics.error) {
+            const readingsEl = document.getElementById('analytics_readings');
+            const failureEl = document.getElementById('analytics_failure');
+            const peakEl = document.getElementById('analytics_peak');
+            const maintEl = document.getElementById('analytics_maint');
+
+            if (readingsEl) readingsEl.textContent = analytics.total_readings || 0;
+            if (failureEl) failureEl.textContent = (analytics.failure_rate || 0).toFixed(2) + '%';
+            if (peakEl) peakEl.textContent = analytics.peak_hour ? analytics.peak_hour + ':00' : '—';
+            if (maintEl) maintEl.textContent = analytics.maintenance_frequency || 0;
+          }
+        }
+      } catch (e) {
+        console.warn('Analytics load failed:', e);
+      }
+
+      // Load machine details with enhanced data
+      const detailsRes = await fetch(`/api/machines/${mid}`);
+      if (!detailsRes.ok) {
+        throw new Error(`HTTP ${detailsRes.status}`);
+      }
+      
+      const details = await detailsRes.json();
+      
+      if (details && !details.error) {
+        // Calculate and display health score
+        try {
+          const healthData = calculateHealthScore(details);
+          const healthEl = document.getElementById('health_value');
+          const healthContainer = document.getElementById('health_score');
+          if (healthEl && healthContainer) {
+            healthEl.textContent = healthData.score + '%';
+            healthContainer.className = 'health-score ' + healthData.level;
+          }
+        } catch (e) {
+          console.warn('Health score calculation failed:', e);
+        }
+
+        // Render OEE gauge
+        try {
+          if (details.oee && typeof details.oee === 'object' && details.oee.oee !== undefined) {
+            const oeeValue = parseFloat(details.oee.oee) || 0;
+            if (window.IMCSChartsEnhanced && window.IMCSChartsEnhanced.renderOEEGauge) {
+              const rendered = window.IMCSChartsEnhanced.renderOEEGauge('oeeGaugeChart', oeeValue);
+              window.oeeGaugeChartInstance = rendered;
+              if (!rendered) {
+                // Fallback to image
+                const fallback = document.getElementById('oeeGaugeFallback');
+                if (fallback) {
+                  fallback.src = `/chart/oee/${mid}.png?ts=${Date.now()}`;
+                  fallback.style.display = 'block';
+                }
+              }
+            } else {
+              // Fallback to image if Chart.js not available
+              const fallback = document.getElementById('oeeGaugeFallback');
+              if (fallback) {
+                fallback.src = `/chart/oee/${mid}.png?ts=${Date.now()}`;
+                fallback.style.display = 'block';
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('OEE gauge render failed:', e);
+          const fallback = document.getElementById('oeeGaugeFallback');
+          if (fallback) {
+            fallback.src = `/chart/oee/${mid}.png?ts=${Date.now()}`;
+            fallback.style.display = 'block';
+          }
+        }
+
+        // Predictive Analytics
+        try {
+          if (details.performance && Array.isArray(details.performance)) {
+            const predictive = calculatePredictiveAnalytics(details.performance);
+            
+            const predEl = document.getElementById('predicted_efficiency');
+            const trendEl = document.getElementById('trend_direction');
+            const riskEl = document.getElementById('risk_level');
+            const maintEl = document.getElementById('maint_due');
+
+            if (predEl) predEl.textContent = (predictive.predicted || '—') + '%';
+            if (trendEl) {
+              trendEl.textContent = predictive.trend || '—';
+              trendEl.style.color = predictive.trend === 'increasing' ? '#28a745' : 
+                                    predictive.trend === 'decreasing' ? '#bb0000' : '#666';
+            }
+            if (riskEl) {
+              riskEl.textContent = predictive.risk || '—';
+              riskEl.style.color = predictive.risk === 'high' ? '#bb0000' : 
+                                  predictive.risk === 'medium' ? '#e9730c' : '#28a745';
+            }
+            if (maintEl) maintEl.textContent = predictive.maintenanceDue || '—';
+
+            // Render trend forecast chart
+            if (window.Chart && details.performance.length >= 7) {
+              const forecastCtx = document.getElementById('trendForecastChart');
+              if (forecastCtx) {
+                const perfData = details.performance.slice(0, 14).reverse();
+                const futureDates = [];
+                const futureValues = [];
+                for (let i = 0; i < 7; i++) {
+                  const lastDate = new Date(perfData[perfData.length - 1].date);
+                  lastDate.setDate(lastDate.getDate() + i + 1);
+                  futureDates.push(lastDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                  const predictedVal = parseFloat(predictive.predicted) || 0;
+                  futureValues.push(predictedVal);
+                }
+
+                const allLabels = [
+                  ...perfData.map(p => {
+                    try {
+                      const d = new Date(p.date);
+                      return isNaN(d.getTime()) ? p.date : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    } catch {
+                      return p.date || '';
+                    }
+                  }),
+                  ...futureDates
+                ];
+
+                const allData = [
+                  ...perfData.map(p => parseFloat(p.efficiency) || 0),
+                  ...futureValues
+                ];
+
+                if (window.trendForecastChartInstance) {
+                  window.trendForecastChartInstance.destroy();
+                }
+
+                window.trendForecastChartInstance = new Chart(forecastCtx, {
+                  type: 'line',
+                  data: {
+                    labels: allLabels,
+                    datasets: [{
+                      label: 'Historical',
+                      data: perfData.map(p => parseFloat(p.efficiency) || 0),
+                      borderColor: '#0a6ed1',
+                      backgroundColor: 'rgba(10, 110, 209, 0.1)',
+                      borderWidth: 2,
+                      fill: true,
+                      tension: 0.4
+                    }, {
+                      label: 'Forecast',
+                      data: [...new Array(perfData.length).fill(null), ...futureValues],
+                      borderColor: '#e9730c',
+                      backgroundColor: 'rgba(233, 115, 12, 0.1)',
+                      borderWidth: 2,
+                      borderDash: [5, 5],
+                      fill: true,
+                      tension: 0.4,
+                      pointRadius: 4
+                    }]
+                  },
+                  options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      title: {
+                        display: true,
+                        text: '7-Day Performance Forecast',
+                        font: { size: 12, weight: 'bold' }
+                      },
+                      legend: {
+                        display: true,
+                        position: 'top'
+                      }
+                    },
+                    scales: {
+                      y: { min: 0, max: 100 }
+                    }
+                  }
+                });
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Predictive analytics failed:', e);
+        }
+
+        // Render performance history chart
+        try {
+          if (details.performance && Array.isArray(details.performance) && details.performance.length > 0 && window.Chart) {
+            const perfCtx = document.getElementById('performanceHistoryChart');
+            if (perfCtx) {
+              // Destroy existing chart if any
+              if (window.performanceHistoryChartInstance) {
+                window.performanceHistoryChartInstance.destroy();
+              }
+
+              const perfData = details.performance.filter(p => p && p.date).reverse();
+              if (perfData.length > 0) {
+                // Show loading
+                const loadingEl = document.getElementById('performanceHistoryLoading');
+                if (loadingEl) loadingEl.style.display = 'flex';
+
+                window.performanceHistoryChartInstance = new Chart(perfCtx, {
+                  type: 'line',
+                  data: {
+                    labels: perfData.map(p => {
+                      try {
+                        const d = new Date(p.date);
+                        return isNaN(d.getTime()) ? p.date : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                      } catch {
+                        return p.date || '';
+                      }
+                    }),
+                    datasets: [{
+                      label: 'Efficiency',
+                      data: perfData.map(p => parseFloat(p.efficiency) || 0),
+                      borderColor: '#0a6ed1',
+                      backgroundColor: 'rgba(10, 110, 209, 0.15)',
+                      borderWidth: 3,
+                      fill: true,
+                      tension: 0.4,
+                      pointRadius: 5,
+                      pointHoverRadius: 8,
+                      pointBackgroundColor: '#0a6ed1',
+                      pointBorderColor: '#ffffff',
+                      pointBorderWidth: 2,
+                      shadowOffsetX: 2,
+                      shadowOffsetY: 2,
+                      shadowBlur: 4,
+                      shadowColor: 'rgba(0,0,0,0.1)'
+                    }, {
+                      label: 'Min',
+                      data: perfData.map(p => parseFloat(p.min) || 0),
+                      borderColor: '#9aa6b2',
+                      backgroundColor: 'rgba(154, 166, 178, 0.05)',
+                      borderWidth: 1.5,
+                      borderDash: [5, 5],
+                      fill: false,
+                      pointRadius: 0,
+                      tension: 0.3
+                    }, {
+                      label: 'Max',
+                      data: perfData.map(p => parseFloat(p.max) || 0),
+                      borderColor: '#9aa6b2',
+                      backgroundColor: 'rgba(154, 166, 178, 0.05)',
+                      borderWidth: 1.5,
+                      borderDash: [5, 5],
+                      fill: false,
+                      pointRadius: 0,
+                      tension: 0.3
+                    }]
+                  },
+                  options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                      duration: 1500,
+                      easing: 'easeInOutQuart'
+                    },
+                    plugins: {
+                      title: {
+                        display: true,
+                        text: 'Performance History (Last 30 Days)',
+                        font: { size: 16, weight: 'bold', family: 'Tahoma, Arial, sans-serif' },
+                        color: '#003366',
+                        padding: { top: 10, bottom: 20 }
+                      },
+                      legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                          usePointStyle: true,
+                          padding: 15,
+                          font: { size: 12, family: 'Tahoma, Arial, sans-serif' }
+                        }
+                      },
+                      tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 13, weight: 'bold' },
+                        bodyFont: { size: 12 },
+                        borderColor: '#0a6ed1',
+                        borderWidth: 1,
+                        cornerRadius: 6,
+                        displayColors: true
+                      }
+                    },
+                    scales: {
+                      y: { 
+                        min: 0, 
+                        max: 100,
+                        ticks: {
+                          callback: function(value) {
+                            return value + '%';
+                          },
+                          font: { size: 11 },
+                          color: '#666'
+                        },
+                        grid: {
+                          color: 'rgba(0,0,0,0.05)',
+                          lineWidth: 1
+                        }
+                      },
+                      x: {
+                        ticks: {
+                          font: { size: 11 },
+                          color: '#666'
+                        },
+                        grid: {
+                          color: 'rgba(0,0,0,0.05)',
+                          lineWidth: 1
+                        }
+                      }
+                    }
+                  }
+                });
+
+                // Hide loading
+                if (loadingEl) loadingEl.style.display = 'none';
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Performance chart render failed:', e);
+          const loadingEl = document.getElementById('performanceHistoryLoading');
+          if (loadingEl) loadingEl.style.display = 'none';
+        }
+
+        // Render sensor statistics
+        try {
+          if (details.sensor_stats && Array.isArray(details.sensor_stats) && document.getElementById('sensorList')) {
+            const sensorDiv = document.getElementById('sensorList');
+            if (details.sensor_stats.length === 0) {
+              sensorDiv.innerHTML = '<div class="muted small">No sensors configured</div>';
+            } else {
+              sensorDiv.innerHTML = details.sensor_stats.map(s => {
+                const name = escapeHtml(s.name || 'Unknown');
+                const unit = escapeHtml(s.unit || '');
+                const avg = parseFloat(s.avg) || 0;
+                const min = parseFloat(s.min) || 0;
+                const max = parseFloat(s.max) || 0;
+                const count = parseInt(s.count) || 0;
+                return `
+                  <div class="sensor-card">
+                    <div class="sensor-name">${name}${unit ? ' (' + unit + ')' : ''}</div>
+                    <div class="sensor-stats">
+                      Avg: ${avg.toFixed(2)}${unit ? ' ' + unit : ''}<br>
+                      Min: ${min.toFixed(2)}${unit ? ' ' + unit : ''}<br>
+                      Max: ${max.toFixed(2)}${unit ? ' ' + unit : ''}<br>
+                      Readings: ${count}
+                    </div>
+                  </div>
+                `;
+              }).join('');
+            }
+          }
+        } catch (e) {
+          console.warn('Sensor stats render failed:', e);
+        }
+
+        // Render performance table
+        try {
+          if (details.performance && Array.isArray(details.performance) && document.getElementById('perfTable')) {
+            const tbody = document.querySelector('#perfTable tbody');
+            if (tbody) {
+              const perfData = details.performance.slice(0, 10).filter(p => p && p.date);
+              if (perfData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="muted small">No performance data</td></tr>';
+              } else {
+                tbody.innerHTML = perfData.map(p => {
+                  try {
+                    const date = new Date(p.date);
+                    const dateStr = isNaN(date.getTime()) ? p.date : date.toLocaleDateString();
+                    return `
+                      <tr>
+                        <td>${escapeHtml(dateStr)}</td>
+                        <td>${parseFloat(p.efficiency) || 0}%</td>
+                        <td>${p.min !== undefined && p.min !== null ? parseFloat(p.min).toFixed(1) + '%' : '—'}</td>
+                        <td>${p.max !== undefined && p.max !== null ? parseFloat(p.max).toFixed(1) + '%' : '—'}</td>
+                        <td>${parseInt(p.readings) || 0}</td>
+                      </tr>
+                    `;
+                  } catch {
+                    return '';
+                  }
+                }).filter(html => html).join('');
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Performance table render failed:', e);
+        }
+
+        // Render alerts
+        try {
+          if (details.alerts && Array.isArray(details.alerts) && document.getElementById('machineAlerts')) {
+            const alertsDiv = document.getElementById('machineAlerts');
+            if (details.alerts.length === 0) {
+              alertsDiv.innerHTML = '<div class="muted small">No recent alerts</div>';
+            } else {
+              alertsDiv.innerHTML = details.alerts.slice(0, 5).map(a => {
+                const severity = escapeHtml(a.severity || 'Info');
+                const message = escapeHtml(a.message || '—');
+                const raisedAt = escapeHtml(a.raised_at || '—');
+                return `
+                  <div class="alert-item ${(a.severity || '').toLowerCase()}">
+                    <strong>${severity}</strong><br>
+                    ${message}<br>
+                    <small class="muted">${raisedAt}</small>
+                  </div>
+                `;
+              }).join('');
+            }
+          }
+        } catch (e) {
+          console.warn('Alerts render failed:', e);
+        }
+
+        // Render maintenance
+        try {
+          if (details.maintenance && Array.isArray(details.maintenance) && document.getElementById('machineMaintenance')) {
+            const maintDiv = document.getElementById('machineMaintenance');
+            if (details.maintenance.length === 0) {
+              maintDiv.innerHTML = '<div class="muted small">No maintenance history</div>';
+            } else {
+              maintDiv.innerHTML = details.maintenance.slice(0, 5).map(m => {
+                const desc = escapeHtml(m.description || '—');
+                const status = escapeHtml(m.status || '—');
+                const priority = escapeHtml(m.priority || '—');
+                const createdAt = escapeHtml(m.created_at || '—');
+                return `
+                  <div class="maintenance-item">
+                    <strong>${desc}</strong><br>
+                    Status: ${status}<br>
+                    Priority: ${priority}<br>
+                    <small class="muted">${createdAt}</small>
+                  </div>
+                `;
+              }).join('');
+            }
+          }
+        } catch (e) {
+          console.warn('Maintenance render failed:', e);
+        }
+      } else {
+        console.error('Invalid machine data:', details);
+      }
+    } catch (e) {
+      console.error('Error loading enhanced machine data:', e);
+      // Show error messages
+      const errorMsg = 'Failed to load machine data. Please refresh the page.';
+      if (document.getElementById('sensorList')) {
+        document.getElementById('sensorList').innerHTML = `<div class="muted small" style="color:#bb0000">${errorMsg}</div>`;
+      }
+    }
+  }
+
+  let refreshInterval = null;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Wait for Chart.js to load
+    if (typeof Chart === 'undefined') {
+      // Retry after a delay
+      setTimeout(() => {
+        loadEnhancedMachineData();
+        refreshInterval = setInterval(loadEnhancedMachineData, 30000);
+      }, 1000);
+    } else {
+      loadEnhancedMachineData();
+      refreshInterval = setInterval(loadEnhancedMachineData, 30000);
+    }
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
+      if (window.performanceHistoryChartInstance) {
+        window.performanceHistoryChartInstance.destroy();
+      }
+    });
+  });
+</script>
+
+<script>
+  // Cache-bust machine trend safely
+  document.addEventListener('DOMContentLoaded', () => {
+    const img = document.getElementById('machineChart');
+    if (img && !img.src.includes('ts=')) {
+      img.src += '?ts=' + Date.now();
+    }
+  });
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/static/sw.js').catch(()=>{});
+    });
+  }
+</script>
+
 </body>
 </html>

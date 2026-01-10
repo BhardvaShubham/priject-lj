@@ -1,83 +1,63 @@
 <!doctype html>
 <html lang="en">
-
 <head>
-    <meta charset="utf-8"/>
-    <title>SAP – Alerts Center</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <link rel="stylesheet" href="/static/css/sap90.css"/>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>IMCS - Alerts</title>
+
+  <style>
+    .app-shell{display:flex;height:100vh;overflow:hidden;background:#DFDFDF;}
+    .app-sidebar{width:260px;background:#ECECEC;padding:6px;border-right:1px solid #A0A0A0;}
+    .logo-img{width:36px;height:36px;display:block;}
+  </style>
+
+  <link rel="preload" href="/static/css/sap90.css" as="style" onload="this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="/static/css/sap90.css"></noscript>
 </head>
 
 <body>
-
 <div class="app-shell">
+  <aside class="app-sidebar">
+    <div class="brand"><img src="/static/icons/logo-imcs.svg" class="logo-img" alt="IMCS"/><div class="title">Industrial Hub</div><div class="muted small">Alerts</div></div>
+    <nav class="nav">
+      <a href="/dashboard"><img src="/static/icons/home.svg" width="16" height="16"/> Overview</a>
+      <a href="/machinery"><img src="/static/icons/machine.svg" width="16" height="16"/> Machinery</a>
+      <a href="/maintenance"><img src="/static/icons/wrench.svg" width="16" height="16"/> Maintenance</a>
+      <a class="active" href="/alerts"><img src="/static/icons/alert.svg" width="16" height="16"/> Alerts</a>
+      <a href="/reports"><img src="/static/icons/chart.svg" width="16" height="16"/> Reports</a>
+    </nav>
+    <!-- <button class="btn">Theme</button> -->
+  </aside>
 
-    <!-- Sidebar -->
-    <aside class="app-sidebar">
-        <div class="brand">
-          <img src="/static/icons/logo-imcs.svg" alt="IMCS Logo" class="logo-img"/>
-            <div class="title">Industrial Hub</div>
-            <div class="muted small">Alerts</div>
-        </div>
+  <main class="app-main">
+    <header class="app-header">
+      <div class="brand"><div class="sap-badge">IMCS</div><div class="hdr-title">System Alerts</div></div>
+      <button class="btn" id="refreshBtn"><img src="/static/icons/refresh.svg" width="16" height="16" class="icon" /> Refresh</button>
+    </header>
 
-        <nav class="nav">
-            <a href="/dashboard"><img src="/static/icons/home.svg"> Overview</a>
-            <a href="/machinery"><img src="/static/icons/machine.svg"> Machinery</a>
-            <a href="/maintenance"><img src="/static/icons/wrench.svg"> Maintenance</a>
-            <a class="active" href="/alerts"><img src="/static/icons/alert.svg"> Alerts</a>
-            <a href="/reports"><img src="/static/icons/chart.svg"> Reports</a>
-        </nav>
+    <div class="container">
+      <div class="card">
+        <div class="card-title">Current Alerts</div>
+        <table class="table" id="alertsTable">
+          <thead>
+            <tr><th>ID</th><th>Machine</th><th>Severity</th><th>Message</th><th>Raised</th><th>Ack</th></tr>
+          </thead>
+          <tbody><tr><td colspan="6">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
 
-        <button class="btn">Theme</button>
-    </aside>
-
-    <!-- Main -->
-    <main class="app-main">
-
-        <header class="app-header">
-            <div class="brand">
-                <div class="sap-badge">IMCS</div>
-                <div class="hdr-title">System Alerts</div>
-            </div>
-            <button class="btn" id="refreshBtn">
-              <img src="/static/icons/refresh.svg" class="icon" /> Refresh
-          </button>
-          
-        </header>
-
-        <div class="container">
-
-            <div class="card">
-                <div class="card-title">Current Alerts</div>
-
-                <table class="table" id="alertsTable">
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Machine</th>
-                        <th>Severity</th>
-                        <th>Message</th>
-                        <th>Raised</th>
-                        <th>Ack</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td colspan="6">Loading…</td></tr>
-                    </tbody>
-                </table>
-
-            </div>
-
-        </div>
-
-        <footer class="footer">IMCS · Alerts Monitor</footer>
-
-    </main>
-
+    <footer class="footer">IMCS · Alerts Monitor</footer>
+  </main>
 </div>
 
-<script src="/static/js/app.js"></script>
-<script src="/static/js/alerts.js"></script>
+<script src="/static/js/app.js" defer></script>
+<script src="/static/js/lazy.js" defer></script>
+<script src="/static/js/alerts.js" defer></script>
+
+<script>
+  if('serviceWorker' in navigator) window.addEventListener('load', ()=> navigator.serviceWorker.register('/static/sw.js').catch(()=>{}));
+</script>
 
 </body>
 </html>

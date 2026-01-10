@@ -67,4 +67,48 @@
     });
   
   })();
+  /* ================= ADD MACHINE MODAL ================= */
+
+const modal = document.getElementById('addMachineModal');
+const openBtn = document.getElementById('addMachineBtn');
+const closeBtn = document.getElementById('closeModal');
+const cancelBtn = document.getElementById('cancelModal');
+const saveBtn = document.getElementById('saveMachineBtn');
+
+if (openBtn) openBtn.onclick = () => modal.classList.remove('hidden');
+if (closeBtn) closeBtn.onclick = () => modal.classList.add('hidden');
+if (cancelBtn) cancelBtn.onclick = () => modal.classList.add('hidden');
+
+if (saveBtn) {
+  saveBtn.onclick = async () => {
+    const payload = {
+      name: document.getElementById('m_name').value,
+      type: document.getElementById('m_type').value,
+      location: document.getElementById('m_location').value,
+      rated_capacity: Number(document.getElementById('m_capacity').value) || null
+    };
+
+    if (!payload.name || !payload.type || !payload.location) {
+      alert("All fields except capacity are required");
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/machines', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error("Failed");
+
+      modal.classList.add('hidden');
+      localStorage.removeItem('pj_machines'); // clear cache
+      location.reload(); // reload machinery list
+    } catch {
+      alert("Unable to add machine (offline?)");
+    }
+  };
+}
+
   

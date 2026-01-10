@@ -1,80 +1,101 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <title>SAP – Machinery Overview</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/static/css/sap90.css" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>IMCS - Machinery</title>
+
+  <style>
+    .app-shell{display:flex;height:100vh;overflow:hidden;background:#DFDFDF;}
+    .app-sidebar{width:260px;background:#ECECEC;padding:6px;border-right:1px solid #A0A0A0;}
+    .logo-img{width:36px;height:36px;display:block;}
+  </style>
+
+  <link rel="preload" href="/static/css/sap90.css" as="style" onload="this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="/static/css/sap90.css"></noscript>
 </head>
 
 <body>
 <div class="app-shell">
+  <aside class="app-sidebar">
+    <img src="/static/icons/logo-imcs.svg" class="logo-img" alt="IMCS"/>
+    <div class="brand"><div class="title">Industrial Hub</div><div class="muted small">Machinery</div></div>
+    <nav class="nav">
+      <a href="/dashboard"><img src="/static/icons/home.svg" width="16" height="16"/> Overview</a>
+      <a class="active" href="/machinery"><img src="/static/icons/machine.svg" width="16" height="16"/> Machinery</a>
+      <a href="/maintenance"><img src="/static/icons/wrench.svg" width="16" height="16"/> Maintenance</a>
+      <a href="/alerts"><img src="/static/icons/alert.svg" width="16" height="16"/> Alerts</a>
+      <a href="/reports"><img src="/static/icons/chart.svg" width="16" height="16"/> Reports</a>
+    </nav>
+    <!-- <button class="btn" id="themeCycleBtn">Theme</button> -->
+  </aside>
 
-    <!-- Sidebar -->
-    <aside class="app-sidebar">
-      <img src="/static/icons/logo-imcs.svg" alt="IMCS Logo" class="logo-img"/>
-        <div class="brand">
-            <div class="title">Industrial Hub</div>
-            <div class="muted small">Machinery</div>
-        </div>
-        <nav class="nav">
-            <a href="/dashboard"><img src="/static/icons/home.svg"> Overview</a>
-            <a class="active" href="/machinery"><img src="/static/icons/machine.svg"> Machinery</a>
-            <a href="/maintenance"><img src="/static/icons/wrench.svg"> Maintenance</a>
-            <a href="/alerts"><img src="/static/icons/alert.svg"> Alerts</a>
-            <a href="/reports"><img src="/static/icons/chart.svg"> Reports</a>
-        </nav>
-        <button class="btn" id="themeCycleBtn">Theme</button>
-    </aside>
+  <main class="app-main">
+    <header class="app-header">
+      <div class="brand"><div class="sap-badge">IMCS</div><div class="hdr-title">Machinery Directory</div></div>
+      <div> <button class="btn" id="refreshBtn"><img src="/static/icons/refresh.svg" width="16" height="16" /> Refresh</button>
+      <button class="btn" id="addMachineBtn"><img src="/static/icons/add-machine.svg" width="16" height="16" />
+         Add Machine
+      </button></div>
+     
+    </header>
 
-    <!-- Main -->
-    <main class="app-main">
+    <div class="container">
+      <div class="card">
+        <div class="card-title">Search Machinery</div>
+        <input id="searchInput" class="input" placeholder="Search by name, type or location" style="width:100%;padding:6px;">
+      </div>
 
-        <header class="app-header">
-            <div class="brand">
-                <div class="sap-badge">IMCS</div>
-                <div class="hdr-title">Machinery Directory</div>
-            </div>
-            <button class="btn" id="refreshBtn">
-              <img src="/static/icons/refresh.svg" class="icon" /> Refresh
-          </button>
-          
-        </header>
+      <div class="card">
+        <div class="card-title">Registered Machines</div>
+        <table class="table" id="machinesTable">
+          <thead>
+            <tr><th>Name</th><th>Type</th><th>Location</th><th>Status</th><th>Eff%</th></tr>
+          </thead>
+          <tbody><tr><td colspan="5">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
 
-        <div class="container">
-
-            <div class="card">
-                <div class="card-title">Search Machinery</div>
-                <input id="searchInput" class="input" placeholder="Search by name, type or location" style="width:100%;padding:6px;">
-            </div>
-
-            <div class="card">
-                <div class="card-title">Registered Machines</div>
-                <table class="table" id="machinesTable">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Type</th>
-                            <th>Location</th>
-                            <th>Status</th>
-                            <th>Eff%</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td colspan="5">Loading…</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-        </div>
-
-        <footer class="footer">IMCS· Machinery List</footer>
-
-    </main>
-
+    <footer class="footer">IMCS· Machinery List</footer>
+  </main>
 </div>
 
-<script src="/static/js/app.js"></script>
-<script src="/static/js/machinery.js"></script>
+<script src="/static/js/app.js" defer></script>
+<script src="/static/js/lazy.js" defer></script>
+<script src="/static/js/machinery.js" defer></script>
+
+<script>
+  if('serviceWorker' in navigator) window.addEventListener('load', ()=> navigator.serviceWorker.register('/static/sw.js').catch(()=>{}));
+</script>
+<!-- ================= ADD MACHINE MODAL ================= -->
+<div id="addMachineModal" class="modal hidden">
+  <div class="modal-box">
+    <div class="modal-header">
+      <strong>Add New Machine</strong>
+      <button class="btn small " id="closeModal">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <label class="label">Machine Name</label>
+      <input id="m_name" class="input" placeholder="CNC-01">
+
+      <label class="label">Type</label>
+      <input id="m_type" class="input" placeholder="CNC / Lathe / Robot">
+
+      <label class="label">Location</label>
+      <input id="m_location" class="input" placeholder="Shop Floor A">
+
+      <label class="label">Rated Capacity</label>
+      <input id="m_capacity" class="input" type="number" placeholder="100">
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn" id="saveMachineBtn">Save</button>
+      <button class="btn secondary" id="cancelModal">Cancel</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

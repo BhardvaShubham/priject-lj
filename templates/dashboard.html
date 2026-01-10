@@ -1,133 +1,524 @@
 <!doctype html>
 <html lang="en">
-
 <head>
-    <meta charset="utf-8" />
-    <title>SAP - Industrial Hub Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IMCS - Industrial Machinery Control System</title>
 
-    <link rel="stylesheet" href="/static/css/sap90.css" />
+  <!-- INDUSTRIAL RULE: load layout CSS synchronously -->
+  <link rel="stylesheet" href="/static/css/sap90.css">
+
+  <!-- Minimal inline shell CSS (safe, no reflow) -->
+  <style>
+    .app-shell {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      background: #DFDFDF;
+    }
+
+    .app-sidebar {
+      width: 260px;
+      background: #ECECEC;
+      padding: 6px;
+      border-right: 1px solid #A0A0A0;
+      flex-shrink: 0;
+    }
+
+    .app-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
 
    
+
+    /* ===== CLS-SAFE CHART CONTAINER ===== */
+    .chart-wrap {
+      width: 100%;
+      aspect-ratio: 10 / 3;
+      min-height: 240px;
+      background: #F2F2F2;
+      border: 1px solid #A0A0A0;
+    }
+
+    .chart-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* Enhanced chart containers */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .chart-card {
+      background: #EFEFEF;
+      border: 1px solid #A0A0A0;
+    }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+      height: 280px;
+      background: #F9F9F9;
+      border: 1px solid #D5D5D5;
+      padding: 8px;
+    }
+
+    .chart-container canvas {
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .chart-fallback {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .chart-card-enhanced {
+      position: relative;
+    }
+
+    .chart-export-btn {
+      float: right;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 2px 6px;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+    }
+
+    .chart-export-btn:hover {
+      opacity: 1;
+    }
+
+    .location-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .location-card {
+      background: #F5F5F5;
+      border: 1px solid #D5D5D5;
+      padding: 10px;
+      border-radius: 4px;
+    }
+
+    .location-card .location-name {
+      font-weight: bold;
+      color: #003366;
+      margin-bottom: 4px;
+    }
+
+    .location-card .location-stats {
+      font-size: 12px;
+      color: #666;
+    }
+
+    /* CSV Drop Zone */
+    .csv-drop-zone {
+      border: 2px dashed #A0A0A0;
+      border-radius: 4px;
+      padding: 24px;
+      text-align: center;
+      background: #F9F9F9;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .csv-drop-zone:hover,
+    .csv-drop-zone.drag-over {
+      border-color: #0a6ed1;
+      background: #E6F2FF;
+    }
+
+    .drop-zone-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .drop-zone-text {
+      color: #003366;
+      font-size: 14px;
+    }
+
+    /* Live indicator */
+    .live-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #107e3e;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+      margin-right: 6px;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+  </style>
 </head>
 
 <body>
 
-    <div class="app-shell">
+<div class="app-shell">
 
-        <!-- Sidebar -->
-        <aside class="app-sidebar">
-          <div class="brand">
-            <img src="/static/icons/logo-imcs.svg" alt="IMCS Logo" class="logo-img"/>
-            <div>
-                <div class="title">Industrial Hub</div>
-                <div class="muted small">Dashboard</div>
-            </div>
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="app-sidebar">
+    <div class="brand">
+      <img src="/static/icons/logo-imcs.svg" alt="IMCS Logo" class="logo-img"/>
+      <div class="title">Industrial Hub</div>
+      <div class="muted small">Dashboard</div>
+    </div>
+
+    <nav class="nav">
+      <a href="/dashboard" class="active">
+        <img src="/static/icons/home.svg" width="16" height="16"> Overview
+      </a>
+      <a href="/machinery">
+        <img src="/static/icons/machine.svg" width="16" height="16"> Machinery
+      </a>
+      <a href="/maintenance">
+        <img src="/static/icons/wrench.svg" width="16" height="16"> Maintenance
+      </a>
+      <a href="/alerts">
+        <img src="/static/icons/alert.svg" width="16" height="16"> Alerts
+      </a>
+      <a href="/reports">
+        <img src="/static/icons/chart.svg" width="16" height="16"> Reports
+      </a>
+    </nav>
+<!-- 
+    <button class="btn" id="themeCycleBtn">Theme</button> -->
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <main class="app-main">
+
+    <header class="app-header">
+      <div class="brand">
+        <div class="sap-badge">IMCS</div>
+        <div class="hdr-title">Operational Dashboard</div>
+      </div>
+      <button class="btn" id="refreshBtn">
+        <img src="/static/icons/refresh.svg" width="16" height="16"> Refresh
+      </button>
+    </header>
+
+    <div class="container">
+
+      <!-- ===== ENHANCED KPIs ===== -->
+      <section class="kpi-row">
+        <div class="card kpi kpi-enhanced">
+          <div class="kpi-header">
+            <div class="label">Total Machines</div>
+            <div class="kpi-icon">🏭</div>
+          </div>
+          <div id="k_total" class="value">—</div>
+          <div class="kpi-footer">
+            <span id="k_running" class="kpi-sub">Running: —</span>
+          </div>
         </div>
-        
+        <div class="card kpi kpi-enhanced">
+          <div class="kpi-header">
+            <div class="label">Avg Efficiency</div>
+            <div class="kpi-icon">⚡</div>
+          </div>
+          <div id="k_eff" class="value">—%</div>
+          <div class="kpi-footer">
+            <span id="k_uptime" class="kpi-sub">Uptime: —%</span>
+          </div>
+        </div>
+        <div class="card kpi kpi-enhanced">
+          <div class="kpi-header">
+            <div class="label">Active Alerts</div>
+            <div class="kpi-icon">⚠️</div>
+          </div>
+          <div id="k_alerts" class="value">—</div>
+          <div class="kpi-footer">
+            <span id="k_maintenance" class="kpi-sub">Maintenance: —</span>
+          </div>
+        </div>
+        <div class="card kpi kpi-enhanced">
+          <div class="kpi-header">
+            <div class="label">System Health</div>
+            <div class="kpi-icon">💚</div>
+          </div>
+          <div id="k_health" class="value">—</div>
+          <div class="kpi-footer">
+            <span class="kpi-sub">Status: <span id="k_health_status">—</span></span>
+          </div>
+        </div>
+      </section>
 
-            <nav class="nav">
-              <a href="/dashboard" class="active">
-                  <img src="/static/icons/home.svg" class="nav-icon" /> Overview
-              </a>
-              <a href="/machinery">
-                  <img src="/static/icons/machine.svg" class="nav-icon" /> Machinery
-              </a>
-              <a href="/maintenance">
-                  <img src="/static/icons/wrench.svg" class="nav-icon" /> Maintenance
-              </a>
-              <a href="/alerts">
-                  <img src="/static/icons/alert.svg" class="nav-icon" /> Alerts
-              </a>
-              <a href="/reports">
-                  <img src="/static/icons/chart.svg" class="nav-icon" /> Reports
-              </a>
-          </nav>
-          
+      <!-- ===== LOCATION BREAKDOWN ===== -->
+      <div class="card">
+        <div class="card-title">Location Performance</div>
+        <div id="locationBreakdown" class="location-grid">
+          <div class="muted small">Loading location data...</div>
+        </div>
+      </div>
 
-            <button class="btn" id="themeCycleBtn">Theme</button>
-        </aside>
+      <!-- ===== CHARTS ROW ===== -->
+      <div class="charts-grid">
+        <!-- Performance Trend -->
+        <div class="card chart-card chart-card-enhanced">
+          <div class="card-title">
+            Performance Trend (Last 7 Days)
+            <button class="chart-export-btn" onclick="exportChart('performanceChart')" title="Export Chart">📥</button>
+          </div>
+          <div class="chart-container">
+            <canvas id="performanceChart"></canvas>
+            <img id="performanceChartFallback" src="/chart/summary.png" alt="Performance chart" class="chart-fallback" style="display:none;">
+          </div>
+        </div>
 
-        <!-- Main -->
-        <main class="app-main">
+        <!-- Status Distribution -->
+        <div class="card chart-card chart-card-enhanced">
+          <div class="card-title">
+            Machine Status Distribution
+            <button class="chart-export-btn" onclick="exportChart('statusChart')" title="Export Chart">📥</button>
+          </div>
+          <div class="chart-container">
+            <canvas id="statusChart"></canvas>
+            <img id="statusChartFallback" src="/chart/status.png" alt="Status chart" class="chart-fallback" style="display:none;">
+          </div>
+        </div>
+      </div>
 
-            <header class="app-header">
-                <div class="brand">
-                    <div class="sap-badge">IMCS</div>
-                    <div class="hdr-title">Operational Dashboard</div>
-                </div>
+      <!-- ===== ALERTS TREND ===== -->
+      <div class="card chart-card">
+        <div class="card-title">Alerts Trend (Last 14 Days)</div>
+        <div class="chart-container">
+          <canvas id="alertsChart"></canvas>
+          <img id="alertsChartFallback" src="/chart/alerts-trend.png" alt="Alerts trend" class="chart-fallback" style="display:none;">
+        </div>
+      </div>
 
-                <button class="btn" id="refreshBtn">
-                  <img src="/static/icons/refresh.svg" class="icon" /> Refresh
-              </button>
-              
-            </header>
+      <!-- ===== ALERTS ===== -->
+      <div class="card">
+        <div class="card-title">Recent Alerts</div>
+        <div id="alertsList">Loading…</div>
+      </div>
 
-            <div class="container">
+      <!-- ===== MACHINE COMPARISON ===== -->
+      <div class="card chart-card">
+        <div class="card-title">Top Machines by Efficiency</div>
+        <div class="chart-container">
+          <canvas id="machineComparisonChart"></canvas>
+        </div>
+      </div>
 
-                <!-- KPI SECTION -->
-                <section class="kpi-row">
-                    <div class="card kpi">
-                        <div class="label">Total Machines</div>
-                        <div id="k_total" class="value">—</div>
-                    </div>
-
-                    <div class="card kpi">
-                        <div class="label">Avg Efficiency</div>
-                        <div id="k_eff" class="value">—%</div>
-                    </div>
-
-                    <div class="card kpi">
-                        <div class="label">Active Alerts</div>
-                        <div id="k_alerts" class="value">—</div>
-                    </div>
-                </section>
-
-                <!-- PERFORMANCE SUMMARY -->
-                <div class="card">
-                    <div class="card-title">Performance Summary (Last 7 days)</div>
-                    <img id="summaryImg" src="/chart/summary.png" class="chart-img" />
-                </div>
-
-                <!-- RECENT ALERTS -->
-                <div class="card">
-                    <div class="card-title">Recent Alerts</div>
-                    <div id="alertsList">Loading…</div>
-                </div>
-
-                <!-- MACHINES TABLE -->
-                <div class="card">
-                    <div class="card-title">Machine Overview</div>
-
-                    <table class="table" id="machinesTable">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Type</th>
-                                <th>Location</th>
-                                <th>Status</th>
-                                <th>Eff%</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td colspan="5">Loading…</td></tr>
-                        </tbody>
-                    </table>
-
-                </div>
-
+      <!-- ===== CSV UPLOAD & VISUALIZATION ===== -->
+      <div class="card">
+        <div class="card-title">CSV Data Visualization</div>
+        <div id="csvDropZone" class="csv-drop-zone">
+          <div class="drop-zone-content">
+            <img src="/static/icons/chart.svg" width="48" height="48" style="opacity:0.5; margin-bottom:8px;">
+            <div class="drop-zone-text">
+              <strong>Drop CSV file here</strong><br>
+              <span class="muted small">or click to browse</span>
             </div>
+            <input type="file" id="csvFileInput" accept=".csv" style="display:none;">
+          </div>
+        </div>
+        <div id="csvVisualization" class="chart-container" style="display:none; margin-top:12px;">
+          <canvas id="csvChart"></canvas>
+        </div>
+        <div id="csvInfo" class="muted small" style="margin-top:8px;"></div>
+      </div>
 
-            <footer class="footer">
-              IMCS· Industrial Hub · Offline Ready
-            </footer>
-
-        </main>
+      <!-- ===== MACHINES ===== -->
+      <div class="card">
+        <div class="card-title">Machine Overview</div>
+        <table class="table" id="machinesTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Location</th>
+              <th>Status</th>
+              <th>Eff%</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="5">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
 
     </div>
 
-<script src="/static/js/app.js"></script>
-<script src="/static/js/dashboard.js"></script>
+    <footer class="footer">
+      IMCS · Industrial Hub · Offline Ready
+    </footer>
+
+  </main>
+</div>
+
+<!-- ================= SCRIPTS ================= -->
+<!-- Chart.js for live visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script src="/static/js/app.js" defer></script>
+<script src="/static/js/charts.js" defer></script>
+<script src="/static/js/charts-enhanced.js" defer></script>
+<script src="/static/js/csv-viz.js" defer></script>
+<script src="/static/js/dashboard.js" defer></script>
+<script src="/static/js/dashboard-enhanced.js" defer></script>
+<script src="/static/js/alerts.js" defer></script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/static/sw.js').catch(()=>{});
+    });
+  }
+</script>
+
+<script>
+  // Chart export function
+  function exportChart(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    
+    const url = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.download = `${canvasId}_${new Date().toISOString().split('T')[0]}.png`;
+    link.href = url;
+    link.click();
+  }
+
+  // Load enhanced dashboard widgets
+  async function loadDashboardWidgets() {
+    try {
+      const response = await fetch('/api/dashboard/widgets');
+      const data = await response.json();
+      
+      if (data.overview) {
+        const ov = data.overview;
+        if (document.getElementById('k_running')) {
+          document.getElementById('k_running').textContent = `Running: ${ov.running_machines || 0}`;
+        }
+        if (document.getElementById('k_uptime')) {
+          document.getElementById('k_uptime').textContent = `Uptime: ${ov.uptime_percentage || 0}%`;
+        }
+        if (document.getElementById('k_maintenance')) {
+          document.getElementById('k_maintenance').textContent = `Maintenance: ${ov.pending_maintenance || 0}`;
+        }
+        if (document.getElementById('k_health')) {
+          const health = ov.uptime_percentage >= 90 ? 'Excellent' : ov.uptime_percentage >= 70 ? 'Good' : 'Warning';
+          document.getElementById('k_health').textContent = `${ov.uptime_percentage || 0}%`;
+          document.getElementById('k_health_status').textContent = health;
+        }
+      }
+      
+      // Location breakdown
+      if (data.location_breakdown && document.getElementById('locationBreakdown')) {
+        const locDiv = document.getElementById('locationBreakdown');
+        if (data.location_breakdown.length === 0) {
+          locDiv.innerHTML = '<div class="muted small">No location data</div>';
+        } else {
+          locDiv.innerHTML = data.location_breakdown.map(loc => `
+            <div class="location-card">
+              <div class="location-name">${loc.location}</div>
+              <div class="location-stats">
+                Machines: ${loc.machine_count}<br>
+                Avg Efficiency: ${loc.avg_efficiency}%
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+    } catch (e) {
+      console.error('Error loading dashboard widgets:', e);
+    }
+  }
+
+  // Initialize CSV upload
+  document.addEventListener('DOMContentLoaded', async () => {
+    // Load enhanced widgets
+    loadDashboardWidgets();
+    setInterval(loadDashboardWidgets, 60000); // Refresh every minute
+    // Initialize IndexedDB
+    if (window.IMCSCSV) {
+      await window.IMCSCSV.initDB();
+    }
+
+    // CSV Drop Zone
+    const dropZone = document.getElementById('csvDropZone');
+    const fileInput = document.getElementById('csvFileInput');
+    const csvViz = document.getElementById('csvVisualization');
+    const csvInfo = document.getElementById('csvInfo');
+
+    if (dropZone && window.IMCSCSV) {
+      // Click to browse
+      dropZone.addEventListener('click', () => fileInput.click());
+      
+      // File input change
+      fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (file) await handleCSVUpload(file);
+      });
+
+      // Drag and drop
+      window.IMCSCSV.handleFileDrop(
+        dropZone,
+        async (result) => {
+          csvInfo.textContent = `✓ ${result.data.filename} loaded (${result.data.row_count} rows)`;
+          csvViz.style.display = 'block';
+          
+          // Visualize
+          if (window.IMCSCSV.visualizeCSVData(result.data, 'csvChart')) {
+            csvInfo.textContent += ' - Chart rendered';
+          }
+        },
+        (error) => {
+          csvInfo.textContent = `✗ ${error}`;
+          csvInfo.style.color = '#bb0000';
+        }
+      );
+    }
+
+    async function handleCSVUpload(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const response = await fetch('/api/upload-csv', {
+          method: 'POST',
+          body: formData
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+          csvInfo.textContent = `✓ ${result.data.filename} loaded (${result.data.row_count} rows)`;
+          csvViz.style.display = 'block';
+          if (window.IMCSCSV.visualizeCSVData(result.data, 'csvChart')) {
+            csvInfo.textContent += ' - Chart rendered';
+          }
+        }
+      } catch (error) {
+        csvInfo.textContent = `✗ Upload failed: ${error.message}`;
+        csvInfo.style.color = '#bb0000';
+      }
+    }
+  });
+</script>
 
 </body>
 </html>

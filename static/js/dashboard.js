@@ -121,14 +121,35 @@
         if (targets.k_alerts) targets.k_alerts.textContent = (data.active_alerts !== undefined) ? data.active_alerts : '—';
         if (targets.summaryImg) targets.summaryImg.src = '/chart/summary.png?ts=' + Date.now();
   
-        // sys health: light check (DB count ok?)
-        let healthText = 'OK';
-        try {
-          const machinesLen = (data.machines && data.machines.length) ? data.machines.length : 0;
-          if (machinesLen === 0) healthText = 'No machines';
-        } catch (e) { healthText = 'Unknown'; }
-        if (targets.sys_health) targets.sys_health.textContent = healthText;
+        // Enhanced widgets - load from dashboard widgets API
+        loadEnhancedWidgets();
       } catch (e) { console.error('populateSummary', e); }
+    }
+
+    async function loadEnhancedWidgets() {
+      try {
+        const widgets = await fetchLow('/api/dashboard/widgets');
+        if (widgets && widgets.overview) {
+          const ov = widgets.overview;
+          const kRunning = document.getElementById('k_running');
+          const kUptime = document.getElementById('k_uptime');
+          const kMaintenance = document.getElementById('k_maintenance');
+          const kHealth = document.getElementById('k_health');
+          const kHealthStatus = document.getElementById('k_health_status');
+
+          if (kRunning) kRunning.textContent = `Running: ${ov.running_machines || 0}`;
+          if (kUptime) kUptime.textContent = `Uptime: ${ov.uptime_percentage || 0}%`;
+          if (kMaintenance) kMaintenance.textContent = `Maintenance: ${ov.pending_maintenance || 0}`;
+          if (kHealth) kHealth.textContent = `${ov.uptime_percentage || 0}%`;
+          if (kHealthStatus) {
+            const health = ov.uptime_percentage >= 90 ? 'Excellent' : 
+                         ov.uptime_percentage >= 70 ? 'Good' : 'Warning';
+            kHealthStatus.textContent = health;
+          }
+        }
+      } catch (e) {
+        console.error('Error loading enhanced widgets:', e);
+      }
     }
   
     async function loadMachines() {

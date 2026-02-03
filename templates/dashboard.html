@@ -7,6 +7,9 @@
 
   <!-- INDUSTRIAL RULE: load layout CSS synchronously -->
   <link rel="stylesheet" href="/static/css/sap90.css">
+  
+  <!-- Dataset Manager -->
+  <script src="/static/js/dataset-manager.js" defer></script>
 
   <!-- Minimal inline shell CSS (safe, no reflow) -->
   <style>
@@ -187,19 +190,19 @@
 
     <nav class="nav">
       <a href="/dashboard" class="active">
-        <img src="/static/icons/home.svg" width="16" height="16"> Overview
+        <img src="/static/icons/home.svg" width="16" height="16" alt=""> Overview
       </a>
       <a href="/machinery">
-        <img src="/static/icons/machine.svg" width="16" height="16"> Machinery
+        <img src="/static/icons/machine.svg" width="16" height="16" alt=""> Machinery
       </a>
       <a href="/maintenance">
-        <img src="/static/icons/wrench.svg" width="16" height="16"> Maintenance
+        <img src="/static/icons/wrench.svg" width="16" height="16" alt=""> Maintenance
       </a>
       <a href="/alerts">
-        <img src="/static/icons/alert.svg" width="16" height="16"> Alerts
+        <img src="/static/icons/alert.svg" width="16" height="16" alt=""> Alerts
       </a>
       <a href="/reports">
-        <img src="/static/icons/chart.svg" width="16" height="16"> Reports
+        <img src="/static/icons/chart.svg" width="16" height="16" alt=""> Reports
       </a>
     </nav>
 <!-- 
@@ -212,14 +215,66 @@
     <header class="app-header">
       <div class="brand">
         <div class="sap-badge">IMCS</div>
-        <div class="hdr-title">Operational Dashboard</div>
+        <div>
+          <div class="hdr-title">Operational Dashboard</div>
+        </div>
       </div>
-      <button class="btn" id="refreshBtn">
-        <img src="/static/icons/refresh.svg" width="16" height="16"> Refresh
-      </button>
+      <div class="btn-group">
+        <button class="btn" id="refreshBtn">
+          <img src="/static/icons/refresh.svg" width="16" height="16" alt=""> Refresh
+        </button>
+        <button class="btn" id="demoDataBtn" title="Generate Demo Data">
+          <img src="/static/icons/add-machine.svg" width="16" height="16" alt=""> Demo Data
+        </button>
+        <button class="btn" id="datasetManagerBtn" title="Dataset Manager">
+          <img src="/static/icons/chart.svg" width="16" height="16" alt=""> Datasets
+        </button>
+      </div>
     </header>
 
     <div class="container">
+
+      <!-- ===== DATASET MANAGEMENT PANEL ===== -->
+      <div id="datasetManagerPanel" class="card" style="display: none; margin-bottom: 20px;">
+        <div class="card-title">
+          Dataset Management
+          <button class="btn-icon" onclick="document.getElementById('datasetManagerPanel').style.display='none'" style="float: right;">✕</button>
+        </div>
+        <div style="padding: 12px;">
+          <div class="btn-group" style="margin-bottom: 12px;">
+            <button class="btn" id="generateDemoBtn">Generate Demo Data</button>
+            <button class="btn" id="clearDemoBtn">Clear Demo Data</button>
+            <button class="btn" id="importDatasetBtn">Import Dataset</button>
+            <button class="btn" id="createDatasetBtn">Create Dataset</button>
+            <input type="file" id="datasetFileInput" accept=".csv,.json" style="display: none;">
+          </div>
+          
+          <div style="margin-bottom: 12px;">
+            <label class="label">Select Dataset:</label>
+            <select id="datasetSelect" class="input" style="width: 100%; max-width: 400px;">
+              <option value="none">Select a dataset...</option>
+            </select>
+          </div>
+          
+          <div id="datasetInfo" style="margin-bottom: 12px;"></div>
+          
+          <div id="datasetOperations" style="display: none;">
+            <div class="card" style="background: #F9F9F9; padding: 12px;">
+              <div class="card-title" style="font-size: 13px;">Dataset Operations</div>
+              <div class="btn-group" style="margin-top: 8px;">
+                <button class="btn" id="filterDatasetBtn">Filter</button>
+                <button class="btn" id="transformDatasetBtn">Transform</button>
+                <button class="btn" id="exportDatasetBtn">Export</button>
+                <button class="btn" id="analyzeDatasetBtn">Analyze</button>
+              </div>
+            </div>
+          </div>
+          
+          <div style="margin-top: 12px;">
+            <canvas id="datasetChart" style="max-height: 300px;"></canvas>
+          </div>
+        </div>
+      </div>
 
       <!-- ===== ENHANCED KPIs ===== -->
       <section class="kpi-row">
@@ -264,6 +319,55 @@
           </div>
         </div>
       </section>
+
+      <!-- ===== CREATE DATASET MODAL ===== -->
+      <div id="createDatasetModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 600px;">
+          <div class="modal-header">
+            <h3>Create New Dataset</h3>
+            <button class="btn-icon" onclick="document.getElementById('createDatasetModal').classList.add('hidden')">✕</button>
+          </div>
+          <div class="modal-body">
+            <div style="margin-bottom: 12px;">
+              <label class="label">Dataset Name:</label>
+              <input type="text" id="datasetName" class="input" placeholder="My Dataset">
+            </div>
+            <div style="margin-bottom: 12px;">
+              <label class="label">Dataset Type:</label>
+              <select id="datasetType" class="input">
+                <option value="time_series">Time Series Data</option>
+                <option value="numeric">Numeric Data</option>
+                <option value="categorical">Categorical Data</option>
+                <option value="mixed">Mixed Data Types</option>
+                <option value="sensor">Sensor Readings</option>
+                <option value="performance">Performance Metrics</option>
+              </select>
+            </div>
+            <div style="margin-bottom: 12px;">
+              <label class="label">Number of Rows:</label>
+              <input type="number" id="datasetRows" class="input" value="100" min="10" max="10000">
+            </div>
+            <div style="margin-bottom: 12px;">
+              <label class="label">Data Pattern:</label>
+              <select id="dataPattern" class="input">
+                <option value="random">Random</option>
+                <option value="linear">Linear Trend</option>
+                <option value="sine">Sine Wave</option>
+                <option value="trend_up">Upward Trend</option>
+                <option value="trend_down">Downward Trend</option>
+              </select>
+            </div>
+            <div style="margin-bottom: 12px;">
+              <label class="label">Columns (comma-separated):</label>
+              <input type="text" id="datasetColumns" class="input" placeholder="timestamp, temperature, pressure, efficiency">
+            </div>
+            <div class="btn-group">
+              <button class="btn" onclick="createDatasetFromModal()">Create Dataset</button>
+              <button class="btn" onclick="document.getElementById('createDatasetModal').classList.add('hidden')">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- ===== LOCATION BREAKDOWN ===== -->
       <div class="card">
@@ -449,15 +553,135 @@
     }
   }
 
-  // Initialize CSV upload
+  // Initialize CSV upload and Dataset Manager
   document.addEventListener('DOMContentLoaded', async () => {
     // Load enhanced widgets
     loadDashboardWidgets();
     setInterval(loadDashboardWidgets, 60000); // Refresh every minute
+    
     // Initialize IndexedDB
     if (window.IMCSCSV) {
       await window.IMCSCSV.initDB();
     }
+    
+    // Dataset Manager UI
+    const datasetManagerBtn = document.getElementById('datasetManagerBtn');
+    const datasetManagerPanel = document.getElementById('datasetManagerPanel');
+    if (datasetManagerBtn && datasetManagerPanel) {
+      datasetManagerBtn.addEventListener('click', () => {
+        datasetManagerPanel.style.display = datasetManagerPanel.style.display === 'none' ? 'block' : 'none';
+        if (window.DatasetManager) {
+          window.DatasetManager.loadAvailableDatasets();
+        }
+      });
+    }
+    
+    // Demo Data Generation
+    const demoDataBtn = document.getElementById('demoDataBtn');
+    const generateDemoBtn = document.getElementById('generateDemoBtn');
+    const clearDemoBtn = document.getElementById('clearDemoBtn');
+    
+    if (demoDataBtn) {
+      demoDataBtn.addEventListener('click', () => {
+        if (datasetManagerPanel) {
+          datasetManagerPanel.style.display = 'block';
+          if (window.DatasetManager) {
+            window.DatasetManager.loadAvailableDatasets();
+          }
+        }
+      });
+    }
+    
+    if (generateDemoBtn) {
+      generateDemoBtn.addEventListener('click', async () => {
+        const numMachines = prompt('Number of machines to generate?', '5');
+        const days = prompt('Days of historical data?', '30');
+        
+        if (numMachines && days) {
+          try {
+            const response = await fetch('/api/demo/generate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                num_machines: parseInt(numMachines),
+                days: parseInt(days)
+              })
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+              alert(`Demo data generated successfully!\n- ${result.data.machines} machines\n- ${result.data.readings} readings\n- ${result.data.alerts} alerts\n- ${result.data.maintenance} maintenance tasks`);
+              // Refresh dashboard
+              location.reload();
+            } else {
+              alert('Error: ' + (result.error || 'Failed to generate demo data'));
+            }
+          } catch (error) {
+            alert('Error: ' + error.message);
+          }
+        }
+      });
+    }
+    
+    if (clearDemoBtn) {
+      clearDemoBtn.addEventListener('click', async () => {
+        if (confirm('Are you sure you want to clear all demo data? This cannot be undone.')) {
+          try {
+            const response = await fetch('/api/demo/clear', { method: 'POST' });
+            const result = await response.json();
+            if (result.success) {
+              alert('Demo data cleared successfully!');
+              location.reload();
+            } else {
+              alert('Error: ' + (result.error || 'Failed to clear demo data'));
+            }
+          } catch (error) {
+            alert('Error: ' + error.message);
+          }
+        }
+      });
+    }
+    
+    // Dataset creation from modal
+    window.createDatasetFromModal = function() {
+      const name = document.getElementById('datasetName').value;
+      const type = document.getElementById('datasetType').value;
+      const numRows = parseInt(document.getElementById('datasetRows').value) || 100;
+      const pattern = document.getElementById('dataPattern').value;
+      const columnsInput = document.getElementById('datasetColumns').value;
+      
+      if (!name || !columnsInput) {
+        alert('Please provide dataset name and columns');
+        return;
+      }
+      
+      const columnNames = columnsInput.split(',').map(c => c.trim()).filter(c => c);
+      const columns = columnNames.map(col => {
+        let colType = 'numeric';
+        if (col.toLowerCase().includes('time') || col.toLowerCase().includes('date')) {
+          colType = 'timestamp';
+        } else if (col.toLowerCase().includes('status') || col.toLowerCase().includes('type')) {
+          colType = 'categorical';
+        }
+        return { name: col, type: colType };
+      });
+      
+      if (window.DatasetManager) {
+        const dataset = window.DatasetManager.createDataset({
+          name: name,
+          type: type,
+          columns: columns,
+          numRows: numRows,
+          dataPattern: pattern
+        });
+        
+        document.getElementById('createDatasetModal').classList.add('hidden');
+        if (window.DatasetManager.visualizeDataset) {
+          window.DatasetManager.visualizeDataset(dataset);
+        }
+        window.DatasetManager.loadAvailableDatasets();
+      }
+    };
 
     // CSV Drop Zone
     const dropZone = document.getElementById('csvDropZone');

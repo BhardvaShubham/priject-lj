@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template, send_file
+from flask import Flask, request, jsonify, render_template, send_file, session, redirect, url_for
 import sqlite3
 from datetime import datetime, timedelta
 import io
@@ -7,6 +7,8 @@ import csv
 import json
 import pandas as pd
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
 
 import matplotlib
 matplotlib.use("Agg")
@@ -24,6 +26,7 @@ app = Flask(
 )
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 
 # Ensure upload directory exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -41,46 +44,228 @@ def log(user, action, entity, entity_id=None):
             (user, action, entity, entity_id)
         )
 
+# ===================== AUTHENTICATION =====================
+def login_required(f):
+    """Decorator to require login for routes"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session or 'company_id' not in session:
+            if request.path.startswith('/api/'):
+                return jsonify({"error": "Authentication required"}), 401
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+def get_current_company_id():
+    """Get current user's company ID from session"""
+    return session.get('company_id')
+
+@app.route("/login")
+def login():
+    """Login page"""
+    if 'user_id' in session:
+        return redirect(url_for('dashboard'))
+    return render_template("login.html")
+
+@app.route("/register")
+def register():
+    """Registration page"""
+    if 'user_id' in session:
+        return redirect(url_for('dashboard'))
+    return render_template("register.html")
+
+@app.route("/logout")
+def logout():
+    """Logout and clear session"""
+    session.clear()
+    return redirect(url_for('login'))
+
+@app.route("/api/auth/login", methods=["POST"])
+def api_login():
+    """API endpoint for login"""
+    data = request.json
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+    
+    company_name = data.get("company_name", "").strip()
+    login_id = data.get("login_id", "").strip()
+    password = data.get("password", "")
+    
+    if not company_name or not login_id or not password:
+        return jsonify({"error": "Company name, login ID, and password are required"}), 400
+    
+    with db() as c:
+        # Find company
+        company = c.execute(
+            "SELECT id, name FROM companies WHERE LOWER(name) = LOWER(?)",
+            (company_name,)
+        ).fetchone()
+        
+        if not company:
+            return jsonify({"error": "Invalid company name"}), 401
+        
+        # Find user with login_id and company_id
+        user = c.execute(
+            """SELECT id, username, login_id, password_hash, company_id, role 
+               FROM users 
+               WHERE login_id = ? AND company_id = ?""",
+            (login_id, company[0])
+        ).fetchone()
+        
+        if not user:
+            return jsonify({"error": "Invalid login ID or company"}), 401
+        
+        # Check password
+        if not check_password_hash(user['password_hash'], password):
+            return jsonify({"error": "Invalid password"}), 401
+        
+        # Set session
+        session['user_id'] = user['id']
+        session['username'] = user['username']
+        session['company_id'] = user['company_id']
+        session['role'] = user['role']
+        session['login_id'] = user['login_id']
+        
+        log(user['username'], "login", "user", user['id'])
+        
+        return jsonify({
+            "success": True,
+            "user": {
+                "id": user['id'],
+                "username": user['username'],
+                "role": user['role'],
+                "company_id": user['company_id']
+            }
+        })
+
+@app.route("/api/auth/register", methods=["POST"])
+def api_register():
+    """API endpoint for registration"""
+    data = request.json
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+    
+    company_name = data.get("company_name", "").strip()
+    login_id = data.get("login_id", "").strip()
+    username = data.get("username", "").strip()
+    password = data.get("password", "")
+    role = data.get("role", "operator")
+    
+    if not all([company_name, login_id, username, password]):
+        return jsonify({"error": "All fields are required"}), 400
+    
+    if len(password) < 6:
+        return jsonify({"error": "Password must be at least 6 characters"}), 400
+    
+    with db() as conn:
+        # Check if company exists, if not create it
+        company = conn.execute(
+            "SELECT id FROM companies WHERE LOWER(name) = LOWER(?)",
+            (company_name,)
+        ).fetchone()
+        
+        if not company:
+            # Create new company
+            cursor = conn.execute("INSERT INTO companies (name) VALUES (?)", (company_name,))
+            company_id = cursor.lastrowid
+            conn.commit()
+        else:
+            company_id = company[0]
+        
+        # Check if login_id already exists in this company
+        existing = conn.execute(
+            "SELECT id FROM users WHERE login_id = ? AND company_id = ?",
+            (login_id, company_id)
+        ).fetchone()
+        
+        if existing:
+            return jsonify({"error": "Login ID already exists for this company"}), 400
+        
+        # Create user
+        password_hash = generate_password_hash(password)
+        cursor = conn.execute(
+            """INSERT INTO users (username, login_id, password_hash, company_id, role)
+               VALUES (?, ?, ?, ?, ?)""",
+            (username, login_id, password_hash, company_id, role)
+        )
+        user_id = cursor.lastrowid
+        conn.commit()
+        
+        log(username, "register", "user", user_id)
+        
+        return jsonify({
+            "success": True,
+            "message": "Account created successfully",
+            "user_id": user_id
+        })
+
 # ===================== UI =====================
 @app.route("/")
 @app.route("/dashboard")
+@login_required
 def dashboard():
     return render_template("dashboard.html")
 
 @app.route("/machinery")
+@login_required
 def machinery():
     return render_template("machinery-overview.html")
 
 @app.route("/machine/<int:mid>")
+@login_required
 def machine_page(mid):
+    # Verify machine belongs to user's company
+    company_id = get_current_company_id()
+    with db() as c:
+        machine = c.execute(
+            "SELECT id FROM machines WHERE id = ? AND company_id = ?",
+            (mid, company_id)
+        ).fetchone()
+        if not machine:
+            return redirect(url_for('machinery'))
     return render_template("machine-details.html", machine_id=mid)
 
 @app.route("/alerts")
+@login_required
 def alerts_page():
     return render_template("alerts.html")
 
 @app.route("/maintenance")
+@login_required
 def maintenance_page():
     return render_template("maintenance.html")
 
 @app.route("/reports")
+@login_required
 def reports_page():
     return render_template("reports.html")
 
 # ===================== APIs =====================
 
 @app.route("/api/summary")
+@login_required
 def summary():
     try:
+        company_id = get_current_company_id()
         with db() as c:
-            total = c.execute("SELECT COUNT(*) FROM machines").fetchone()[0]
+            total = c.execute(
+                "SELECT COUNT(*) FROM machines WHERE company_id = ?",
+                (company_id,)
+            ).fetchone()[0]
             
-            # Handle empty sensor_readings table
-            avg_eff_result = c.execute("SELECT AVG(value) FROM sensor_readings").fetchone()
+            # Handle empty sensor_readings table - filter by company via machines
+            avg_eff_result = c.execute("""
+                SELECT AVG(sr.value) FROM sensor_readings sr
+                JOIN sensors s ON sr.sensor_id = s.id
+                JOIN machines m ON s.machine_id = m.id
+                WHERE m.company_id = ?
+            """, (company_id,)).fetchone()
             avg_eff = avg_eff_result[0] if avg_eff_result and avg_eff_result[0] is not None else 0
             
             alerts = c.execute(
-                "SELECT COUNT(*) FROM alarms WHERE acknowledged=0"
+                """SELECT COUNT(*) FROM alarms 
+                   WHERE acknowledged=0 AND company_id = ?""",
+                (company_id,)
             ).fetchone()[0]
 
         return jsonify({
@@ -97,7 +282,10 @@ def summary():
         }), 500
 
 @app.route("/api/machines", methods=["GET", "POST"])
+@login_required
 def machines():
+    company_id = get_current_company_id()
+    
     if request.method == "POST":
         # Create new machine
         data = request.json
@@ -110,27 +298,35 @@ def machines():
         
         with db() as c:
             cursor = c.execute(
-                """INSERT INTO machines (name, type, location, rated_capacity, status)
-                   VALUES (?, ?, ?, ?, ?)""",
+                """INSERT INTO machines (name, type, location, rated_capacity, status, company_id)
+                   VALUES (?, ?, ?, ?, ?, ?)""",
                 (data["name"], data["type"], data["location"], 
-                 data.get("rated_capacity"), data.get("status", "idle"))
+                 data.get("rated_capacity"), data.get("status", "idle"), company_id)
             )
             c.commit()
             machine_id = cursor.lastrowid
             
-            log("system", "create", "machine", machine_id)
+            log(session.get('username', 'system'), "create", "machine", machine_id)
             
             return jsonify({"success": True, "id": machine_id, "message": "Machine created"}), 201
     
-    # GET - List all machines
+    # GET - List all machines for this company
     with db() as c:
-        rows = c.execute("SELECT * FROM machines").fetchall()
+        rows = c.execute(
+            "SELECT * FROM machines WHERE company_id = ?",
+            (company_id,)
+        ).fetchall()
     return jsonify([dict(r) for r in rows])
 
 @app.route("/api/machines/<int:mid>")
+@login_required
 def machine_details(mid):
+    company_id = get_current_company_id()
     with db() as c:
-        m = c.execute("SELECT * FROM machines WHERE id=?", (mid,)).fetchone()
+        m = c.execute(
+            "SELECT * FROM machines WHERE id=? AND company_id=?",
+            (mid, company_id)
+        ).fetchone()
         if not m:
             return jsonify({"error": "Machine not found"}), 404
 
@@ -241,8 +437,18 @@ def machine_details(mid):
 # ===================== PHASE-1.3 =====================
 
 @app.route("/api/oee/<int:mid>")
+@login_required
 def oee(mid):
+    company_id = get_current_company_id()
     with db() as c:
+        # Verify machine belongs to company
+        machine = c.execute(
+            "SELECT id FROM machines WHERE id=? AND company_id=?",
+            (mid, company_id)
+        ).fetchone()
+        if not machine:
+            return jsonify({"error": "Machine not found"}), 404
+        
         eff = c.execute(
             """SELECT AVG(value) FROM sensor_readings
                WHERE sensor_id IN (
@@ -262,17 +468,27 @@ def oee(mid):
     })
 
 @app.route("/api/reliability/<int:mid>")
+@login_required
 def reliability(mid):
+    company_id = get_current_company_id()
     with db() as c:
+        # Verify machine belongs to company
+        machine = c.execute(
+            "SELECT id FROM machines WHERE id=? AND company_id=?",
+            (mid, company_id)
+        ).fetchone()
+        if not machine:
+            return jsonify({"error": "Machine not found"}), 404
+        
         failures = c.execute(
-            "SELECT COUNT(*) FROM alarms WHERE machine_id=?",
-            (mid,)
+            "SELECT COUNT(*) FROM alarms WHERE machine_id=? AND company_id=?",
+            (mid, company_id)
         ).fetchone()[0]
 
         repairs = c.execute(
             """SELECT COUNT(*) FROM maintenance_tasks
-               WHERE machine_id=? AND status='completed'""",
-            (mid,)
+               WHERE machine_id=? AND status='completed' AND company_id=?""",
+            (mid, company_id)
         ).fetchone()[0]
 
     return jsonify({
@@ -283,11 +499,24 @@ def reliability(mid):
 # ===================== CHARTS =====================
 
 @app.route("/chart/summary.png")
+@login_required
 def chart_summary():
+    company_id = get_current_company_id()
     with db() as c:
-        machines = c.execute("SELECT COUNT(*) FROM machines").fetchone()[0]
-        alerts = c.execute("SELECT COUNT(*) FROM alarms WHERE acknowledged=0").fetchone()[0]
-        avg_value_result = c.execute("SELECT AVG(value) FROM sensor_readings").fetchone()
+        machines = c.execute(
+            "SELECT COUNT(*) FROM machines WHERE company_id = ?",
+            (company_id,)
+        ).fetchone()[0]
+        alerts = c.execute(
+            "SELECT COUNT(*) FROM alarms WHERE acknowledged=0 AND company_id = ?",
+            (company_id,)
+        ).fetchone()[0]
+        avg_value_result = c.execute("""
+            SELECT AVG(sr.value) FROM sensor_readings sr
+            JOIN sensors s ON sr.sensor_id = s.id
+            JOIN machines m ON s.machine_id = m.id
+            WHERE m.company_id = ?
+        """, (company_id,)).fetchone()
         avg_value = avg_value_result[0] if avg_value_result and avg_value_result[0] else 0
 
     fig, ax = plt.subplots(figsize=(8, 4), facecolor='white')
@@ -336,8 +565,18 @@ def chart_summary():
     return send_file(buf, mimetype="image/png")
 
 @app.route("/chart/machine/<int:mid>.png")
+@login_required
 def chart_machine(mid):
+    company_id = get_current_company_id()
     with db() as c:
+        # Verify machine belongs to company
+        machine = c.execute(
+            "SELECT id FROM machines WHERE id=? AND company_id=?",
+            (mid, company_id)
+        ).fetchone()
+        if not machine:
+            return send_file(io.BytesIO(), mimetype="image/png")
+        
         rows = c.execute(
             """SELECT timestamp,value FROM sensor_readings
                WHERE sensor_id IN (
@@ -386,8 +625,18 @@ def chart_machine(mid):
     return send_file(buf, mimetype="image/png")
 
 @app.route("/chart/oee/<int:mid>.png")
+@login_required
 def chart_oee(mid):
     """OEE gauge chart for a machine."""
+    company_id = get_current_company_id()
+    with db() as c:
+        machine = c.execute(
+            "SELECT id FROM machines WHERE id=? AND company_id=?",
+            (mid, company_id)
+        ).fetchone()
+        if not machine:
+            return send_file(io.BytesIO(), mimetype="image/png")
+    
     oee_data = oee(mid)
     oee_val = oee_data.get_json().get("oee", 0)
     buf = viz.oee_gauge_chart(oee_val)
@@ -434,30 +683,46 @@ def chart_alerts_trend():
 # ===================== DATA APIs FOR CLIENT-SIDE CHARTS =====================
 
 @app.route("/api/chart-data/summary")
+@login_required
 def chart_data_summary():
     """JSON data for client-side chart rendering."""
+    company_id = get_current_company_id()
     try:
         with db() as c:
-            machines = c.execute("SELECT COUNT(*) FROM machines").fetchone()[0]
-            alerts = c.execute("SELECT COUNT(*) FROM alarms WHERE acknowledged=0").fetchone()[0]
+            machines = c.execute(
+                "SELECT COUNT(*) FROM machines WHERE company_id = ?",
+                (company_id,)
+            ).fetchone()[0]
+            alerts = c.execute(
+                "SELECT COUNT(*) FROM alarms WHERE acknowledged=0 AND company_id = ?",
+                (company_id,)
+            ).fetchone()[0]
             
             # Handle case where sensor_readings table might be empty
-            avg_eff_result = c.execute("SELECT AVG(value) FROM sensor_readings").fetchone()
+            avg_eff_result = c.execute("""
+                SELECT AVG(sr.value) FROM sensor_readings sr
+                JOIN sensors s ON sr.sensor_id = s.id
+                JOIN machines m ON s.machine_id = m.id
+                WHERE m.company_id = ?
+            """, (company_id,)).fetchone()
             avg_eff = avg_eff_result[0] if avg_eff_result and avg_eff_result[0] is not None else 0
             
             # Status distribution
             status_data = c.execute(
-                "SELECT status, COUNT(*) as cnt FROM machines GROUP BY status"
+                "SELECT status, COUNT(*) as cnt FROM machines WHERE company_id = ? GROUP BY status",
+                (company_id,)
             ).fetchall()
             
             # Recent performance (last 7 days) - handle empty case
             perf_data = c.execute("""
-                SELECT DATE(timestamp) as d, AVG(value) as eff
-                FROM sensor_readings
-                WHERE timestamp >= date('now', '-7 days')
-                GROUP BY DATE(timestamp)
+                SELECT DATE(sr.timestamp) as d, AVG(sr.value) as eff
+                FROM sensor_readings sr
+                JOIN sensors s ON sr.sensor_id = s.id
+                JOIN machines m ON s.machine_id = m.id
+                WHERE m.company_id = ? AND sr.timestamp >= date('now', '-7 days')
+                GROUP BY DATE(sr.timestamp)
                 ORDER BY d ASC
-            """).fetchall()
+            """, (company_id,)).fetchall()
         
         # If no performance data, create empty trend
         if not perf_data:
@@ -484,10 +749,20 @@ def chart_data_summary():
         })
 
 @app.route("/api/chart-data/machine/<int:mid>")
+@login_required
 def chart_data_machine(mid):
     """JSON data for machine-specific charts."""
+    company_id = get_current_company_id()
     try:
         with db() as c:
+            # Verify machine belongs to company
+            machine = c.execute(
+                "SELECT id FROM machines WHERE id=? AND company_id=?",
+                (mid, company_id)
+            ).fetchone()
+            if not machine:
+                return jsonify({"error": "Machine not found"}), 404
+            
             # Sensor readings (last 100 for better visualization)
             readings = c.execute("""
                 SELECT timestamp, value, s.name as sensor_name, s.unit
@@ -569,10 +844,19 @@ def chart_data_machine(mid):
         }), 500
 
 @app.route("/api/machine/<int:mid>/analytics")
+@login_required
 def machine_analytics(mid):
     """Advanced analytics for a machine."""
+    company_id = get_current_company_id()
     try:
         with db() as c:
+            # Verify machine belongs to company
+            machine = c.execute(
+                "SELECT id FROM machines WHERE id=? AND company_id=?",
+                (mid, company_id)
+            ).fetchone()
+            if not machine:
+                return jsonify({"error": "Machine not found"}), 404
             # Uptime calculation
             total_readings = c.execute("""
                 SELECT COUNT(*) FROM sensor_readings
@@ -626,32 +910,41 @@ def machine_analytics(mid):
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/dashboard/widgets")
+@login_required
 def dashboard_widgets():
     """Enhanced dashboard widget data."""
+    company_id = get_current_company_id()
     try:
         with db() as c:
             # Overall statistics
-            total_machines = c.execute("SELECT COUNT(*) FROM machines").fetchone()[0]
-            running_machines = c.execute("SELECT COUNT(*) FROM machines WHERE status='running'").fetchone()[0]
-            active_alerts = c.execute("SELECT COUNT(*) FROM alarms WHERE acknowledged=0").fetchone()[0]
+            total_machines = c.execute("SELECT COUNT(*) FROM machines WHERE company_id = ?", (company_id,)).fetchone()[0]
+            running_machines = c.execute("SELECT COUNT(*) FROM machines WHERE status='running' AND company_id = ?", (company_id,)).fetchone()[0]
+            active_alerts = c.execute("SELECT COUNT(*) FROM alarms WHERE acknowledged=0 AND company_id = ?", (company_id,)).fetchone()[0]
             
             # Efficiency metrics
-            avg_eff_result = c.execute("SELECT AVG(value) FROM sensor_readings").fetchone()
+            avg_eff_result = c.execute("""
+                SELECT AVG(sr.value) FROM sensor_readings sr
+                JOIN sensors s ON sr.sensor_id = s.id
+                JOIN machines m ON s.machine_id = m.id
+                WHERE m.company_id = ?
+            """, (company_id,)).fetchone()
             avg_eff = avg_eff_result[0] if avg_eff_result and avg_eff_result[0] else 0
             
             # Location breakdown
             location_stats = c.execute("""
                 SELECT m.location, COUNT(*) as count
                 FROM machines m
+                WHERE m.company_id = ?
                 GROUP BY m.location
-            """).fetchall()
+            """, (company_id,)).fetchall()
             
             # Calculate efficiency per location
             location_eff = {}
             for loc in location_stats:
                 loc_name = loc[0]
                 machine_ids = c.execute(
-                    "SELECT id FROM machines WHERE location=?", (loc_name,)
+                    "SELECT id FROM machines WHERE location=? AND company_id=?",
+                    (loc_name, company_id)
                 ).fetchall()
                 if machine_ids:
                     eff_values = []
@@ -676,13 +969,15 @@ def dashboard_widgets():
                 SELECT a.*, m.name as machine_name
                 FROM alarms a
                 LEFT JOIN machines m ON a.machine_id = m.id
+                WHERE a.company_id = ?
                 ORDER BY a.raised_at DESC LIMIT 5
-            """).fetchall()
+            """, (company_id,)).fetchall()
             
             # Maintenance status
             pending_maintenance = c.execute("""
-                SELECT COUNT(*) FROM maintenance_tasks WHERE status='open'
-            """).fetchone()[0]
+                SELECT COUNT(*) FROM maintenance_tasks 
+                WHERE status='open' AND company_id = ?
+            """, (company_id,)).fetchone()[0]
         
         return jsonify({
             "overview": {
@@ -707,18 +1002,20 @@ def dashboard_widgets():
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/chart-data/alerts")
+@login_required
 def chart_data_alerts():
     """JSON data for alerts trend chart."""
+    company_id = get_current_company_id()
     try:
         days = request.args.get("days", 14, type=int)
         with db() as c:
             data = c.execute("""
                 SELECT date(raised_at) as d, COUNT(*) as cnt, severity
                 FROM alarms
-                WHERE raised_at >= date('now', '-{} days')
+                WHERE company_id = ? AND raised_at >= date('now', '-{} days')
                 GROUP BY date(raised_at), severity
                 ORDER BY d ASC
-            """.format(days)).fetchall()
+            """.format(days), (company_id,)).fetchall()
         
         # Group by date
         by_date = {}
@@ -742,8 +1039,11 @@ def chart_data_alerts():
 # ===================== ALERTS API =====================
 
 @app.route("/api/alerts", methods=["GET", "POST"])
+@login_required
 def alerts():
     """Get or create alerts."""
+    company_id = get_current_company_id()
+    
     if request.method == "POST":
         # Create new alert
         data = request.json
@@ -755,25 +1055,36 @@ def alerts():
             return jsonify({"error": "Missing required fields"}), 400
         
         with db() as c:
+            # Verify machine belongs to company
+            machine = c.execute(
+                "SELECT id FROM machines WHERE id=? AND company_id=?",
+                (data["machine_id"], company_id)
+            ).fetchone()
+            if not machine:
+                return jsonify({"error": "Machine not found"}), 404
+            
             cursor = c.execute(
-                """INSERT INTO alarms (machine_id, severity, message, raised_at, acknowledged)
-                   VALUES (?, ?, ?, datetime('now'), 0)""",
-                (data["machine_id"], data["severity"], data["message"])
+                """INSERT INTO alarms (machine_id, severity, message, raised_at, acknowledged, company_id)
+                   VALUES (?, ?, ?, datetime('now'), 0, ?)""",
+                (data["machine_id"], data["severity"], data["message"], company_id)
             )
             c.commit()
             alert_id = cursor.lastrowid
-            log("system", "create", "alarm", alert_id)
+            log(session.get('username', 'system'), "create", "alarm", alert_id)
             return jsonify({"success": True, "id": alert_id}), 201
     
-    # GET - List alerts
+    # GET - List alerts for this company
     ack_filter = request.args.get("ack")
     with db() as c:
-        query = "SELECT a.*, m.name as machine FROM alarms a LEFT JOIN machines m ON a.machine_id = m.id"
-        params = []
+        query = """SELECT a.*, m.name as machine 
+                   FROM alarms a 
+                   LEFT JOIN machines m ON a.machine_id = m.id
+                   WHERE a.company_id = ?"""
+        params = [company_id]
         
         if ack_filter is not None:
             ack_val = 1 if ack_filter == "1" else 0
-            query += " WHERE a.acknowledged = ?"
+            query += " AND a.acknowledged = ?"
             params.append(ack_val)
         
         query += " ORDER BY a.raised_at DESC LIMIT 100"
@@ -782,21 +1093,31 @@ def alerts():
     return jsonify([dict(r) for r in rows])
 
 @app.route("/api/alerts/<int:alert_id>/ack", methods=["POST"])
+@login_required
 def acknowledge_alert(alert_id):
     """Acknowledge an alert."""
+    company_id = get_current_company_id()
     data = request.json or {}
-    user = data.get("user", "system")
+    user = session.get('username', 'system')
     comment = data.get("comment")
     
     with db() as c:
+        # Verify alert belongs to company
+        alert = c.execute(
+            "SELECT id FROM alarms WHERE id=? AND company_id=?",
+            (alert_id, company_id)
+        ).fetchone()
+        if not alert:
+            return jsonify({"error": "Alert not found"}), 404
+        
         c.execute(
             """UPDATE alarms 
                SET acknowledged = 1, 
                    acknowledged_by = ?,
                    acknowledged_at = datetime('now'),
                    comment = ?
-               WHERE id = ?""",
-            (user, comment, alert_id)
+               WHERE id = ? AND company_id = ?""",
+            (user, comment, alert_id, company_id)
         )
         c.commit()
         log(user, "acknowledge", "alarm", alert_id)
@@ -806,8 +1127,11 @@ def acknowledge_alert(alert_id):
 # ===================== MAINTENANCE API =====================
 
 @app.route("/api/maintenance", methods=["GET", "POST"])
+@login_required
 def maintenance():
     """Get or create maintenance tasks."""
+    company_id = get_current_company_id()
+    
     if request.method == "POST":
         # Create new maintenance task
         data = request.json
@@ -819,32 +1143,42 @@ def maintenance():
             return jsonify({"error": "Missing required fields"}), 400
         
         with db() as c:
+            # Verify machine belongs to company
+            machine = c.execute(
+                "SELECT id FROM machines WHERE id=? AND company_id=?",
+                (data["machine_id"], company_id)
+            ).fetchone()
+            if not machine:
+                return jsonify({"error": "Machine not found"}), 404
+            
             cursor = c.execute(
                 """INSERT INTO maintenance_tasks 
-                   (machine_id, description, priority, technician, scheduled_date, status)
-                   VALUES (?, ?, ?, ?, ?, ?)""",
+                   (machine_id, description, priority, technician, scheduled_date, status, company_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
                 (data["machine_id"], 
                  data["description"],
                  data.get("priority", "medium"),
                  data.get("technician"),
                  data.get("scheduled_date"),
-                 data.get("status", "open"))
+                 data.get("status", "open"),
+                 company_id)
             )
             c.commit()
             task_id = cursor.lastrowid
-            log("system", "create", "maintenance", task_id)
+            log(session.get('username', 'system'), "create", "maintenance", task_id)
             return jsonify({"success": True, "id": task_id, "ok": True}), 201
     
-    # GET - List maintenance tasks
+    # GET - List maintenance tasks for this company
     status_filter = request.args.get("status")
     with db() as c:
         query = """SELECT t.*, m.name as machine 
                    FROM maintenance_tasks t 
-                   LEFT JOIN machines m ON t.machine_id = m.id"""
-        params = []
+                   LEFT JOIN machines m ON t.machine_id = m.id
+                   WHERE t.company_id = ?"""
+        params = [company_id]
         
         if status_filter:
-            query += " WHERE t.status = ?"
+            query += " AND t.status = ?"
             params.append(status_filter)
         
         query += " ORDER BY t.created_at DESC LIMIT 100"
@@ -853,8 +1187,10 @@ def maintenance():
     return jsonify([dict(r) for r in rows])
 
 @app.route("/api/maintenance/<int:task_id>", methods=["PUT"])
+@login_required
 def update_maintenance(task_id):
     """Update maintenance task."""
+    company_id = get_current_company_id()
     data = request.json
     if not data:
         return jsonify({"error": "No data provided"}), 400
@@ -884,15 +1220,23 @@ def update_maintenance(task_id):
     if not updates:
         return jsonify({"error": "No fields to update"}), 400
     
-    params.append(task_id)
+    params.extend([task_id, company_id])
     
     with db() as c:
+        # Verify task belongs to company
+        task = c.execute(
+            "SELECT id FROM maintenance_tasks WHERE id=? AND company_id=?",
+            (task_id, company_id)
+        ).fetchone()
+        if not task:
+            return jsonify({"error": "Task not found"}), 404
+        
         c.execute(
-            f"UPDATE maintenance_tasks SET {', '.join(updates)} WHERE id = ?",
+            f"UPDATE maintenance_tasks SET {', '.join(updates)} WHERE id = ? AND company_id = ?",
             params
         )
         c.commit()
-        log("system", "update", "maintenance", task_id)
+        log(session.get('username', 'system'), "update", "maintenance", task_id)
     
     return jsonify({"success": True, "message": "Task updated"})
 
@@ -902,6 +1246,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route("/api/upload-csv", methods=["POST"])
+@login_required
 def upload_csv():
     """Upload and parse CSV file for visualization."""
     if 'file' not in request.files:
@@ -946,6 +1291,7 @@ def upload_csv():
     return jsonify({"error": "Invalid file type"}), 400
 
 @app.route("/api/csv-data/<cache_key>")
+@login_required
 def get_csv_data(cache_key):
     """Retrieve cached CSV data."""
     cache_file = os.path.join(UPLOAD_FOLDER, f"{cache_key}.json")
@@ -956,6 +1302,7 @@ def get_csv_data(cache_key):
         return jsonify({"error": "Data not found"}), 404
 
 @app.route("/api/csv-visualize", methods=["POST"])
+@login_required
 def visualize_csv():
     """Generate visualization data from CSV."""
     data = request.json
@@ -1004,6 +1351,272 @@ def visualize_csv():
         })
     except Exception as e:
         return jsonify({"error": f"Error processing data: {str(e)}"}), 400
+
+# ===================== DATA MANAGEMENT APIs =====================
+
+@app.route("/api/data/machines/all")
+@login_required
+def get_all_machines_data():
+    """Get all machines with performance data for reports."""
+    company_id = get_current_company_id()
+    try:
+        with db() as c:
+            machines = c.execute(
+                "SELECT * FROM machines WHERE company_id = ? ORDER BY id",
+                (company_id,)
+            ).fetchall()
+            
+            result = []
+            for m in machines:
+                machine_dict = dict(m)
+                # Get latest efficiency
+                efficiency = c.execute("""
+                    SELECT AVG(value) FROM sensor_readings sr
+                    JOIN sensors s ON sr.sensor_id = s.id
+                    WHERE s.machine_id = ?
+                    ORDER BY sr.timestamp DESC LIMIT 10
+                """, (m['id'],)).fetchone()
+                
+                machine_dict['efficiency'] = round(efficiency[0] or 0, 2) if efficiency and efficiency[0] else 0
+                machine_dict['last_updated'] = m.get('last_seen', 'N/A')
+                result.append(machine_dict)
+            
+            return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/data/sensors/all")
+@login_required
+def get_all_sensors_data():
+    """Get all sensor readings for reports."""
+    company_id = get_current_company_id()
+    try:
+        with db() as c:
+            readings = c.execute("""
+                SELECT sr.id, sr.value, sr.timestamp,
+                       s.name as sensor_name, s.unit,
+                       m.id as machine_id, m.name as machine_name
+                FROM sensor_readings sr
+                JOIN sensors s ON sr.sensor_id = s.id
+                JOIN machines m ON s.machine_id = m.id
+                WHERE m.company_id = ?
+                ORDER BY sr.timestamp DESC LIMIT 500
+            """, (company_id,)).fetchall()
+            
+            return jsonify([dict(r) for r in readings])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/data/machines/<int:mid>", methods=["PUT"])
+@login_required
+def update_machine_data(mid):
+    """Update machine data."""
+    company_id = get_current_company_id()
+    data = request.json
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+    
+    # Verify machine belongs to company
+    with db() as c:
+        machine = c.execute(
+            "SELECT id FROM machines WHERE id=? AND company_id=?",
+            (mid, company_id)
+        ).fetchone()
+        if not machine:
+            return jsonify({"error": "Machine not found"}), 404
+        
+        updates = []
+        params = []
+        
+        if "name" in data:
+            updates.append("name = ?")
+            params.append(data["name"])
+        
+        if "type" in data:
+            updates.append("type = ?")
+            params.append(data["type"])
+        
+        if "location" in data:
+            updates.append("location = ?")
+            params.append(data["location"])
+        
+        if "status" in data:
+            updates.append("status = ?")
+            params.append(data["status"])
+        
+        if "rated_capacity" in data:
+            updates.append("rated_capacity = ?")
+            params.append(data["rated_capacity"])
+        
+        if not updates:
+            return jsonify({"error": "No fields to update"}), 400
+        
+        params.extend([mid, company_id])
+        
+        c.execute(
+            f"UPDATE machines SET {', '.join(updates)} WHERE id = ? AND company_id = ?",
+            params
+        )
+        c.commit()
+        log(session.get('username', 'system'), "update", "machine", mid)
+        
+        return jsonify({"success": True, "message": "Machine updated"})
+
+@app.route("/api/data/sensors/<int:sid>", methods=["PUT"])
+@login_required
+def update_sensor_reading(sid):
+    """Update sensor reading."""
+    company_id = get_current_company_id()
+    data = request.json
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+    
+    with db() as c:
+        # Verify sensor reading belongs to company
+        reading = c.execute("""
+            SELECT sr.id FROM sensor_readings sr
+            JOIN sensors s ON sr.sensor_id = s.id
+            JOIN machines m ON s.machine_id = m.id
+            WHERE sr.id = ? AND m.company_id = ?
+        """, (sid, company_id)).fetchone()
+        
+        if not reading:
+            return jsonify({"error": "Sensor reading not found"}), 404
+        
+        updates = []
+        params = []
+        
+        if "value" in data:
+            updates.append("value = ?")
+            params.append(float(data["value"]))
+        
+        if "timestamp" in data:
+            updates.append("timestamp = ?")
+            params.append(data["timestamp"])
+        
+        if not updates:
+            return jsonify({"error": "No fields to update"}), 400
+        
+        params.append(sid)
+        
+        c.execute(
+            f"UPDATE sensor_readings SET {', '.join(updates)} WHERE id = ?",
+            params
+        )
+        c.commit()
+        log(session.get('username', 'system'), "update", "sensor_reading", sid)
+        
+        return jsonify({"success": True, "message": "Sensor reading updated"})
+
+@app.route("/api/data/sensors/<int:sid>", methods=["DELETE"])
+@login_required
+def delete_sensor_reading(sid):
+    """Delete sensor reading."""
+    company_id = get_current_company_id()
+    
+    with db() as c:
+        # Verify sensor reading belongs to company
+        reading = c.execute("""
+            SELECT sr.id FROM sensor_readings sr
+            JOIN sensors s ON sr.sensor_id = s.id
+            JOIN machines m ON s.machine_id = m.id
+            WHERE sr.id = ? AND m.company_id = ?
+        """, (sid, company_id)).fetchone()
+        
+        if not reading:
+            return jsonify({"error": "Sensor reading not found"}), 404
+        
+        c.execute("DELETE FROM sensor_readings WHERE id = ?", (sid,))
+        c.commit()
+        log(session.get('username', 'system'), "delete", "sensor_reading", sid)
+        
+        return jsonify({"success": True, "message": "Sensor reading deleted"})
+
+# ===================== DEMO DATA & DATASET MANAGEMENT =====================
+@app.route("/api/demo/generate", methods=["POST"])
+@login_required
+def generate_demo_data():
+    """Generate demo data for testing"""
+    company_id = get_current_company_id()
+    data = request.json or {}
+    num_machines = data.get("num_machines", 5)
+    days_of_data = data.get("days", 30)
+    
+    try:
+        from demo_data import generate_demo_data
+        result = generate_demo_data(company_id, num_machines, days_of_data)
+        return jsonify({
+            "success": True,
+            "message": "Demo data generated successfully",
+            "data": result
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/demo/clear", methods=["POST"])
+@login_required
+def clear_demo_data():
+    """Clear demo data for current company"""
+    company_id = get_current_company_id()
+    
+    try:
+        with db() as c:
+            # Delete in order to respect foreign keys
+            c.execute("DELETE FROM sensor_readings WHERE sensor_id IN (SELECT id FROM sensors WHERE machine_id IN (SELECT id FROM machines WHERE company_id = ?))", (company_id,))
+            c.execute("DELETE FROM sensors WHERE machine_id IN (SELECT id FROM machines WHERE company_id = ?)", (company_id,))
+            c.execute("DELETE FROM alarms WHERE company_id = ?", (company_id,))
+            c.execute("DELETE FROM maintenance_tasks WHERE company_id = ?", (company_id,))
+            c.execute("DELETE FROM machines WHERE company_id = ?", (company_id,))
+            c.commit()
+        
+        return jsonify({"success": True, "message": "Demo data cleared"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/datasets", methods=["GET"])
+@login_required
+def list_datasets():
+    """List available datasets"""
+    # This would typically come from a database or file system
+    # For now, return empty list - client-side will handle IndexedDB
+    return jsonify({"datasets": []})
+
+@app.route("/api/datasets/upload", methods=["POST"])
+@login_required
+def upload_dataset():
+    """Upload and process dataset file"""
+    if 'file' not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No file selected"}), 400
+    
+    try:
+        # Save file
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(filepath)
+        
+        # Process based on file type
+        if filename.endswith('.csv'):
+            import pandas as pd
+            df = pd.read_csv(filepath)
+            dataset = {
+                "name": filename.replace('.csv', ''),
+                "columns": [{"name": col, "type": "numeric" if pd.api.types.is_numeric_dtype(df[col]) else "text"} for col in df.columns],
+                "rows": df.to_dict('records')[:1000],  # Limit to 1000 rows
+                "row_count": len(df)
+            }
+        else:
+            return jsonify({"error": "Unsupported file type"}), 400
+        
+        return jsonify({
+            "success": True,
+            "dataset": dataset
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # ===================== HEALTH =====================
 @app.route("/health")

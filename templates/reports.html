@@ -16,13 +16,6 @@
       background: #DFDFDF;
     }
 
-    .app-sidebar {
-      width: 260px;
-      background: #ECECEC;
-      padding: 6px;
-      border-right: 1px solid #A0A0A0;
-      flex-shrink: 0;
-    }
 
     
 
@@ -100,6 +93,119 @@
       color: #003366;
       font-size: 14px;
     }
+
+    /* Editable Table Styles */
+    .editable-cell {
+      cursor: pointer;
+      position: relative;
+      padding: 4px 6px;
+    }
+
+    .editable-cell:hover {
+      background-color: #E6F2FF;
+    }
+
+    .editable-cell.editing {
+      padding: 0;
+    }
+
+    .editable-cell input {
+      width: 100%;
+      padding: 4px 6px;
+      border: 2px solid #003366;
+      background: #FFFFFF;
+      font-size: 13px;
+      font-family: Tahoma, Arial, sans-serif;
+      box-sizing: border-box;
+    }
+
+    .editable-cell input:focus {
+      outline: none;
+      border-color: #0a6ed1;
+    }
+
+    .table-actions {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .table-actions .btn-icon {
+      padding: 2px 6px;
+      font-size: 11px;
+      cursor: pointer;
+      border: 1px solid #A0A0A0;
+      background: #F5F5F5;
+      border-radius: 2px;
+      transition: all 0.2s;
+    }
+
+    .table-actions .btn-icon:hover {
+      background: #E0E0E0;
+    }
+
+    .table-actions .btn-save {
+      background: #D4EDDA;
+      border-color: #28a745;
+      color: #107e3e;
+    }
+
+    .table-actions .btn-save:hover {
+      background: #C3E6CB;
+    }
+
+    .table-actions .btn-cancel {
+      background: #F8D7DA;
+      border-color: #dc3545;
+      color: #721c24;
+    }
+
+    .table-actions .btn-cancel:hover {
+      background: #F5C6CB;
+    }
+
+    .table-actions .btn-edit {
+      background: #D7DFEF;
+      border-color: #7A8BA8;
+      color: #003366;
+    }
+
+    .table-actions .btn-edit:hover {
+      background: #C3D0E5;
+    }
+
+    .table-actions .btn-delete {
+      background: #F8D7DA;
+      border-color: #dc3545;
+      color: #721c24;
+    }
+
+    .table-actions .btn-delete:hover {
+      background: #F5C6CB;
+    }
+
+    .save-status {
+      display: inline-block;
+      padding: 2px 6px;
+      font-size: 11px;
+      border-radius: 3px;
+      margin-left: 8px;
+    }
+
+    .save-status.saving {
+      background: #FFF3CD;
+      color: #856404;
+    }
+
+    .save-status.saved {
+      background: #D4EDDA;
+      color: #155724;
+    }
+
+    .save-status.error {
+      background: #F8D7DA;
+      color: #721c24;
+    }
   </style>
 </head>
 
@@ -115,11 +221,11 @@
     </div>
 
     <nav class="nav">
-      <a href="/dashboard"><img src="/static/icons/home.svg" width="16"> Overview</a>
-      <a href="/machinery"><img src="/static/icons/machine.svg" width="16"> Machinery</a>
-      <a href="/maintenance"><img src="/static/icons/wrench.svg" width="16"> Maintenance</a>
-      <a href="/alerts"><img src="/static/icons/alert.svg" width="16"> Alerts</a>
-      <a class="active" href="/reports"><img src="/static/icons/chart.svg" width="16"> Reports</a>
+      <a href="/dashboard"><img src="/static/icons/home.svg" width="16" height="16" alt=""> Overview</a>
+      <a href="/machinery"><img src="/static/icons/machine.svg" width="16" height="16" alt=""> Machinery</a>
+      <a href="/maintenance"><img src="/static/icons/wrench.svg" width="16" height="16" alt=""> Maintenance</a>
+      <a href="/alerts"><img src="/static/icons/alert.svg" width="16" height="16" alt=""> Alerts</a>
+      <a class="active" href="/reports"><img src="/static/icons/chart.svg" width="16" height="16" alt=""> Reports</a>
     </nav>
   </aside>
 
@@ -128,14 +234,41 @@
     <header class="app-header">
       <div class="brand">
         <div class="sap-badge">IMCS</div>
-        <div class="hdr-title">Analytics & Trends</div>
+        <div>
+          <div class="hdr-title">Analytics & Trends</div>
+        </div>
       </div>
-      <button class="btn" id="refreshBtn">
-        <img src="/static/icons/refresh.svg" width="16"> Refresh
-      </button>
+      <div class="btn-group">
+        <button class="btn" id="refreshBtn">
+          <img src="/static/icons/refresh.svg" width="16" height="16" alt=""> Refresh
+        </button>
+      </div>
     </header>
 
     <div class="container">
+
+      <!-- ===== DATA SUMMARY ===== -->
+      <div class="card">
+        <div class="card-title">Data Summary</div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; padding: 12px;">
+          <div style="text-align: center;">
+            <div style="font-size: 24px; font-weight: bold; color: #003366;" id="summaryMachines">—</div>
+            <div style="font-size: 12px; color: #666; margin-top: 4px;">Total Machines</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 24px; font-weight: bold; color: #003366;" id="summarySensors">—</div>
+            <div style="font-size: 12px; color: #666; margin-top: 4px;">Sensor Readings</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 24px; font-weight: bold; color: #003366;" id="summaryEfficiency">—</div>
+            <div style="font-size: 12px; color: #666; margin-top: 4px;">Avg Efficiency</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 24px; font-weight: bold; color: #003366;" id="summaryAlerts">—</div>
+            <div style="font-size: 12px; color: #666; margin-top: 4px;">Active Alerts</div>
+          </div>
+        </div>
+      </div>
 
       <!-- ===== SUMMARY CHART ===== -->
       <div class="card">
@@ -151,12 +284,91 @@
         </div>
       </div>
 
+      <!-- ===== MACHINE PERFORMANCE DATA ===== -->
+      <div class="card">
+        <div class="card-title">
+          Machine Performance Data
+          <button class="btn" id="loadMachinesDataBtn" style="padding:4px 8px; font-size:11px;">
+            <img src="/static/icons/refresh.svg" width="12" height="12" alt=""> Load Data
+          </button>
+        </div>
+        <div class="chart-container" style="height: 350px;">
+          <canvas id="machinesPerformanceChart"></canvas>
+        </div>
+        <div id="machinesDataTableContainer" style="margin-top: 16px; display: none;">
+          <div class="card-title" style="margin-bottom: 10px;">
+            Performance Data Table
+            <button class="btn" id="exportMachinesBtn" style="padding:4px 8px; font-size:11px;">
+              <img src="/static/icons/chart.svg" width="12" height="12" alt=""> Export
+            </button>
+          </div>
+          <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
+            <table class="table" id="machinesDataTable">
+              <thead>
+                <tr>
+                  <th>Machine ID</th>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Location</th>
+                  <th>Status</th>
+                  <th>Efficiency</th>
+                  <th>Last Updated</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="machinesDataTableBody">
+                <tr><td colspan="8" class="muted small" style="text-align:center; padding:20px;">Click "Load Data" to view machine performance</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SENSOR READINGS DATA ===== -->
+      <div class="card">
+        <div class="card-title">
+          Sensor Readings Analysis
+          <button class="btn" id="loadSensorsDataBtn" style="padding:4px 8px; font-size:11px;">
+            <img src="/static/icons/refresh.svg" width="12" height="12" alt=""> Load Data
+          </button>
+        </div>
+        <div class="chart-container" style="height: 350px;">
+          <canvas id="sensorsDataChart"></canvas>
+        </div>
+        <div id="sensorsDataTableContainer" style="margin-top: 16px; display: none;">
+          <div class="card-title" style="margin-bottom: 10px;">
+            Sensor Readings Table
+            <button class="btn" id="exportSensorsBtn" style="padding:4px 8px; font-size:11px;">
+              <img src="/static/icons/chart.svg" width="12" height="12" alt=""> Export
+            </button>
+          </div>
+          <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
+            <table class="table" id="sensorsDataTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Sensor Name</th>
+                  <th>Machine</th>
+                  <th>Value</th>
+                  <th>Unit</th>
+                  <th>Timestamp</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="sensorsDataTableBody">
+                <tr><td colspan="7" class="muted small" style="text-align:center; padding:20px;">Click "Load Data" to view sensor readings</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- ===== CSV VISUALIZATION ===== -->
       <div class="card">
         <div class="card-title">CSV Data Analysis</div>
         <div id="csvDropZoneReports" class="csv-drop-zone">
           <div class="drop-zone-content">
-            <img src="/static/icons/chart.svg" width="48" height="48" style="opacity:0.5; margin-bottom:8px;">
+            <img src="/static/icons/chart.svg" width="48" height="48" style="opacity:0.5; margin-bottom:8px;" alt="">
             <div class="drop-zone-text">
               <strong>Drop CSV file here for analysis</strong><br>
               <span class="muted small">Supports time series, numeric data, and more</span>
@@ -178,6 +390,23 @@
                 <canvas id="csvBarChart"></canvas>
               </div>
             </div>
+          </div>
+        </div>
+        <div id="csvDataTableContainer" style="margin-top: 16px; display: none;">
+          <div class="card-title" style="margin-bottom: 10px;">
+            CSV Data Table
+            <button class="btn" id="exportCSVBtn" style="padding:4px 8px; font-size:11px;">
+              <img src="/static/icons/chart.svg" width="12" height="12" alt=""> Export
+            </button>
+          </div>
+          <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
+            <table class="table" id="csvDataTable">
+              <thead id="csvDataTableHead">
+                <tr></tr>
+              </thead>
+              <tbody id="csvDataTableBody">
+              </tbody>
+            </table>
           </div>
         </div>
         <div id="csvInfoReports" class="muted small" style="margin-top:8px;"></div>
@@ -210,6 +439,7 @@
 <script src="/static/js/charts.js" defer></script>
 <script src="/static/js/csv-viz.js" defer></script>
 <script src="/static/js/reports.js" defer></script>
+<script src="/static/js/reports-enhanced.js" defer></script>
 
 <script>
   // Initialize CSV upload for reports
@@ -237,9 +467,17 @@
           csvInfo.textContent = `✓ ${result.data.filename} loaded (${result.data.row_count} rows)`;
           csvCharts.style.display = 'block';
           
+          // Store CSV data globally
+          window.csvDataCache = result.data;
+          
           // Visualize with multiple chart types
           window.IMCSCSV.visualizeCSVData(result.data, 'csvLineChart', 'line');
           window.IMCSCSV.visualizeCSVData(result.data, 'csvBarChart', 'bar');
+          
+          // Render CSV data table
+          if (window.ReportsEnhanced && window.ReportsEnhanced.renderCSVTable) {
+            window.ReportsEnhanced.renderCSVTable(result.data);
+          }
         },
         (error) => {
           csvInfo.textContent = `✗ ${error}`;
@@ -264,11 +502,45 @@
           csvCharts.style.display = 'block';
           window.IMCSCSV.visualizeCSVData(result.data, 'csvLineChart', 'line');
           window.IMCSCSV.visualizeCSVData(result.data, 'csvBarChart', 'bar');
+          
+          // Store CSV data globally and render table
+          window.csvDataCache = result.data;
+          if (window.ReportsEnhanced && window.ReportsEnhanced.renderCSVTable) {
+            window.ReportsEnhanced.renderCSVTable(result.data);
+          }
         }
       } catch (error) {
         csvInfo.textContent = `✗ Upload failed: ${error.message}`;
         csvInfo.style.color = '#bb0000';
       }
+    }
+
+    // Make handleCSVUpload available globally
+    window.handleCSVUpload = handleCSVUpload;
+
+    // Load summary data
+    try {
+      const summaryRes = await fetch('/api/summary');
+      if (summaryRes.ok) {
+        const summary = await summaryRes.json();
+        const machinesEl = document.getElementById('summaryMachines');
+        const sensorsEl = document.getElementById('summarySensors');
+        const efficiencyEl = document.getElementById('summaryEfficiency');
+        const alertsEl = document.getElementById('summaryAlerts');
+        
+        if (machinesEl) machinesEl.textContent = summary.total_machines || 0;
+        if (efficiencyEl) efficiencyEl.textContent = (summary.avg_efficiency || 0) + '%';
+        if (alertsEl) alertsEl.textContent = summary.active_alerts || 0;
+        
+        // Get sensor count
+        const sensorsRes = await fetch('/api/data/sensors/all');
+        if (sensorsRes.ok) {
+          const sensors = await sensorsRes.json();
+          if (sensorsEl) sensorsEl.textContent = sensors.length || 0;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load summary:', e);
     }
 
     // Load performance chart

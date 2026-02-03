@@ -7,8 +7,6 @@
 
   <style>
     .app-shell{display:flex;height:100vh;overflow:hidden;background:#DFDFDF;}
-    .app-sidebar{width:260px;background:#ECECEC;padding:6px;border-right:1px solid #A0A0A0;}
-    .logo-img{width:36px;height:36px;display:block;}
   </style>
 
   <link rel="preload" href="/static/css/sap90.css" as="style" onload="this.rel='stylesheet'">
@@ -18,21 +16,31 @@
 <body>
 <div class="app-shell">
   <aside class="app-sidebar">
-    <div class="brand"><img src="/static/icons/logo-imcs.svg" class="logo-img" alt="IMCS"/><div class="title">Industrial Hub</div><div class="muted small">Alerts</div></div>
+    <div class="brand">
+      <img src="/static/icons/logo-imcs.svg" class="logo-img" alt="IMCS"/>
+      <div class="title">Industrial Hub</div>
+      <div class="muted small">Alerts</div>
+    </div>
     <nav class="nav">
-      <a href="/dashboard"><img src="/static/icons/home.svg" width="16" height="16"/> Overview</a>
-      <a href="/machinery"><img src="/static/icons/machine.svg" width="16" height="16"/> Machinery</a>
-      <a href="/maintenance"><img src="/static/icons/wrench.svg" width="16" height="16"/> Maintenance</a>
-      <a class="active" href="/alerts"><img src="/static/icons/alert.svg" width="16" height="16"/> Alerts</a>
-      <a href="/reports"><img src="/static/icons/chart.svg" width="16" height="16"/> Reports</a>
+      <a href="/dashboard"><img src="/static/icons/home.svg" width="16" height="16" alt=""/> Overview</a>
+      <a href="/machinery"><img src="/static/icons/machine.svg" width="16" height="16" alt=""/> Machinery</a>
+      <a href="/maintenance"><img src="/static/icons/wrench.svg" width="16" height="16" alt=""/> Maintenance</a>
+      <a class="active" href="/alerts"><img src="/static/icons/alert.svg" width="16" height="16" alt=""/> Alerts</a>
+      <a href="/reports"><img src="/static/icons/chart.svg" width="16" height="16" alt=""/> Reports</a>
     </nav>
-    <!-- <button class="btn">Theme</button> -->
   </aside>
 
   <main class="app-main">
     <header class="app-header">
-      <div class="brand"><div class="sap-badge">IMCS</div><div class="hdr-title">System Alerts</div></div>
-      <button class="btn" id="refreshBtn"><img src="/static/icons/refresh.svg" width="16" height="16" class="icon" /> Refresh</button>
+      <div class="brand">
+        <div class="sap-badge">IMCS</div>
+        <div>
+          <div class="hdr-title">System Alerts</div>
+        </div>
+      </div>
+      <div class="btn-group">
+        <button class="btn" id="refreshBtn"><img src="/static/icons/refresh.svg" width="16" height="16" alt=""/> Refresh</button>
+      </div>
     </header>
 
     <div class="container">

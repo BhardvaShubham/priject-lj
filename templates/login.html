@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IMCS - Login</title>
+  <link rel="stylesheet" href="/static/css/sap90.css">
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #E8E8E8 0%, #DFDFDF 100%);
+      margin: 0;
+    }
+
+    .login-container {
+      background: linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 100%);
+      border: 2px solid #A0A0A0;
+      border-radius: 4px;
+      padding: 30px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .login-header img {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 12px;
+    }
+
+    .login-header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #003366;
+      margin: 0;
+      letter-spacing: 0.5px;
+    }
+
+    .login-header p {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #002244;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #A0A0A0;
+      background: #FFFFFF;
+      font-size: 14px;
+      font-family: Tahoma, Arial, sans-serif;
+      box-sizing: border-box;
+      transition: border-color 0.2s ease;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #003366;
+      box-shadow: 0 0 0 2px rgba(0, 51, 102, 0.1);
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 10px;
+      background: linear-gradient(135deg, #003366 0%, #004080 100%);
+      color: white;
+      border: 1px solid #002244;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-top: 8px;
+    }
+
+    .btn-login:hover {
+      background: linear-gradient(135deg, #004080 0%, #0050A0 100%);
+      box-shadow: 0 2px 6px rgba(0, 51, 102, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .btn-login:active {
+      transform: translateY(0);
+    }
+
+    .error-message {
+      background: #FFF5F5;
+      border: 1px solid #FFB3B3;
+      border-left: 4px solid #bb0000;
+      color: #bb0000;
+      padding: 10px;
+      margin-bottom: 16px;
+      font-size: 12px;
+      border-radius: 3px;
+    }
+
+    .register-link {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .register-link a {
+      color: #003366;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .register-link a:hover {
+      text-decoration: underline;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 10px;
+      color: #003366;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-header">
+      <img src="/static/icons/logo-imcs.svg" alt="IMCS Logo">
+      <h1>Industrial Hub</h1>
+      <p>Machine Control System</p>
+    </div>
+
+    <div id="errorMessage" class="error-message" style="display:none;"></div>
+    <div id="loadingMessage" class="loading">Logging in...</div>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="companyName">Company Name</label>
+        <input type="text" id="companyName" name="company_name" required autocomplete="organization">
+      </div>
+
+      <div class="form-group">
+        <label for="loginId">Login ID</label>
+        <input type="text" id="loginId" name="login_id" required autocomplete="username">
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required autocomplete="current-password">
+      </div>
+
+      <button type="submit" class="btn-login">Login</button>
+    </form>
+
+    <div class="register-link">
+      Don't have an account? <a href="/register">Register</a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const errorDiv = document.getElementById('errorMessage');
+      const loadingDiv = document.getElementById('loadingMessage');
+      errorDiv.style.display = 'none';
+      loadingDiv.style.display = 'block';
+      
+      const formData = {
+        company_name: document.getElementById('companyName').value.trim(),
+        login_id: document.getElementById('loginId').value.trim(),
+        password: document.getElementById('password').value
+      };
+      
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+          // Redirect to dashboard
+          window.location.href = '/dashboard';
+        } else {
+          errorDiv.textContent = data.error || 'Login failed. Please check your credentials.';
+          errorDiv.style.display = 'block';
+          loadingDiv.style.display = 'none';
+        }
+      } catch (error) {
+        errorDiv.textContent = 'Network error. Please try again.';
+        errorDiv.style.display = 'block';
+        loadingDiv.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>

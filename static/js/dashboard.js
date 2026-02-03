@@ -460,6 +460,37 @@
       setInterval(refreshAll, 60 * 1000); // every 60s
     }
   
+    // --- Update dashboard with dataset data ---
+    window.updateDashboardWithDataset = function(dataset) {
+        if (!dataset || !dataset.rows || dataset.rows.length === 0) return;
+        
+        // Extract numeric columns for KPI calculation
+        const numericCols = dataset.columns.filter(c => c.type === 'numeric');
+        if (numericCols.length === 0) return;
+        
+        // Calculate averages for KPIs
+        const averages = {};
+        numericCols.forEach(col => {
+            const values = dataset.rows.map(r => parseFloat(r[col.name]) || 0).filter(v => !isNaN(v));
+            if (values.length > 0) {
+                averages[col.name] = values.reduce((a, b) => a + b, 0) / values.length;
+            }
+        });
+        
+        // Update KPI displays if available
+        if (targets.k_eff && numericCols.length > 0) {
+            const firstAvg = averages[numericCols[0].name];
+            if (firstAvg !== undefined) {
+                targets.k_eff.textContent = `${Math.round(firstAvg)}%`;
+            }
+        }
+        
+        // Update total count
+        if (targets.k_total) {
+            targets.k_total.textContent = dataset.rows.length;
+        }
+    };
+
     // Start
     document.addEventListener('DOMContentLoaded', init);
   

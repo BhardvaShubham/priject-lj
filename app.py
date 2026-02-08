@@ -1378,7 +1378,7 @@ def get_all_machines_data():
                 """, (m['id'],)).fetchone()
                 
                 machine_dict['efficiency'] = round(efficiency[0] or 0, 2) if efficiency and efficiency[0] else 0
-                machine_dict['last_updated'] = m.get('last_seen', 'N/A')
+                machine_dict['last_updated'] = machine_dict.get('last_seen', 'N/A')
                 result.append(machine_dict)
             
             return jsonify(result)

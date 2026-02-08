@@ -75,7 +75,8 @@
           label: function(context) {
             let label = context.dataset.label || '';
             if (label) label += ': ';
-            label += context.parsed.y !== null ? context.parsed.y.toFixed(2) : 'N/A';
+            const y = context.parsed.y;
+            label += Number.isFinite(y) ? y.toFixed(2) : '0.00';
             if (context.dataset.unit) label += ' ' + context.dataset.unit;
             return label;
           }
@@ -397,7 +398,8 @@
     const ctx = document.getElementById(canvasId);
     if (!ctx) return false;
 
-    const oee = Math.max(0, Math.min(100, oeeValue));
+    const safeOEE = Number.isFinite(oeeValue) ? oeeValue : 0;
+    const oee = Math.max(0, Math.min(100, safeOEE));
     const color = oee >= 85 ? SAP_COLORS.success : oee >= 60 ? SAP_COLORS.warning : SAP_COLORS.error;
 
     // Create gauge using doughnut chart

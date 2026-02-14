@@ -16,6 +16,18 @@
     const alertsData = await window.IMCSCharts?.fetchChartData('/api/chart-data/alerts') || null;
     const machinesData = await window.__sapApp?.fetchJsonLow('/api/machines') || null;
 
+    // Debug: Log machines data
+    if (machinesData) {
+      console.log('Machines data loaded:', machinesData.length, 'machines');
+      const withEfficiency = machinesData.filter(m => m.efficiency != null);
+      console.log('Machines with efficiency:', withEfficiency.length);
+      if (withEfficiency.length > 0) {
+        console.log('Top machine:', withEfficiency.sort((a,b) => (b.efficiency || 0) - (a.efficiency || 0))[0]);
+      }
+    } else {
+      console.warn('Failed to load machines data');
+    }
+
     // Use enhanced charts if available, fallback to regular
     const chartsModule = window.IMCSChartsEnhanced || window.IMCSCharts;
 
@@ -57,11 +69,20 @@
 
     // Render machine comparison (enhanced)
     if (machinesData && chartsModule) {
-      if (window.IMCSChartsEnhanced && window.IMCSChartsEnhanced.renderEnhancedMachineComparison) {
-        window.IMCSChartsEnhanced.renderEnhancedMachineComparison('machineComparisonChart', machinesData);
-      } else if (window.IMCSCharts) {
-        window.IMCSCharts.renderMachineComparison('machineComparisonChart', machinesData);
+      try {
+        if (window.IMCSChartsEnhanced && window.IMCSChartsEnhanced.renderEnhancedMachineComparison) {
+          const result = window.IMCSChartsEnhanced.renderEnhancedMachineComparison('machineComparisonChart', machinesData);
+          console.log('Machine comparison chart rendered:', result);
+        } else if (window.IMCSCharts && window.IMCSCharts.renderMachineComparison) {
+          window.IMCSCharts.renderMachineComparison('machineComparisonChart', machinesData);
+        } else {
+          console.warn('No machine comparison renderer available');
+        }
+      } catch (e) {
+        console.error('Failed to render machine comparison chart:', e);
       }
+    } else {
+      console.warn('Machine comparison chart skipped - data:', machinesData, 'chartsModule:', chartsModule);
     }
   }
 

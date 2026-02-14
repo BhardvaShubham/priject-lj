@@ -1,0 +1,6 @@
+"Machine ID","Name","Type","Location","Status","Efficiency","Last Updated","Actions"
+"94","Robot Arm 1","Robot Arm","Warehouse","maintenance","79.74%","2026-02-09 07:32:37","✎"
+"95","Press 2","Press","Production Line A","idle","769.41%","2026-02-09 07:32:37","✎"
+"96","Welder 3","Welder","Production Line A","running","516.8%","2026-02-09 07:32:37","✎"
+"97","Robot Arm 4","Robot Arm","Production Line A","running","58.6%","2026-02-09 07:32:37","✎"
+"98","Conveyor 5","Conveyor","Production Line B","maintenance","420.15%","2026-02-09 07:32:37","✎"

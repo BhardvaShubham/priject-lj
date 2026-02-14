@@ -139,6 +139,15 @@
     return gradient;
   }
 
+  // Helper: Destroy existing chart on canvas to prevent reuse conflicts
+  function destroyExistingChart(canvasElement) {
+    if (!canvasElement) return;
+    const canvasCtx = canvasElement.getContext ? canvasElement.getContext('2d') : null;
+    if (canvasCtx && canvasCtx.canvas.__chartInstance) {
+      canvasCtx.canvas.__chartInstance.destroy();
+    }
+  }
+
   // Enhanced performance trend chart
   function renderEnhancedPerformanceChart(canvasId, data) {
     if (!window.Chart || !data || !data.performance_trend) return false;
@@ -146,11 +155,14 @@
     const ctx = document.getElementById(canvasId);
     if (!ctx) return false;
 
+    // Destroy any existing chart
+    destroyExistingChart(ctx);
+
     const trend = data.performance_trend;
     const chartCtx = ctx.getContext('2d');
     const gradient = createGradient(chartCtx, SAP_COLORS.primary + '40', SAP_COLORS.primary + '05');
 
-    new Chart(chartCtx, {
+    const chart = new Chart(chartCtx, {
       type: 'line',
       data: {
         labels: trend.map(t => {
@@ -200,6 +212,8 @@
         }
       }
     });
+
+    ctx.__chartInstance = chart;
     return true;
   }
 
@@ -210,10 +224,13 @@
     const ctx = document.getElementById(canvasId);
     if (!ctx) return false;
 
+    // Destroy any existing chart
+    destroyExistingChart(ctx);
+
     const dist = data.status_distribution;
     const labels = Object.keys(dist);
     const values = Object.values(dist);
-    
+
     const colorMap = {
       'running': { bg: SAP_COLORS.success, border: SAP_COLORS.successDark },
       'idle': { bg: SAP_COLORS.warning, border: SAP_COLORS.warningDark },
@@ -224,7 +241,7 @@
     const colors = labels.map(l => colorMap[l.toLowerCase()]?.bg || SAP_COLORS.muted);
     const borders = labels.map(l => colorMap[l.toLowerCase()]?.border || '#6b7280');
 
-    new Chart(ctx, {
+    const chart = new Chart(ctx, {
       type: 'doughnut',
       data: {
         labels: labels.map(l => l.charAt(0).toUpperCase() + l.slice(1)),
@@ -253,6 +270,8 @@
         }
       }
     });
+
+    ctx.__chartInstance = chart;
     return true;
   }
 
@@ -263,10 +282,13 @@
     const ctx = document.getElementById(canvasId);
     if (!ctx) return false;
 
+    // Destroy any existing chart
+    destroyExistingChart(ctx);
+
     const trend = data.trend;
     const chartCtx = ctx.getContext('2d');
 
-    new Chart(chartCtx, {
+    const chart = new Chart(chartCtx, {
       type: 'bar',
       data: {
         labels: trend.map(t => {
@@ -323,6 +345,8 @@
         }
       }
     });
+
+    ctx.__chartInstance = chart;
     return true;
   }
 
@@ -332,6 +356,9 @@
 
     const ctx = document.getElementById(canvasId);
     if (!ctx) return false;
+
+    // Destroy any existing chart
+    destroyExistingChart(ctx);
 
     const sorted = machines
       .filter(m => m.efficiency != null)
@@ -346,7 +373,7 @@
       return SAP_COLORS.error;
     });
 
-    new Chart(chartCtx, {
+    const chart = new Chart(chartCtx, {
       type: 'bar',
       data: {
         labels: sorted.map(m => m.name),
@@ -388,6 +415,8 @@
         }
       }
     });
+
+    ctx.__chartInstance = chart;
     return true;
   }
 
@@ -398,12 +427,18 @@
     const ctx = document.getElementById(canvasId);
     if (!ctx) return false;
 
+    // Destroy existing chart if it exists
+    const existingChart = Chart.helpers?.datasets ? Chart.instances.find(c => c.canvas === ctx) : ctx.__chartInstance;
+    if (existingChart) {
+      existingChart.destroy();
+    }
+
     const safeOEE = Number.isFinite(oeeValue) ? oeeValue : 0;
     const oee = Math.max(0, Math.min(100, safeOEE));
     const color = oee >= 85 ? SAP_COLORS.success : oee >= 60 ? SAP_COLORS.warning : SAP_COLORS.error;
 
     // Create gauge using doughnut chart
-    new Chart(ctx, {
+    const chart = new Chart(ctx, {
       type: 'doughnut',
       data: {
         datasets: [{
@@ -434,14 +469,14 @@
           const ctx = chart.ctx;
           const centerX = chart.chartArea.left + (chart.chartArea.right - chart.chartArea.left) / 2;
           const centerY = chart.chartArea.top + (chart.chartArea.bottom - chart.chartArea.top) / 2;
-          
+
           ctx.save();
           ctx.font = 'bold 32px Tahoma';
           ctx.fillStyle = color;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           ctx.fillText(`${oee.toFixed(1)}%`, centerX, centerY - 10);
-          
+
           ctx.font = '14px Tahoma';
           ctx.fillStyle = '#003366';
           ctx.fillText('OEE', centerX, centerY + 20);
@@ -449,6 +484,9 @@
         }
       }]
     });
+
+    // Store reference for cleanup
+    ctx.__chartInstance = chart;
     return true;
   }
 

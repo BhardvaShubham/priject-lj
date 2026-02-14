@@ -1,0 +1,51 @@
+Company_ID,Company_Name,Email,Phone,Country,Founded_Date,Industry,Status,Employee_Count
+1,Oneal Inc,mindyharrington@hansen.com,001-947-137-8407x122,Grenada,2017-09-28,Retail,Pending,3241
+2,"Sanchez, Bishop and Martin",scottdiana@love.com,(411)066-2310x7950,Equatorial Guinea,2006-11-14,Healthcare,Active,5690
+3,Merritt-King,susan52@ryan.net,164.552.7254x821,Argentina,2013-04-02,Education,Closed,1340
+4,Mcdonald-Huynh,qaguilar@smith.com,(277)735-5042x52611,Ghana,1996-09-30,Technology,Active,6380
+5,Russo Ltd,martinbrandy@mitchell.com,(892)094-5719x075,Denmark,2020-08-22,Retail,Closed,5963
+6,"Wolf, Ortiz and Brooks",ajenkins@norman.biz,7176668423,Bangladesh,2005-12-06,Healthcare,Inactive,4586
+7,"Arnold, Floyd and Hardy",joseph51@daniels.com,+1-440-382-8955x12644,Greece,2007-01-26,Education,Closed,1486
+8,Carr-Collins,zacharyroberson@figueroa-yang.net,5478814726,Liechtenstein,2001-11-26,Manufacturing,Inactive,7929
+9,Shaw-Scott,fkramer@morris-graham.org,097-686-7579,Marshall Islands,2012-03-27,Education,Active,9594
+10,Marshall-Fowler,igeorge@randall.net,(261)929-9142x7373,Tanzania,2025-03-17,Education,Pending,7508
+11,Bell Ltd,rochamary@herrera-flores.com,6801722138,Bermuda,2016-05-10,Retail,Closed,8468
+12,"Ellis, Sullivan and Frank",sally35@spencer.info,001-136-887-3661x5860,Falkland Islands (Malvinas),1999-05-08,Manufacturing,Inactive,5978
+13,"Hernandez, Robles and Ball",kimberlywarner@hernandez.org,(481)980-8526x759,Guatemala,1998-07-20,Manufacturing,Inactive,3651
+14,"Carpenter, Weaver and Gibson",hodgeryan@wright.com,4528185839,Croatia,2002-08-20,Technology,Inactive,2113
+15,Wilson-Quinn,katrinajenkins@grant.biz,001-146-707-3174,Saint Kitts and Nevis,2022-02-15,Healthcare,Inactive,1991
+16,Horton-Reid,bradley48@santiago.com,001-367-123-8345x02654,Honduras,2015-03-23,Retail,Pending,3914
+17,"Smith, Whitaker and Murphy",sean03@rodriguez.com,465.254.3354,Lesotho,2001-01-26,Healthcare,Closed,93
+18,Ford and Sons,valeriehansen@webb.info,+1-151-681-7039x363,Zimbabwe,2011-11-07,Retail,Closed,6464
+19,Dillon-Cannon,gmeyer@mckee.biz,+1-655-727-1173x91194,Uruguay,1996-04-04,Healthcare,Closed,2740
+20,Huffman Inc,clarkcrystal@white.com,001-103-900-4434x419,Uzbekistan,2014-08-13,Retail,Inactive,92
+21,Lang Inc,victor51@baker-schmidt.org,6577604931,India,2010-11-18,Finance,Closed,3463
+22,Estes Inc,shawnicholas@brown.org,001-635-021-2420x35773,Christmas Island,2009-05-17,Education,Inactive,6718
+23,White-Roberts,jdillon@benjamin.net,+1-231-325-7157x0572,Zambia,2015-05-03,Retail,Active,7250
+24,"Valdez, Erickson and Martinez",sarahrogers@george.com,644.311.0544,Morocco,2008-03-19,Education,Inactive,1022
+25,Rodriguez-Lucero,michellehinton@davis-owens.biz,+1-667-066-0468x987,Kyrgyz Republic,1999-07-15,Manufacturing,Active,3427
+26,Shannon-Fuller,zhoward@walker-smith.com,+1-993-780-8817x58738,Sierra Leone,2012-10-02,Technology,Pending,501
+27,Garrison and Sons,kingbarbara@hansen-miller.com,831.662.7731,Tuvalu,2019-06-11,Finance,Active,2493
+28,Andrews Group,kendra67@santiago-rogers.info,105.013.3099x946,India,2025-01-16,Technology,Inactive,7008
+29,Lopez-Moore,cantrellmegan@curry-moore.com,809.570.9618x4391,Azerbaijan,2022-03-06,Education,Closed,1577
+30,Buck-Lee,kathryn52@fischer.com,(249)479-4588,Holy See (Vatican City State),2013-11-17,Healthcare,Inactive,6754
+31,"Deleon, Lee and Beasley",jennifer07@hernandez.org,(157)708-1110,Sudan,2015-03-01,Retail,Inactive,1139
+32,Nunez-Woods,bethany00@clark.com,001-608-089-6202x73018,Guinea,2023-10-28,Healthcare,Pending,904
+33,Holmes PLC,jasminehernandez@stephens-johnson.net,(761)095-4346x44603,Kazakhstan,2018-02-02,Education,Inactive,9488
+34,"Shaw, Moore and Nichols",tracypowers@robinson-cantrell.com,+1-306-753-5965x922,India,2009-11-03,Technology,Inactive,9111
+35,"Reyes, Hardy and Smith",michaeljones@hall.com,601.515.9597x639,Russian Federation,2002-05-04,Finance,Closed,3973
+36,Fuller Ltd,dianehendricks@hernandez.com,468.829.9065x9234,Belize,2005-06-01,Education,Inactive,4842
+37,Clarke LLC,barneswendy@carpenter-phillips.com,3525448565,Malta,2011-06-01,Education,Inactive,5385
+38,"Baker, Gould and Harper",dmorgan@barnes.biz,7299276253,Saint Pierre and Miquelon,2004-06-16,Finance,Inactive,4653
+39,Hahn and Sons,frank98@fuller-dalton.info,(864)376-9072x477,Namibia,2015-02-05,Finance,Closed,7684
+40,Archer Inc,darren31@lopez.com,872-918-1433,Tajikistan,2000-09-11,Manufacturing,Inactive,953
+41,"Gordon, Mora and Perez",jonathonhurst@sampson.com,(308)745-4923x0508,Lao People's Democratic Republic,2020-01-19,Retail,Inactive,2727
+42,"Wood, Atkins and Campbell",manningsarah@juarez.com,376-690-9747x96733,Colombia,1998-05-16,Education,Active,516
+43,Santos PLC,charleskelly@smith.com,(472)805-2470,Antarctica (the territory South of 60 deg S),2009-11-24,Manufacturing,Inactive,9144
+44,"Williams, Hill and Middleton",whitedaniel@watson.net,7217558593,Romania,2008-12-13,Manufacturing,Pending,9163
+45,Kennedy PLC,rodriguezlauren@graham-brown.com,+1-196-381-5933x558,Tuvalu,2010-07-31,Finance,Inactive,9811
+46,Davis-Archer,matthew30@robinson.com,(133)081-4400x028,Guinea,2018-09-03,Healthcare,Pending,7543
+47,"Alvarado, Jacobs and Hess",alexandra68@patel.com,411-159-9422,France,2016-11-06,Technology,Active,5289
+48,"Murray, Durham and Johnson",matthew01@george.com,303-221-8388,Burkina Faso,1996-05-11,Finance,Pending,5321
+49,Johnson-Thompson,paul31@allen.com,+1-831-786-5988x815,Puerto Rico,2024-12-21,Manufacturing,Pending,2940
+50,Miller PLC,anthony00@deleon.com,969.070.1089x94946,Germany,1999-07-16,Healthcare,Active,3123

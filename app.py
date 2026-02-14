@@ -310,13 +310,27 @@ def machines():
             
             return jsonify({"success": True, "id": machine_id, "message": "Machine created"}), 201
     
-    # GET - List all machines for this company
+    # GET - List all machines for this company with efficiency
     with db() as c:
         rows = c.execute(
             "SELECT * FROM machines WHERE company_id = ?",
             (company_id,)
         ).fetchall()
-    return jsonify([dict(r) for r in rows])
+
+        result = []
+        for m in rows:
+            machine_dict = dict(m)
+            # Get efficiency from average sensor readings
+            efficiency = c.execute("""
+                SELECT AVG(value) FROM sensor_readings sr
+                JOIN sensors s ON sr.sensor_id = s.id
+                WHERE s.machine_id = ?
+            """, (m['id'],)).fetchone()
+
+            machine_dict['efficiency'] = round(float(efficiency[0]), 2) if efficiency and efficiency[0] is not None else 0
+            result.append(machine_dict)
+
+    return jsonify(result)
 
 @app.route("/api/machines/<int:mid>")
 @login_required
@@ -636,48 +650,84 @@ def chart_oee(mid):
         ).fetchone()
         if not machine:
             return send_file(io.BytesIO(), mimetype="image/png")
-    
-    oee_data = oee(mid)
-    oee_val = oee_data.get_json().get("oee", 0)
-    buf = viz.oee_gauge_chart(oee_val)
+
+        # Calculate OEE directly
+        result = c.execute(
+            """SELECT AVG(value) FROM sensor_readings
+               WHERE sensor_id IN (
+                 SELECT id FROM sensors WHERE machine_id=?
+               )""",
+            (mid,)
+        ).fetchone()
+        eff = (result[0] or 0) if result and result[0] is not None else 0
+
+    availability = 100 if eff > 0 else 0
+    oee_val = round((availability/100) * (eff/100) * 100, 1)
+
+    quality = request.args.get("quality", "normal", type=str)
+    buf = viz.oee_gauge_chart(oee_val, quality_mode=quality)
     return send_file(buf, mimetype="image/png")
 
 @app.route("/chart/status.png")
+@login_required
 def chart_status():
     """Machine status distribution pie chart."""
+    company_id = get_current_company_id()
+    quality = request.args.get("quality", "normal", type=str)
     with db() as conn:
-        buf = viz.status_pie_chart_from_conn(conn)
+        buf = viz.status_pie_chart_from_conn(conn, company_id, quality_mode=quality)
     return send_file(buf, mimetype="image/png")
 
 @app.route("/chart/multi-sensor/<int:mid>.png")
+@login_required
 def chart_multi_sensor(mid):
     """Multi-sensor trend chart."""
+    company_id = get_current_company_id()
+    with db() as c:
+        # Verify machine belongs to company
+        machine = c.execute(
+            "SELECT id FROM machines WHERE id=? AND company_id=?",
+            (mid, company_id)
+        ).fetchone()
+        if not machine:
+            return send_file(io.BytesIO(), mimetype="image/png")
+
     days = request.args.get("days", 7, type=int)
+    quality = request.args.get("quality", "normal", type=str)
     with db() as conn:
-        buf = viz.multi_sensor_trend_chart(conn, mid, days)
+        buf = viz.multi_sensor_trend_chart(conn, mid, days, quality_mode=quality)
     return send_file(buf, mimetype="image/png")
 
 @app.route("/chart/heatmap.png")
+@login_required
 def chart_heatmap():
     """Status heatmap by location."""
+    company_id = get_current_company_id()
+    quality = request.args.get("quality", "normal", type=str)
     with db() as conn:
-        buf = viz.status_heatmap_chart(conn)
+        buf = viz.status_heatmap_chart(conn, company_id, quality_mode=quality)
     return send_file(buf, mimetype="image/png")
 
 @app.route("/chart/performance.png")
+@login_required
 def chart_performance():
     """Performance comparison chart."""
+    company_id = get_current_company_id()
     days = request.args.get("days", 30, type=int)
+    quality = request.args.get("quality", "normal", type=str)
     with db() as conn:
-        buf = viz.performance_comparison_chart(conn, days)
+        buf = viz.performance_comparison_chart(conn, days, company_id, quality_mode=quality)
     return send_file(buf, mimetype="image/png")
 
 @app.route("/chart/alerts-trend.png")
+@login_required
 def chart_alerts_trend():
     """Alert frequency trend chart."""
+    company_id = get_current_company_id()
     days = request.args.get("days", 14, type=int)
+    quality = request.args.get("quality", "normal", type=str)
     with db() as conn:
-        buf = viz.alert_frequency_chart_from_conn(conn, days)
+        buf = viz.alert_frequency_chart_from_conn(conn, days, company_id, quality_mode=quality)
     return send_file(buf, mimetype="image/png")
 
 # ===================== DATA APIs FOR CLIENT-SIDE CHARTS =====================

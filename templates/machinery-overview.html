@@ -16,17 +16,18 @@
 <body>
 <div class="app-shell">
   <aside class="app-sidebar">
+    <button class="sidebar-toggle" title="Collapse sidebar">◀</button>
     <div class="brand">
       <img src="/static/icons/logo-imcs.svg" class="logo-img" alt="IMCS"/>
       <div class="title">Industrial Hub</div>
       <div class="muted small">Machinery</div>
     </div>
     <nav class="nav">
-      <a href="/dashboard"><img src="/static/icons/home.svg" width="16" height="16" alt=""/> Overview</a>
-      <a class="active" href="/machinery"><img src="/static/icons/machine.svg" width="16" height="16" alt=""/> Machinery</a>
-      <a href="/maintenance"><img src="/static/icons/wrench.svg" width="16" height="16" alt=""/> Maintenance</a>
-      <a href="/alerts"><img src="/static/icons/alert.svg" width="16" height="16" alt=""/> Alerts</a>
-      <a href="/reports"><img src="/static/icons/chart.svg" width="16" height="16" alt=""/> Reports</a>
+      <a href="/dashboard" data-label="Overview"><img src="/static/icons/home.svg" width="16" height="16" alt=""/> <span>Overview</span></a>
+      <a class="active" href="/machinery" data-label="Machinery"><img src="/static/icons/machine.svg" width="16" height="16" alt=""/> <span>Machinery</span></a>
+      <a href="/maintenance" data-label="Maintenance"><img src="/static/icons/wrench.svg" width="16" height="16" alt=""/> <span>Maintenance</span></a>
+      <a href="/alerts" data-label="Alerts"><img src="/static/icons/alert.svg" width="16" height="16" alt=""/> <span>Alerts</span></a>
+      <a href="/reports" data-label="Reports"><img src="/static/icons/chart.svg" width="16" height="16" alt=""/> <span>Reports</span></a>
     </nav>
   </aside>
 

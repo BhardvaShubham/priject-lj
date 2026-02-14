@@ -79,30 +79,33 @@
   .brand .title{font-size:16px;font-weight:700}
   .header-actions{display:flex;gap:8px;align-items:center}
   
-  /* Theme toggle (single button) */
-  .btn {display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card-bg);cursor:pointer;font-weight:600;font-size:var(--ui-small)}
-  .btn:active{transform:translateY(1px)}
+  /* Theme toggle (single button with 90s beveled style) */
+  .btn {display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:2px;border:2px solid;border-color:#DFEFFF #7A8BA8 #7A8BA8 #DFEFFF;background:linear-gradient(135deg, #DFECF9 0%, #D7DFEF 100%);cursor:pointer;font-weight:600;font-size:var(--ui-small);box-shadow:inset 1px 1px 0 rgba(255,255,255,0.8), inset -1px -1px 0 rgba(0,0,0,0.3);transition:all 0.15s ease}
+  .btn:hover{background:linear-gradient(135deg, #E8F2FF 0%, #DFE8F5 100%);border-color:#D0DFF0 #5B6A80 #5B6A80 #D0DFF0}
+  .btn:active{border-color:#7A8BA8 #DFEFFF #DFEFFF #7A8BA8;box-shadow:inset -1px -1px 0 rgba(255,255,255,0.8), inset 1px 1px 0 rgba(0,0,0,0.3);transform:translateY(1px)}
   .icon{width:18px;height:18px;display:inline-block;vertical-align:middle}
   
-  /* Sidebar nav */
+  /* Sidebar nav with 90s hover effects */
   .nav{display:flex;flex-direction:column;gap:6px;margin-top:12px}
-  .nav a{display:flex;align-items:center;gap:12px;padding:10px;border-radius:8px;color:var(--text);text-decoration:none;font-size:var(--ui-medium)}
+  .nav a{display:flex;align-items:center;gap:12px;padding:10px;border-radius:2px;color:var(--text);text-decoration:none;font-size:var(--ui-medium);border:1px solid transparent;transition:all 0.15s ease}
   .nav a .nav-icon{width:20px;height:20px;display:inline-block}
-  .nav a:hover{background:rgba(10,110,209,0.06)}
-  .nav a.active{background:linear-gradient(90deg, rgba(10,110,209,0.12), rgba(10,110,209,0.06));border-left:4px solid var(--accent);padding-left:8px}
+  .nav a:hover{background:rgba(10,110,209,0.1);border-color:rgba(10,110,209,0.3)}
+  .nav a.active{background:rgba(10,110,209,0.15);border-left:4px solid var(--accent);padding-left:8px;font-weight:600}
   
-  /* Content containers */
+  /* Content containers with 90s card styling */
   .container {padding:18px;display:flex;flex-direction:column;gap:16px}
-  .card{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:12px;box-shadow:var(--shadow)}
+  .card{background:var(--card-bg);border:2px solid;border-color:#FFFFFF #505050 #505050 #FFFFFF;border-radius:2px;padding:12px;box-shadow:inset 1px 1px 0 rgba(255,255,255,0.5), inset -1px -1px 0 rgba(0,0,0,0.2);transition:all 0.2s ease}
+  .card:hover{box-shadow:inset 1px 1px 0 rgba(255,255,255,0.6), inset -1px -1px 0 rgba(0,0,0,0.3)}
   .kpi-row{display:flex;gap:12px;flex-wrap:wrap}
-  .kpi{flex:1;min-width:160px;padding:12px;border-radius:8px;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.02))}
+  .kpi{flex:1;min-width:160px;padding:12px;border-radius:2px;background:linear-gradient(180deg, rgba(255,255,255,0.5), rgba(0,0,0,0.03));border:2px solid;border-color:#FFFFFF #808080 #808080 #FFFFFF;box-shadow:inset 1px 1px 0 rgba(255,255,255,0.8), inset -1px -1px 0 rgba(0,0,0,0.2)}
   .kpi .label{font-size:13px;color:var(--muted)}
   .kpi .value{font-size:22px;font-weight:800;margin-top:6px}
   
-  /* Table */
-  .table{width:100%;border-collapse:collapse;font-size:14px}
-  .table th,.table td{padding:10px;text-align:left;border-bottom:1px solid var(--border)}
-  .table th{font-weight:700;background:transparent;color:var(--muted)}
+  /* Table with 90s styling */
+  .table{width:100%;border-collapse:collapse;font-size:14px;border:2px solid;border-color:#FFFFFF #808080 #808080 #FFFFFF}
+  .table th{padding:10px;text-align:left;font-weight:700;background:linear-gradient(90deg, #000080 0%, #1084d7 100%);color:#FFFFFF;text-shadow:1px 1px 0 rgba(0,0,0,0.5);border-bottom:2px solid #7A8BA8}
+  .table td{padding:10px;text-align:left;border-bottom:1px solid var(--border)}
+  .table tbody tr:nth-child(even){background:rgba(0,0,0,0.02)}
   
   /* Small responsive adjustments */
   @media (max-width:900px){

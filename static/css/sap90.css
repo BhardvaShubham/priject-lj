@@ -17,15 +17,58 @@ body {
     background: #DFDFDF;
 }
 
-/* ----------- Sidebar (SAP tree) ----------- */
+/* ----------- Sidebar (SAP tree with 90s bevels) ----------- */
 .app-sidebar {
     width: 260px;
-    background: #ECECEC;
-    border-right: 1px solid #A0A0A0;
+    background: linear-gradient(90deg, #ECECEC 0%, #E3E3E3 100%);
+    border-right: 2px solid;
+    border-color: #FFFFFF #808080 #808080 #FFFFFF;
     display: flex;
     flex-direction: column;
     padding: 8px;
     flex-shrink: 0;
+    box-shadow: inset 1px 0 0 rgba(255,255,255,0.8), 0 0 0 rgba(0,0,0,0.2);
+    transition: width 0.3s ease, padding 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.app-sidebar.collapsed {
+    width: 60px;
+    padding: 8px 4px;
+}
+
+.sidebar-toggle {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: linear-gradient(135deg, #DFECF9 0%, #D7DFEF 100%);
+    border: 2px solid;
+    border-color: #DFEFFF #7A8BA8 #7A8BA8 #DFEFFF;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    box-shadow: inset 1px 1px 0 rgba(255,255,255,0.8), inset -1px -1px 0 rgba(0,0,0,0.3);
+    transition: all 0.15s ease;
+    font-size: 12px;
+    font-weight: bold;
+    color: #003366;
+}
+
+.sidebar-toggle:hover {
+    background: linear-gradient(135deg, #E8F2FF 0%, #DFE8F5 100%);
+    border-color: #D0DFF0 #5B6A80 #5B6A80 #D0DFF0;
+}
+
+.sidebar-toggle:active {
+    border-color: #7A8BA8 #DFEFFF #DFEFFF #7A8BA8;
+    box-shadow: inset -1px -1px 0 rgba(255,255,255,0.8), inset 1px 1px 0 rgba(0,0,0,0.3);
+    transform: translateY(1px);
 }
 
 .brand {
@@ -33,6 +76,11 @@ body {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    transition: all 0.3s ease;
+}
+
+.app-sidebar.collapsed .brand {
+    align-items: center;
 }
 
 .brand img.logo-img {
@@ -40,12 +88,26 @@ body {
     height: auto;
     display: block;
     margin-bottom: 8px;
+    transition: all 0.3s ease;
+}
+
+.app-sidebar.collapsed .brand img.logo-img {
+    width: 40px;
+    height: auto;
+    margin-bottom: 4px;
 }
 
 .logo {
     font-weight: bold;
     font-size: 24px;
     color: #004080;
+    transition: opacity 0.3s ease;
+}
+
+.app-sidebar.collapsed .logo {
+    font-size: 12px;
+    opacity: 0;
+    visibility: hidden;
 }
 
 .title {
@@ -53,12 +115,25 @@ body {
     font-weight: bold;
     color: #003366;
     line-height: 1.4;
+    transition: opacity 0.3s ease;
+}
+
+.app-sidebar.collapsed .title {
+    opacity: 0;
+    visibility: hidden;
+    font-size: 10px;
 }
 
 .brand .muted {
     font-size: 11px;
     color: #666;
     margin-top: 2px;
+    transition: opacity 0.3s ease;
+}
+
+.app-sidebar.collapsed .brand .muted {
+    opacity: 0;
+    visibility: hidden;
 }
 
 /* Sidebar navigation with icons */
@@ -66,6 +141,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    transition: all 0.3s ease;
 }
 
 .nav a {
@@ -79,30 +155,77 @@ body {
     font-size: 14px;
     border-radius: 3px;
     transition: all 0.2s ease;
+    white-space: nowrap;
+    position: relative;
 }
 
 .nav a img {
     width: 16px;
     height: 16px;
     flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.nav a span {
+    transition: opacity 0.3s ease;
+    display: inline;
+}
+
+.app-sidebar.collapsed .nav a {
+    padding: 8px 6px;
+    justify-content: center;
+    gap: 0;
+}
+
+.app-sidebar.collapsed .nav a span {
+    opacity: 0;
+    visibility: hidden;
+    width: 0;
+    display: none;
+}
+
+.app-sidebar.collapsed .nav a:hover {
+    position: relative;
+}
+
+.app-sidebar.collapsed .nav a:hover::after {
+    content: attr(data-label);
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 51, 102, 0.95);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 2px;
+    font-size: 12px;
+    white-space: nowrap;
+    margin-left: 8px;
+    pointer-events: none;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.3);
 }
 
 .nav a.active {
     background: #D0D8E8;
     border: 1px solid #8BA2C0;
     font-weight: 600;
+    box-shadow: inset 1px 1px 0 rgba(255,255,255,0.8), inset -1px -1px 0 rgba(0,0,0,0.2);
 }
 
-/* ----------- Top Header (SAP gradient) ----------- */
+/* ----------- Top Header (90s gradient bar) ----------- */
 .app-header {
-    background: linear-gradient(#DDE7F2, #C8D4E2);
+    background: linear-gradient(90deg, #000080 0%, #1084d7 100%);
     padding: 10px 14px;
-    border-bottom: 1px solid #8FA7C2;
+    border-bottom: 2px solid;
+    border-color: #DFDFDF #7A8BA8 #7A8BA8 #DFDFDF;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 16px;
     flex-shrink: 0;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 4px 8px rgba(0,0,0,0.2);
 }
 
 .app-header .brand {
@@ -121,8 +244,9 @@ body {
 .hdr-title {
     font-size: 16px;
     font-weight: bold;
-    color: #003366;
+    color: #FFFFFF;
     line-height: 1.3;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
 }
 
 .sap-badge {
@@ -161,24 +285,29 @@ body {
     flex: 1;
 }
 
-/* ----------- Cards (SAP panels) ----------- */
+/* ----------- Cards (SAP panels with 90s beveled borders) ----------- */
 .card {
-    background: #EFEFEF;
-    border: 1px solid #A0A0A0;
+    background: linear-gradient(180deg, #F7F7F7 0%, #EFEFEF 100%);
+    border: 2px solid;
+    border-color: #DFDFDF #808080 #808080 #DFDFDF;
     padding: 6px;
     margin-bottom: 10px;
+    box-shadow: inset 1px 1px 0 rgba(255,255,255,0.8), inset -1px -1px 0 rgba(0,0,0,0.3);
 }
 
 .card-title {
     font-size: 13px;
     font-weight: bold;
-    color: #002244;
-    border-bottom: 1px solid #A0A0A0;
-    margin-bottom: 10px;
-    padding-bottom: 6px;
+    color: #ffffff;
+    background: linear-gradient(90deg, #000080 0%, #1084d7 100%);
+    border-bottom: 2px solid;
+    border-color: #DFDFDF #7A8BA8 #7A8BA8 #DFDFDF;
+    margin: -6px -6px 10px -6px;
+    padding: 6px 8px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
 }
 
 /* ----------- KPI Row ----------- */
@@ -190,7 +319,17 @@ body {
 
 .kpi {
     flex: 1;
-    background: #F5F5F5;
+    background: linear-gradient(180deg, #F5F5F5 0%, #EEEEEE 50%, #E5E5E5 100%);
+    border: 2px solid;
+    border-color: #FFFFFF #808080 #808080 #FFFFFF;
+    padding: 10px;
+    box-shadow: inset 1px 1px 0 rgba(255,255,255,0.8), inset -1px -1px 0 rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+}
+
+.kpi:hover {
+    background: linear-gradient(180deg, #FAFAFA 0%, #F3F3F3 50%, #EBEBEB 100%);
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.8), inset -2px -2px 0 rgba(0,0,0,0.3);
 }
 
 .kpi .label {
@@ -204,16 +343,19 @@ body {
     color: #003366;
 }
 
-/* ----------- Table (SAP style) ----------- */
+/* ----------- Table (SAP style with 90s header) ----------- */
 .table {
     width: 100%;
     border-collapse: collapse;
     font-size: 13px;
+    border: 2px solid;
+    border-color: #FFFFFF #808080 #808080 #FFFFFF;
 }
 
 .table thead {
-    background: #D0D0D0;
-    border-bottom: 2px solid #A0A0A0;
+    background: linear-gradient(90deg, #000080 0%, #1084d7 100%);
+    border-bottom: 2px solid #7A8BA8;
+    color: #FFFFFF;
 }
 
 .table thead th {
@@ -221,6 +363,7 @@ body {
     text-align: left;
     font-weight: 700;
     vertical-align: middle;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
 }
 
 .table tbody td {
@@ -230,14 +373,19 @@ body {
 }
 
 .table tbody tr:nth-child(even) {
-    background: #F3F3F3;
+    background: linear-gradient(90deg, #F3F3F3 0%, #EFEFEF 100%);
 }
 
-/* ----------- Buttons ----------- */
+.table tbody tr:nth-child(odd) {
+    background: #FFFFFF;
+}
+
+/* ----------- Buttons (90s Beveled Style) ----------- */
 .btn {
     padding: 6px 12px;
-    background: #D7DFEF;
-    border: 1px solid #7A8BA8;
+    background: linear-gradient(135deg, #DFECF9 0%, #D7DFEF 50%, #B8CDE8 100%);
+    border: 2px solid;
+    border-color: #DFEFFF #7A8BA8 #7A8BA8 #DFEFFF;
     cursor: pointer;
     font-size: 13px;
     font-family: Tahoma, Arial, sans-serif;
@@ -245,14 +393,22 @@ body {
     align-items: center;
     justify-content: center;
     gap: 6px;
-    border-radius: 3px;
-    transition: all 0.2s ease;
+    border-radius: 2px;
+    transition: all 0.15s ease;
     white-space: nowrap;
+    box-shadow: inset 1px 1px 0 rgba(255,255,255,0.8), inset -1px -1px 0 rgba(0,0,0,0.3);
+    position: relative;
 }
 
 .btn:hover {
-    background: #C3D0E5;
-    border-color: #6B7A9A;
+    background: linear-gradient(135deg, #E8F2FF 0%, #DFE8F5 50%, #C0D8F0 100%);
+    border-color: #D0DFF0 #5B6A80 #5B6A80 #D0DFF0;
+}
+
+.btn:active {
+    border-color: #7A8BA8 #DFEFFF #DFEFFF #7A8BA8;
+    box-shadow: inset -1px -1px 0 rgba(255,255,255,0.8), inset 1px 1px 0 rgba(0,0,0,0.3);
+    transform: translateY(1px);
 }
 
 .btn img {
@@ -261,22 +417,24 @@ body {
     flex-shrink: 0;
 }
 
-/* ----------- Inputs & Labels ----------- */
+/* ----------- Inputs & Labels (90s Inset Style) ----------- */
 .input {
     padding: 6px 8px;
-    border: 1px solid #A0A0A0;
+    border: 2px solid;
+    border-color: #7A8BA8 #FFFFFF #FFFFFF #7A8BA8;
     background: #FFFFFF;
     font-size: 13px;
     font-family: Tahoma, Arial, sans-serif;
     width: 100%;
     box-sizing: border-box;
     transition: border-color 0.2s ease;
+    box-shadow: inset 1px 1px 0 rgba(0,0,0,0.5), inset -1px -1px 0 rgba(255,255,255,0.5);
 }
 
 .input:focus {
     outline: none;
-    border-color: #003366;
-    box-shadow: 0 0 0 2px rgba(0, 51, 102, 0.1);
+    border-color: #003366 #7A8BA8 #7A8BA8 #003366;
+    box-shadow: inset 1px 1px 0 rgba(0,0,0,0.5), inset -1px -1px 0 rgba(255,255,255,0.5), 0 0 0 3px rgba(0, 51, 102, 0.2);
 }
 
 .label {
@@ -306,29 +464,38 @@ body {
 }
 
 /* =======================================================
-      SAP TAB STRIP (for Machine Details)
+      SAP TAB STRIP (for Machine Details with 90s style)
 ======================================================= */
 
 .tab-strip {
     display: flex;
-    border-bottom: 1px solid #7A8BA8;
+    border-bottom: 2px solid #7A8BA8;
     margin-bottom: 8px;
+    background: linear-gradient(90deg, #E3E3E3 0%, #DADADA 100%);
 }
 
 .tab-btn {
-    padding: 4px 10px;
-    background: #E2E2E2;
-    border: 1px solid #7A8BA8;
+    padding: 6px 14px;
+    background: linear-gradient(180deg, #E8E8E8 0%, #DFDFDF 100%);
+    border: 2px solid;
+    border-color: #DFDFFF #7A8BA8 #7A8BA8 #DFDFFF;
     border-bottom: none;
     cursor: pointer;
     font-size: 13px;
     margin-right: 2px;
+    transition: all 0.15s ease;
+    box-shadow: inset 1px 1px 0 rgba(255,255,255,0.8), inset -1px 0 0 rgba(0,0,0,0.2);
+}
+
+.tab-btn:hover {
+    background: linear-gradient(180deg, #F0F0F0 0%, #E8E8E8 100%);
 }
 
 .tab-btn.active {
     background: #FFFFFF;
-    border-bottom: 1px solid #FFFFFF;
+    border-bottom: 2px solid #FFFFFF;
     font-weight: bold;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
 }
 
 .tab-content {
@@ -358,36 +525,47 @@ body {
   .modal.hidden { display: none; }
   
   .modal-box {
-    background: #ECECEC;
-    border: 1px solid #808080;
+    background: linear-gradient(180deg, #ECECEC 0%, #DFDFDF 100%);
+    border: 2px solid;
+    border-color: #DFDFDF #808080 #808080 #DFDFDF;
     width: 400px;
     max-width: 90vw;
-    padding: 16px;
-    border-radius: 4px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 6px;
+    border-radius: 2px;
+    box-shadow: inset 1px 1px 0 rgba(255,255,255,0.8), inset -1px -1px 0 rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.25);
   }
-  
+
   .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #A0A0A0;
+    margin-bottom: 0px;
+    padding: 4px 6px;
+    background: linear-gradient(90deg, #000080 0%, #1084d7 100%);
+    color: #FFFFFF;
+    margin: -6px -6px 12px -6px;
+    font-weight: bold;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+    border-bottom: 2px solid;
+    border-color: #DFDFDF #7A8BA8 #7A8BA8 #DFDFDF;
   }
 
   .modal-body {
-    margin: 12px 0;
+    margin: 12px;
+    padding: 0;
   }
-  
+
   .modal-body .input {
     width: 100%;
     margin-bottom: 10px;
     padding: 6px 8px;
-    border: 1px solid #A0A0A0;
+    border: 2px solid;
+    border-color: #7A8BA8 #FFFFFF #FFFFFF #7A8BA8;
     font-size: 13px;
     font-family: Tahoma, Arial, sans-serif;
     box-sizing: border-box;
+    background: #FFFFFF;
+    box-shadow: inset 1px 1px 0 rgba(0,0,0,0.5), inset -1px -1px 0 rgba(255,255,255,0.5);
   }
 
   .modal-body .label {
@@ -395,7 +573,7 @@ body {
     font-size: 12px;
     font-weight: 600;
     color: #002244;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
@@ -405,8 +583,12 @@ body {
     justify-content: flex-end;
     gap: 8px;
     margin-top: 12px;
+    margin-left: 12px;
+    margin-right: 12px;
+    margin-bottom: 12px;
     padding-top: 12px;
-    border-top: 1px solid #A0A0A0;
+    border-top: 2px solid;
+    border-color: #DFDFDF #808080 #808080 #DFDFDF;
   }
   .btn img {
     filter: grayscale(100%);

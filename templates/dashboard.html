@@ -17,28 +17,69 @@
   <!-- Chart Synchronization System -->
   <script src="/static/js/chart-sync.js" defer></script>
 
-  <!-- Minimal inline shell CSS (safe, no reflow) -->
-  <style>
-    .app-shell {
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
-      background: #DFDFDF;
-    }
+<style>
+  /* Modal styles */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+  }
 
-    .app-sidebar {
-      width: 260px;
-      background: #ECECEC;
-      padding: 6px;
-      border-right: 1px solid #A0A0A0;
-      flex-shrink: 0;
-    }
+  .modal.hidden {
+    display: none;
+  }
 
-    .app-main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
+  .modal:not(.hidden) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 0;
+    border: 1px solid #888;
+    width: 90%;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  }
+
+  .modal-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    font-size: 16px;
+  }
+
+  .modal-body {
+    padding: 16px;
+  }
+
+  .btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    color: #666;
+  }
+
+  .btn-icon:hover {
+    color: #000;
+  }
+</style>
 
    
 
@@ -792,26 +833,46 @@
       const alerts = await response.json();
       const alertsList = document.getElementById('alertsList');
 
+      if (!alertsList) {
+        console.warn('[DASHBOARD] alertsList element not found');
+        return;
+      }
+
       if (!Array.isArray(alerts) || alerts.length === 0) {
         alertsList.innerHTML = '<div class="muted small">No active alerts</div>';
         return;
       }
 
-      alertsList.innerHTML = alerts.slice(0, 10).map(alert => `
-        <div style="padding: 8px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <strong>${alert.machine_id ? 'Machine ' + alert.machine_id : 'System'}</strong>
-            <div class="muted small" style="margin-top: 2px;">
-              <strong style="color: ${alert.severity === 'critical' ? '#cc0000' : alert.severity === 'warning' ? '#ff9900' : '#0066cc'};">${alert.severity || 'info'}</strong> - ${alert.message || 'No message'}
+      alertsList.innerHTML = alerts.slice(0, 10).map(alert => {
+        const alertId = alert.id || 0;
+        const machineId = alert.machine_id || 'System';
+        const messageSafe = (alert.message || '').replace(/'/g, "\\'").replace(/"/g, '\\"');
+        const severity = alert.severity || 'info';
+        const severityColor =
+          severity === 'critical' ? '#cc0000' :
+          severity === 'warning' ? '#ff9900' :
+          '#0066cc';
+        const timestamp = alert.raised_at ? new Date(alert.raised_at).toLocaleString() : 'Unknown';
+
+        return `
+          <div style="padding: 8px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong>Machine ${machineId}</strong>
+              <div class="muted small" style="margin-top: 2px;">
+                <strong style="color: ${severityColor};">${severity}</strong> - ${alert.message || 'No message'}
+              </div>
+              <div class="muted tiny" style="margin-top: 4px;">${timestamp}</div>
             </div>
-            <div class="muted tiny" style="margin-top: 4px;">${new Date(alert.raised_at).toLocaleString()}</div>
+            <button class="btn" onclick="showAcknowledgeModal(${alertId}, '${machineId}', '${messageSafe}', '${severity}')" style="margin-left: 8px;">Acknowledge</button>
           </div>
-          <button class="btn" onclick="showAcknowledgeModal(${alert.id}, '${alert.machine_id || 'system'}', '${alert.message}', '${alert.severity}')" style="margin-left: 8px;">Acknowledge</button>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     } catch (e) {
-      console.error('Error loading alerts:', e);
-      document.getElementById('alertsList').innerHTML = '<div class="muted small">Error loading alerts</div>';
+      console.error('[DASHBOARD] Error loading alerts:', e);
+      const alertsList = document.getElementById('alertsList');
+      if (alertsList) {
+        alertsList.innerHTML = '<div class="muted small">Error loading alerts</div>';
+      }
     }
   }
 
@@ -830,9 +891,14 @@
 
   // Acknowledge alert
   async function acknowledgeAlert() {
-    if (!window.currentAlertId) return;
+    if (!window.currentAlertId) {
+      console.warn('[DASHBOARD] No alert ID set');
+      return;
+    }
 
-    const comment = document.getElementById('alertComment').value;
+    const commentElem = document.getElementById('alertComment');
+    const comment = commentElem ? commentElem.value : '';
+
     try {
       const response = await fetch(`/api/alerts/${window.currentAlertId}/ack`, {
         method: 'POST',
@@ -842,13 +908,20 @@
 
       if (response.ok) {
         alert('Alert acknowledged successfully');
-        document.getElementById('acknowledgeAlertModal').classList.add('hidden');
+        const modal = document.getElementById('acknowledgeAlertModal');
+        if (modal) modal.classList.add('hidden');
+
+        // Clear the comment
+        if (commentElem) commentElem.value = '';
+
+        // Reload alerts list
         loadAlerts();
       } else {
-        alert('Error acknowledging alert');
+        const error = await response.json();
+        alert('Error acknowledging alert: ' + (error.error || 'Unknown error'));
       }
     } catch (e) {
-      console.error('Error:', e);
+      console.error('[DASHBOARD] Error acknowledging:', e);
       alert('Error acknowledging alert: ' + e.message);
     }
   }
@@ -877,14 +950,25 @@
 
   // Create maintenance task
   async function createMaintenanceTask() {
-    const machineId = document.getElementById('maintMachineId').value;
-    const description = document.getElementById('maintDescription').value;
-    const priority = document.getElementById('maintPriority').value;
-    const scheduledDate = document.getElementById('maintScheduledDate').value;
-    const technician = document.getElementById('maintTechnician').value;
+    const machineIdElem = document.getElementById('maintMachineId');
+    const descriptionElem = document.getElementById('maintDescription');
+    const priorityElem = document.getElementById('maintPriority');
+    const scheduledDateElem = document.getElementById('maintScheduledDate');
+    const technicianElem = document.getElementById('maintTechnician');
+
+    if (!machineIdElem || !descriptionElem) {
+      alert('Form elements not found. Please reload the page.');
+      return;
+    }
+
+    const machineId = machineIdElem.value;
+    const description = descriptionElem.value;
+    const priority = priorityElem?.value || 'medium';
+    const scheduledDate = scheduledDateElem?.value;
+    const technician = technicianElem?.value;
 
     if (!machineId || !description) {
-      alert('Please fill in all required fields');
+      alert('Please fill in Machine and Description fields');
       return;
     }
 
@@ -902,17 +986,23 @@
       });
 
       if (response.ok) {
-        alert('Maintenance task created successfully');
-        document.getElementById('createMaintenanceModal').classList.add('hidden');
-        document.getElementById('maintDescription').value = '';
-        document.getElementById('maintTechnician').value = '';
-        document.getElementById('maintScheduledDate').value = '';
+        alert('Maintenance task created successfully!');
+        const modal = document.getElementById('createMaintenanceModal');
+        if (modal) modal.classList.add('hidden');
+
+        // Clear form
+        if (descriptionElem) descriptionElem.value = '';
+        if (technicianElem) technicianElem.value = '';
+        if (scheduledDateElem) scheduledDateElem.value = '';
+
+        // Reload machines list
+        loadMachinesForMaintenance();
       } else {
         const error = await response.json();
         alert('Error creating task: ' + (error.error || 'Unknown error'));
       }
     } catch (e) {
-      console.error('Error:', e);
+      console.error('[DASHBOARD] Maintenance task error:', e);
       alert('Error creating task: ' + e.message);
     }
   }
@@ -1152,55 +1242,75 @@
 
   // Initialize CSV upload and Dataset Manager
   document.addEventListener('DOMContentLoaded', async () => {
+    console.log('[DASHBOARD] Initializing dashboard...');
+
     // Load enhanced widgets
-    loadDashboardWidgets();
-    setInterval(loadDashboardWidgets, 60000); // Refresh every minute
+    try {
+      loadDashboardWidgets();
+      setInterval(loadDashboardWidgets, 60000); // Refresh every minute
+    } catch (e) { console.error('[DASHBOARD] Widget loading error:', e); }
 
     // Load machine status breakdown
-    loadMachineStatusBreakdown();
-    setInterval(loadMachineStatusBreakdown, 60000);
+    try {
+      loadMachineStatusBreakdown();
+      setInterval(loadMachineStatusBreakdown, 60000);
+    } catch (e) { console.error('[DASHBOARD] Status breakdown error:', e); }
 
     // Load alerts
-    loadAlerts();
-    setInterval(loadAlerts, 30000); // Refresh every 30 seconds
+    try {
+      loadAlerts();
+      setInterval(loadAlerts, 30000); // Refresh every 30 seconds
+    } catch (e) { console.error('[DASHBOARD] Alerts loading error:', e); }
 
     // Load machines for maintenance modal
-    loadMachinesForMaintenance();
+    try {
+      loadMachinesForMaintenance();
+    } catch (e) { console.error('[DASHBOARD] Machines loading error:', e); }
 
     // Create performance trend chart
-    createPerformanceTrendChart();
-    setInterval(createPerformanceTrendChart, 120000); // Refresh every 2 minutes
+    try {
+      createPerformanceTrendChart();
+      setInterval(createPerformanceTrendChart, 120000); // Refresh every 2 minutes
+    } catch (e) { console.error('[DASHBOARD] Performance trend error:', e); }
 
     // Create status distribution chart
-    createStatusDistributionChart();
-    setInterval(createStatusDistributionChart, 120000); // Refresh every 2 minutes
+    try {
+      createStatusDistributionChart();
+      setInterval(createStatusDistributionChart, 120000); // Refresh every 2 minutes
+    } catch (e) { console.error('[DASHBOARD] Status distribution error:', e); }
 
     // Create performance matrix chart
-    createPerformanceMatrix();
-    setInterval(createPerformanceMatrix, 120000); // Refresh every 2 minutes
+    try {
+      createPerformanceMatrix();
+      setInterval(createPerformanceMatrix, 120000); // Refresh every 2 minutes
+    } catch (e) { console.error('[DASHBOARD] Performance matrix error:', e); }
 
     // Listen for visualization events to reload data
     window.addEventListener('viz:data-generated', () => {
-      loadDashboardWidgets();
-      loadMachineStatusBreakdown();
-      loadAlerts();
-      createPerformanceTrendChart();
-      createStatusDistributionChart();
-      createPerformanceMatrix();
+      console.log('[DASHBOARD] Data generated event received, refreshing...');
+      try { loadDashboardWidgets(); } catch (e) {}
+      try { loadMachineStatusBreakdown(); } catch (e) {}
+      try { loadAlerts(); } catch (e) {}
+      try { createPerformanceTrendChart(); } catch (e) {}
+      try { createStatusDistributionChart(); } catch (e) {}
+      try { createPerformanceMatrix(); } catch (e) {}
     });
 
     window.addEventListener('viz:data-cleared', () => {
-      loadDashboardWidgets();
-      loadMachineStatusBreakdown();
-      loadAlerts();
-      createPerformanceTrendChart();
-      createStatusDistributionChart();
-      createPerformanceMatrix();
+      console.log('[DASHBOARD] Data cleared event received, refreshing...');
+      try { loadDashboardWidgets(); } catch (e) {}
+      try { loadMachineStatusBreakdown(); } catch (e) {}
+      try { loadAlerts(); } catch (e) {}
+      try { createPerformanceTrendChart(); } catch (e) {}
+      try { createStatusDistributionChart(); } catch (e) {}
+      try { createPerformanceMatrix(); } catch (e) {}
     });
 
     // Initialize IndexedDB
     if (window.IMCSCSV) {
-      await window.IMCSCSV.initDB();
+      try {
+        await window.IMCSCSV.initDB();
+      } catch (e) { console.error('[DASHBOARD] IndexedDB error:', e); }
     }
 
     // Dataset Manager UI
@@ -1210,25 +1320,27 @@
       datasetManagerBtn.addEventListener('click', () => {
         datasetManagerPanel.style.display = datasetManagerPanel.style.display === 'none' ? 'block' : 'none';
         if (window.DatasetManager) {
-          window.DatasetManager.loadAvailableDatasets();
+          try {
+            window.DatasetManager.loadAvailableDatasets();
+          } catch (e) { console.error('[DASHBOARD] Dataset manager error:', e); }
         }
       });
     }
 
     // Maintenance Task Button
-    const createMaintenanceBtn = document.querySelector('[onclick*="createMaintenanceModal"]') ||
-                                  Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('Create Task')) ||
-                                  document.createElement('button');
-
-    // Add create maintenance button to header if it doesn't exist
-    const headerBtnGroup = document.querySelector('.btn-group');
-    if (headerBtnGroup && !Array.from(headerBtnGroup.querySelectorAll('button')).some(b => b.textContent.includes('Create Task'))) {
-      const createBtn = document.createElement('button');
-      createBtn.className = 'btn';
-      createBtn.innerHTML = '<img src="/static/icons/add-machine.svg" width="16" height="16" alt=""> Create Maintenance';
-      createBtn.onclick = () => document.getElementById('createMaintenanceModal').classList.remove('hidden');
-      headerBtnGroup.appendChild(createBtn);
-    }
+    try {
+      const headerBtnGroup = document.querySelector('.btn-group');
+      if (headerBtnGroup && !Array.from(headerBtnGroup.querySelectorAll('button')).some(b => b.textContent.includes('Create Task'))) {
+        const createBtn = document.createElement('button');
+        createBtn.className = 'btn';
+        createBtn.innerHTML = '<img src="/static/icons/add-machine.svg" width="16" height="16" alt=""> Create Maintenance';
+        createBtn.onclick = () => {
+          const modal = document.getElementById('createMaintenanceModal');
+          if (modal) modal.classList.remove('hidden');
+        };
+        headerBtnGroup.appendChild(createBtn);
+      }
+    } catch (e) { console.error('[DASHBOARD] Maintenance button error:', e); }
 
     // Demo Data Generation
     const demoDataBtn = document.getElementById('demoDataBtn');

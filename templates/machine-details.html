@@ -820,6 +820,7 @@
 
   <!-- SIDEBAR -->
   <aside class="app-sidebar">
+    <button class="sidebar-toggle" title="Collapse sidebar">◀</button>
     <div class="brand">
       <img src="/static/icons/logo-imcs.svg" alt="IMCS Logo" class="logo-img"/>
       <div class="title">Industrial Hub</div>
@@ -827,12 +828,45 @@
     </div>
 
     <nav class="nav">
-      <a href="/dashboard"><img src="/static/icons/home.svg" width="16" height="16" alt=""> Overview</a>
-      <a href="/machinery" class="active"><img src="/static/icons/machine.svg" width="16" height="16" alt=""> Machinery</a>
-      <a href="/maintenance"><img src="/static/icons/wrench.svg" width="16" height="16" alt=""> Maintenance</a>
-      <a href="/alerts"><img src="/static/icons/alert.svg" width="16" height="16" alt=""> Alerts</a>
-      <a href="/reports"><img src="/static/icons/chart.svg" width="16" height="16" alt=""> Reports</a>
+      <div class="nav-section">
+        <div class="nav-section-header" data-section="main">
+          <span class="nav-section-chevron">▼</span>
+          <span class="nav-section-title">Main</span>
+        </div>
+        <div class="nav-section-items">
+          <a href="/dashboard" class="nav-item" data-label="Dashboard"><img src="/static/icons/home.svg" width="16" height="16" alt=""/> <span>Dashboard</span></a>
+          <a href="/machinery" class="nav-item active" data-label="Machinery"><img src="/static/icons/machine.svg" width="16" height="16" alt=""/> <span>Machinery</span></a>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-header" data-section="operations">
+          <span class="nav-section-chevron">▼</span>
+          <span class="nav-section-title">Operations</span>
+        </div>
+        <div class="nav-section-items">
+          <a href="/maintenance" class="nav-item" data-label="Maintenance"><img src="/static/icons/wrench.svg" width="16" height="16" alt=""/> <span>Maintenance</span></a>
+          <a href="/alerts" class="nav-item" data-label="Alerts"><img src="/static/icons/alert.svg" width="16" height="16" alt=""/> <span>Alerts</span></a>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-header" data-section="reporting">
+          <span class="nav-section-chevron">▼</span>
+          <span class="nav-section-title">Reporting</span>
+        </div>
+        <div class="nav-section-items">
+          <a href="/reports" class="nav-item" data-label="Reports"><img src="/static/icons/chart.svg" width="16" height="16" alt=""/> <span>Reports</span></a>
+        </div>
+      </div>
     </nav>
+
+    <!-- Navigation Footer -->
+    <div class="nav-footer">
+      <a href="/logout" class="nav-footer-btn" title="Sign out">
+        <img src="/static/icons/alert.svg" width="14" height="14" alt=""> Sign Out
+      </a>
+    </div>
 
     <!-- <button id="themeCycleBtn" class="btn full">Theme</button> -->
   </aside>
@@ -846,6 +880,9 @@
           <div class="hdr-title" id="m_name">Machine</div>
           <div class="muted small" id="m_type">Loading…</div>
         </div>
+      </div>
+      <div class="btn-group">
+        <a href="/logout" class="btn" title="Logout"><img src="/static/icons/alert.svg" width="16" height="16" alt=""/> Logout</a>
       </div>
     </header>
 

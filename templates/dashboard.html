@@ -81,7 +81,7 @@
   }
 </style>
 
-   
+   <style>
 
     /* ===== CLS-SAFE CHART CONTAINER ===== */
     .chart-wrap {
@@ -102,28 +102,57 @@
     /* Enhanced chart containers */
     .charts-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-      gap: 12px;
-      margin-bottom: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+      width: 100%;
     }
 
     .chart-card {
       background: #EFEFEF;
       border: 1px solid #A0A0A0;
+      padding: 12px;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .card {
+      box-sizing: border-box;
+    }
+
+    .card-title {
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 12px;
+      color: #003366;
     }
 
     .chart-container {
       position: relative;
-      width: auto;
+      width: 100%;
       height: 280px;
       background: #F9F9F9;
       border: 1px solid #D5D5D5;
       padding: 8px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .chart-container canvas {
+      width: 100% !important;
+      height: 100% !important;
       max-width: 100%;
-      max-height: 100%;
+      max-height: calc(100% - 16px);
+      display: block;
+    }
+
+    .chart-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
     }
 
     .chart-fallback {
@@ -219,7 +248,7 @@
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.5; }
-    }
+    }</style>
   </style>
 </head>
 
@@ -1030,47 +1059,73 @@
 
       // Create chart
       const ctx = canvas.getContext('2d');
-      if (window.performanceChartInstance) {
-        window.performanceChartInstance.destroy();
+      if (!ctx) {
+        console.error('[DASHBOARD] Could not get canvas context for Performance Matrix');
+        return;
       }
 
-      window.performanceChartInstance = new Chart(ctx, {
-        type: 'bubble',
-        data: {
-          datasets: [{
-            label: 'Machine Efficiency (bubble size = running hours)',
-            data: machines.map((m, idx) => ({
-              x: m.efficiency || 0,
-              y: statusMap[(m.status || 'offline').toLowerCase()] || 1,
-              r: (m.efficiency || 0) / 10
-            })),
-            backgroundColor: colors,
-            borderColor: colors,
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: { display: true }
+      // Destroy existing chart instance if it exists
+      if (window.performanceMatrixChartInstance) {
+        window.performanceMatrixChartInstance.destroy();
+        window.performanceMatrixChartInstance = null;
+      }
+
+      try {
+        window.performanceMatrixChartInstance = new Chart(ctx, {
+          type: 'bubble',
+          data: {
+            datasets: [{
+              label: 'Machine Efficiency (bubble size = efficiency %)',
+              data: machines.map((m, idx) => ({
+                x: m.efficiency || 0,
+                y: statusMap[(m.status || 'offline').toLowerCase()] || 1,
+                r: Math.max(5, (m.efficiency || 0) / 5)
+              })),
+              backgroundColor: colors,
+              borderColor: colors,
+              borderWidth: 1
+            }]
           },
-          scales: {
-            x: {
-              title: { display: true, text: 'Efficiency %' },
-              min: 0,
-              max: 100
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: { display: true, position: 'top' },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return 'Efficiency: ' + context.raw.x + '%';
+                  }
+                }
+              }
             },
-            y: {
-              title: { display: true, text: 'Status (running=10, idle=5, maintenance=3, offline=1)' },
-              min: 0,
-              max: 12
+            scales: {
+              x: {
+                title: { display: true, text: 'Efficiency %', font: { weight: 'bold' } },
+                min: 0,
+                max: 100,
+                ticks: { stepSize: 20 }
+              },
+              y: {
+                title: { display: true, text: 'Status Level', font: { weight: 'bold' } },
+                min: 0,
+                max: 12,
+                ticks: {
+                  callback: function(value) {
+                    const statusLabels = { 1: 'Offline', 3: 'Maintenance', 5: 'Idle', 10: 'Running' };
+                    return statusLabels[value] || value;
+                  }
+                }
+              }
             }
           }
-        }
-      });
+        });
+        console.log('[DASHBOARD] Performance Matrix chart created successfully');
+      } catch (chartError) {
+        console.error('[DASHBOARD] Error creating Performance Matrix chart:', chartError);
+      }
     } catch (e) {
-      console.error('Error creating performance matrix:', e);
+      console.error('[DASHBOARD] Error in createPerformanceMatrix:', e);
     }
   }
 
@@ -1078,7 +1133,10 @@
   async function createPerformanceTrendChart() {
     try {
       const canvas = document.getElementById('performanceChart');
-      if (!canvas) return;
+      if (!canvas) {
+        console.warn('[DASHBOARD] Performance chart canvas not found');
+        return;
+      }
 
       let labels = [];
       let data = [];
@@ -1088,27 +1146,26 @@
         const response = await fetch('/api/chart-data/summary');
         const chartData = await response.json();
 
-        if (chartData && chartData.dates && chartData.values) {
+        // Handle both response formats
+        if (chartData && chartData.performance_trend && Array.isArray(chartData.performance_trend)) {
+          // New format: performance_trend array
+          labels = chartData.performance_trend.map(p => p.date);
+          data = chartData.performance_trend.map(p => p.efficiency);
+        } else if (chartData && chartData.dates && chartData.values) {
+          // Old format: dates and values arrays
           labels = chartData.dates;
           data = chartData.values;
         } else {
-          // Fallback: generate dates
-          const today = new Date();
-          for (let i = 6; i >= 0; i--) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-          }
-          // Generate trend data
-          let baseValue = 75;
-          for (let i = 0; i < 7; i++) {
-            baseValue += (Math.random() - 0.5) * 10;
-            data.push(Math.max(50, Math.min(100, baseValue)));
-          }
+          throw new Error('Unexpected response format');
         }
-      } catch (e) {
-        console.warn('[VIZ] Could not fetch chart data, using simulated data:', e);
-        // Generate dates
+
+        // Ensure we have data
+        if (!labels || labels.length === 0 || !data || data.length === 0) {
+          throw new Error('No data from API');
+        }
+      } catch (apiError) {
+        console.warn('[DASHBOARD] Could not fetch chart data from API, using simulated data:', apiError);
+        // Generate dates and simulated data
         const today = new Date();
         for (let i = 6; i >= 0; i--) {
           const date = new Date(today);
@@ -1124,47 +1181,86 @@
       }
 
       const ctx = canvas.getContext('2d');
-      if (window.performanceTrendChartInstance) {
-        window.performanceTrendChartInstance.destroy();
+      if (!ctx) {
+        console.error('[DASHBOARD] Could not get canvas context for Performance Trend');
+        return;
       }
 
-      window.performanceTrendChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Efficiency %',
-            data: data,
-            borderColor: '#0a6ed1',
-            backgroundColor: 'rgba(10, 110, 209, 0.1)',
-            borderWidth: 2,
-            fill: true,
-            tension: 0.4,
-            pointRadius: 4,
-            pointBackgroundColor: '#0a6ed1',
-            pointBorderColor: '#fff',
-            pointBorderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: { display: true }
+      // Destroy existing instance
+      if (window.performanceTrendChartInstance) {
+        try {
+          window.performanceTrendChartInstance.destroy();
+          window.performanceTrendChartInstance = null;
+        } catch (destroyError) {
+          console.warn('[DASHBOARD] Error destroying previous chart:', destroyError);
+        }
+      }
+
+      try {
+        window.performanceTrendChartInstance = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Efficiency %',
+              data: data,
+              borderColor: '#0a6ed1',
+              backgroundColor: 'rgba(10, 110, 209, 0.1)',
+              borderWidth: 2.5,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 5,
+              pointHoverRadius: 7,
+              pointBackgroundColor: '#0a6ed1',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2
+            }]
           },
-          scales: {
-            y: {
-              title: { display: true, text: 'Efficiency %' },
-              min: 0,
-              max: 100
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+                labels: { usePointStyle: true, padding: 15 }
+              },
+              tooltip: {
+                enabled: true,
+                mode: 'index',
+                intersect: false,
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 10,
+                borderRadius: 4
+              }
+            },
+            interaction: {
+              mode: 'nearest',
+              axis: 'x',
+              intersect: false
+            },
+            scales: {
+              x: {
+                title: { display: true, text: 'Date', font: { weight: 'bold', size: 12 } },
+                grid: { display: false }
+              },
+              y: {
+                title: { display: true, text: 'Efficiency %', font: { weight: 'bold', size: 12 } },
+                min: 0,
+                max: 100,
+                ticks: { stepSize: 20 },
+                grid: { color: 'rgba(0, 0, 0, 0.05)' }
+              }
             }
           }
-        }
-      });
+        });
 
-      console.log('[VIZ] Performance trend chart created');
+        console.log('[DASHBOARD] Performance trend chart created successfully with', labels.length, 'data points');
+      } catch (chartError) {
+        console.error('[DASHBOARD] Error creating Performance Trend chart:', chartError);
+      }
     } catch (e) {
-      console.error('Error creating performance trend chart:', e);
+      console.error('[DASHBOARD] Error in createPerformanceTrendChart:', e);
     }
   }
 
@@ -1172,71 +1268,119 @@
   async function createStatusDistributionChart() {
     try {
       const canvas = document.getElementById('statusChart');
-      if (!canvas) return;
-
-      // Fetch machines to count statuses
-      const machinesResp = await fetch('/api/machines');
-      const machines = await machinesResp.json();
-
-      if (!Array.isArray(machines)) return;
-
-      // Count statuses
-      const statusCounts = {
-        running: 0,
-        idle: 0,
-        maintenance: 0,
-        offline: 0
-      };
-
-      machines.forEach(m => {
-        const status = (m.status || 'offline').toLowerCase();
-        if (status.includes('run')) statusCounts.running++;
-        else if (status.includes('idle')) statusCounts.idle++;
-        else if (status.includes('maint')) statusCounts.maintenance++;
-        else statusCounts.offline++;
-      });
-
-      const ctx = canvas.getContext('2d');
-      if (window.statusDistributionChartInstance) {
-        window.statusDistributionChartInstance.destroy();
+      if (!canvas) {
+        console.warn('[DASHBOARD] Status chart canvas not found');
+        return;
       }
 
-      window.statusDistributionChartInstance = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: ['Running', 'Idle', 'Maintenance', 'Offline'],
-          datasets: [{
-            data: [
-              statusCounts.running,
-              statusCounts.idle,
-              statusCounts.maintenance,
-              statusCounts.offline
-            ],
-            backgroundColor: [
-              '#107e3e', // Running - Green
-              '#0066cc', // Idle - Blue
-              '#ff9900', // Maintenance - Orange
-              '#cc0000'  // Offline - Red
-            ],
-            borderColor: '#fff',
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: {
-              display: true,
-              position: 'bottom'
-            }
+      // Fetch machines to count statuses
+      try {
+        const machinesResp = await fetch('/api/machines');
+        if (!machinesResp.ok) throw new Error('Failed to fetch machines');
+
+        const machines = await machinesResp.json();
+
+        if (!Array.isArray(machines) || machines.length === 0) {
+          console.warn('[DASHBOARD] No machines data for status chart');
+          return;
+        }
+
+        // Count statuses
+        const statusCounts = {
+          running: 0,
+          idle: 0,
+          maintenance: 0,
+          offline: 0
+        };
+
+        machines.forEach(m => {
+          const status = (m.status || 'offline').toLowerCase();
+          if (status.includes('run')) statusCounts.running++;
+          else if (status.includes('idle')) statusCounts.idle++;
+          else if (status.includes('maint')) statusCounts.maintenance++;
+          else statusCounts.offline++;
+        });
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          console.error('[DASHBOARD] Could not get canvas context for Status Distribution');
+          return;
+        }
+
+        // Destroy existing instance
+        if (window.statusDistributionChartInstance) {
+          try {
+            window.statusDistributionChartInstance.destroy();
+            window.statusDistributionChartInstance = null;
+          } catch (destroyError) {
+            console.warn('[DASHBOARD] Error destroying previous status chart:', destroyError);
           }
         }
-      });
 
-      console.log('[VIZ] Status distribution chart created');
+        try {
+          window.statusDistributionChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+              labels: ['Running', 'Idle', 'Maintenance', 'Offline'],
+              datasets: [{
+                data: [
+                  statusCounts.running,
+                  statusCounts.idle,
+                  statusCounts.maintenance,
+                  statusCounts.offline
+                ],
+                backgroundColor: [
+                  '#107e3e', // Running - Green
+                  '#0066cc', // Idle - Blue
+                  '#ff9900', // Maintenance - Orange
+                  '#cc0000'  // Offline - Red
+                ],
+                borderColor: '#fff',
+                borderWidth: 2.5,
+                hoverOffset: 5
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'bottom',
+                  labels: {
+                    usePointStyle: true,
+                    padding: 15,
+                    font: { size: 12 }
+                  }
+                },
+                tooltip: {
+                  enabled: true,
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  padding: 10,
+                  borderRadius: 4,
+                  callbacks: {
+                    label: function(context) {
+                      const label = context.label || '';
+                      const value = context.parsed || 0;
+                      const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                      const percentage = ((value / total) * 100).toFixed(1);
+                      return label + ': ' + value + ' (' + percentage + '%)';
+                    }
+                  }
+                }
+              }
+            }
+          });
+
+          console.log('[DASHBOARD] Status distribution chart created successfully');
+        } catch (chartError) {
+          console.error('[DASHBOARD] Error creating Status Distribution chart:', chartError);
+        }
+      } catch (fetchError) {
+        console.error('[DASHBOARD] Error fetching machines for status chart:', fetchError);
+      }
     } catch (e) {
-      console.error('Error creating status distribution chart:', e);
+      console.error('[DASHBOARD] Error in createStatusDistributionChart:', e);
     }
   }
 

@@ -145,8 +145,81 @@
       // Apply sidebar state
       applySidebarCollapsed(readSidebarCollapsed());
       attachSidebarToggle();
+
+      // Initialize enhanced sidebar features
+      initializeNavSections();
+      initializeNavSearch();
     });
 
-  })();
+    // ===== ENHANCED SIDEBAR FEATURES =====
 
-  
+    // Initialize collapsible nav sections
+    function initializeNavSections() {
+      const sectionHeaders = document.querySelectorAll(".nav-section-header");
+
+      sectionHeaders.forEach((header) => {
+        const section = header.closest(".nav-section");
+        if (!section) return;
+
+        // Load collapsed state from localStorage
+        const sectionId = header.getAttribute("data-section");
+        const collapsedKey = `nav_section_collapsed_${sectionId}`;
+        const isCollapsed = localStorage.getItem(collapsedKey) === "true";
+
+        if (isCollapsed) {
+          section.classList.add("collapsed");
+        }
+
+        // Add click handler
+        header.addEventListener("click", (e) => {
+          e.preventDefault();
+          section.classList.toggle("collapsed");
+
+          // Save to localStorage
+          const newCollapsed = section.classList.contains("collapsed");
+          localStorage.setItem(collapsedKey, newCollapsed ? "true" : "false");
+        });
+      });
+    }
+
+    // Initialize nav search functionality
+    function initializeNavSearch() {
+      const searchInput = document.getElementById("navSearch");
+      if (!searchInput) return;
+
+      searchInput.addEventListener("input", (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        const navItems = document.querySelectorAll(".nav-item, .nav-section-header");
+
+        navItems.forEach((item) => {
+          const searchText = item.getAttribute("data-search") || "";
+          const label = item.getAttribute("data-label") || item.textContent || "";
+          const matchesQuery = searchText.toLowerCase().includes(query) ||
+                              label.toLowerCase().includes(query) ||
+                              query === "";
+
+          item.style.display = matchesQuery ? "" : "none";
+
+          // Highlight search match
+          if (query && matchesQuery) {
+            item.style.background = "rgba(255, 200, 87, 0.15)";
+          } else if (matchesQuery) {
+            item.style.background = "";
+          }
+        });
+
+        // Auto-expand sections that have visible items
+        if (query.trim()) {
+          document.querySelectorAll(".nav-section").forEach((section) => {
+            const hasVisibleItems = Array.from(section.querySelectorAll(".nav-item"))
+              .some(item => item.style.display !== "none");
+
+            if (hasVisibleItems) {
+              section.classList.remove("collapsed");
+            }
+          });
+        }
+      });
+    }
+
+  })();

@@ -23,12 +23,45 @@
       <div class="muted small">Machinery</div>
     </div>
     <nav class="nav">
-      <a href="/dashboard" data-label="Overview"><img src="/static/icons/home.svg" width="16" height="16" alt=""/> <span>Overview</span></a>
-      <a class="active" href="/machinery" data-label="Machinery"><img src="/static/icons/machine.svg" width="16" height="16" alt=""/> <span>Machinery</span></a>
-      <a href="/maintenance" data-label="Maintenance"><img src="/static/icons/wrench.svg" width="16" height="16" alt=""/> <span>Maintenance</span></a>
-      <a href="/alerts" data-label="Alerts"><img src="/static/icons/alert.svg" width="16" height="16" alt=""/> <span>Alerts</span></a>
-      <a href="/reports" data-label="Reports"><img src="/static/icons/chart.svg" width="16" height="16" alt=""/> <span>Reports</span></a>
+      <div class="nav-section">
+        <div class="nav-section-header" data-section="main">
+          <span class="nav-section-chevron">▼</span>
+          <span class="nav-section-title">Main</span>
+        </div>
+        <div class="nav-section-items">
+          <a href="/dashboard" class="nav-item" data-label="Dashboard"><img src="/static/icons/home.svg" width="16" height="16" alt=""/> <span>Dashboard</span></a>
+          <a href="/machinery" class="nav-item active" data-label="Machinery"><img src="/static/icons/machine.svg" width="16" height="16" alt=""/> <span>Machinery</span></a>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-header" data-section="operations">
+          <span class="nav-section-chevron">▼</span>
+          <span class="nav-section-title">Operations</span>
+        </div>
+        <div class="nav-section-items">
+          <a href="/maintenance" class="nav-item" data-label="Maintenance"><img src="/static/icons/wrench.svg" width="16" height="16" alt=""/> <span>Maintenance</span></a>
+          <a href="/alerts" class="nav-item" data-label="Alerts"><img src="/static/icons/alert.svg" width="16" height="16" alt=""/> <span>Alerts</span></a>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-header" data-section="reporting">
+          <span class="nav-section-chevron">▼</span>
+          <span class="nav-section-title">Reporting</span>
+        </div>
+        <div class="nav-section-items">
+          <a href="/reports" class="nav-item" data-label="Reports"><img src="/static/icons/chart.svg" width="16" height="16" alt=""/> <span>Reports</span></a>
+        </div>
+      </div>
     </nav>
+
+    <!-- Navigation Footer -->
+    <div class="nav-footer">
+      <a href="/logout" class="nav-footer-btn" title="Sign out">
+        <img src="/static/icons/alert.svg" width="14" height="14" alt=""> Sign Out
+      </a>
+    </div>
   </aside>
 
   <main class="app-main">
@@ -42,6 +75,7 @@
       <div class="btn-group">
         <button class="btn" id="refreshBtn"><img src="/static/icons/refresh.svg" width="16" height="16" alt=""/> Refresh</button>
         <button class="btn" id="addMachineBtn"><img src="/static/icons/add-machine.svg" width="16" height="16" alt=""/> Add Machine</button>
+        <a href="/logout" class="btn" title="Logout"><img src="/static/icons/alert.svg" width="16" height="16" alt=""/> Logout</a>
       </div>
     </header>
 

@@ -11,6 +11,12 @@
   <!-- Dataset Manager -->
   <script src="/static/js/dataset-manager.js" defer></script>
 
+  <!-- Visualization Manager - Connected real-time chart updates -->
+  <script src="/static/js/viz-manager.js" defer></script>
+
+  <!-- Chart Synchronization System -->
+  <script src="/static/js/chart-sync.js" defer></script>
+
   <!-- Minimal inline shell CSS (safe, no reflow) -->
   <style>
     .app-shell {
@@ -256,6 +262,16 @@
     </nav>
 <!--
     <button class="btn" id="themeCycleBtn">Theme</button> -->
+
+    <!-- Navigation Footer -->
+    <div class="nav-footer">
+      <a href="/dashboard" class="nav-footer-btn" title="User Dashboard">
+        <img src="/static/icons/home.svg" width="14" height="14" alt=""> Profile
+      </a>
+      <a href="/logout" class="nav-footer-btn" title="Sign out">
+        <img src="/static/icons/alert.svg" width="14" height="14" alt=""> Sign Out
+      </a>
+    </div>
   </aside>
 
   <!-- ================= MAIN ================= -->
@@ -278,6 +294,9 @@
         <button class="btn" id="datasetManagerBtn" title="Dataset Manager">
           <img src="/static/icons/chart.svg" width="16" height="16" alt=""> Datasets
         </button>
+        <a href="/logout" class="btn" title="Logout">
+          <img src="/static/icons/alert.svg" width="16" height="16" alt=""> Logout
+        </a>
       </div>
     </header>
 
@@ -435,7 +454,7 @@
             <button class="chart-export-btn" onclick="exportChart('performanceChart')" title="Export Chart">📥</button>
           </div>
           <div class="chart-container">
-            <canvas id="performanceChart"></canvas>
+            <canvas id="performanceChart" data-chart-type="performance" data-tracked="true"></canvas>
             <img id="performanceChartFallback" src="/chart/summary.png" alt="Performance chart" class="chart-fallback" style="display:none;">
           </div>
         </div>
@@ -447,7 +466,7 @@
             <button class="chart-export-btn" onclick="exportChart('statusChart')" title="Export Chart">📥</button>
           </div>
           <div class="chart-container">
-            <canvas id="statusChart"></canvas>
+            <canvas id="statusChart" data-chart-type="status" data-tracked="true"></canvas>
             <img id="statusChartFallback" src="/chart/status.png" alt="Status chart" class="chart-fallback" style="display:none;">
           </div>
         </div>
@@ -457,8 +476,55 @@
       <div class="card chart-card">
         <div class="card-title">Alerts Trend (Last 14 Days)</div>
         <div class="chart-container">
-          <canvas id="alertsChart"></canvas>
+          <canvas id="alertsChart" data-chart-type="alerts" data-tracked="true"></canvas>
           <img id="alertsChartFallback" src="/chart/alerts-trend.png" alt="Alerts trend" class="chart-fallback" style="display:none;">
+        </div>
+      </div>
+
+      <!-- ===== MACHINE STATUS BREAKDOWN ===== -->
+      <div class="card">
+        <div class="card-title">Machine Status Overview</div>
+        <div class="kpi-row">
+          <div class="card kpi kpi-enhanced">
+            <div class="kpi-header">
+              <div class="label">Running</div>
+              <div class="kpi-icon">▶️</div>
+            </div>
+            <div id="status_running" class="value">—</div>
+            <div class="kpi-footer">
+              <span id="status_running_pct" class="kpi-sub">0%</span>
+            </div>
+          </div>
+          <div class="card kpi kpi-enhanced">
+            <div class="kpi-header">
+              <div class="label">Idle</div>
+              <div class="kpi-icon">⏸️</div>
+            </div>
+            <div id="status_idle" class="value">—</div>
+            <div class="kpi-footer">
+              <span id="status_idle_pct" class="kpi-sub">0%</span>
+            </div>
+          </div>
+          <div class="card kpi kpi-enhanced">
+            <div class="kpi-header">
+              <div class="label">Maintenance</div>
+              <div class="kpi-icon">🔧</div>
+            </div>
+            <div id="status_maintenance" class="value">—</div>
+            <div class="kpi-footer">
+              <span id="status_maintenance_pct" class="kpi-sub">0%</span>
+            </div>
+          </div>
+          <div class="card kpi kpi-enhanced">
+            <div class="kpi-header">
+              <div class="label">Offline</div>
+              <div class="kpi-icon">❌</div>
+            </div>
+            <div id="status_offline" class="value">—</div>
+            <div class="kpi-footer">
+              <span id="status_offline_pct" class="kpi-sub">0%</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -495,6 +561,14 @@
         <div id="csvInfo" class="muted small" style="margin-top:8px;"></div>
       </div>
 
+      <!-- ===== PERFORMANCE MATRIX ===== -->
+      <div class="card chart-card">
+        <div class="card-title">Performance Matrix (Efficiency vs Status)</div>
+        <div class="chart-container">
+          <canvas id="performanceMatrixChart"></canvas>
+        </div>
+      </div>
+
       <!-- ===== MACHINES ===== -->
       <div class="card">
         <div class="card-title">Machine Overview</div>
@@ -506,14 +580,81 @@
               <th>Location</th>
               <th>Status</th>
               <th>Eff%</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr><td colspan="5">Loading…</td></tr>
+            <tr><td colspan="6">Loading…</td></tr>
           </tbody>
         </table>
       </div>
 
+    </div>
+
+    <!-- ===== CREATE MAINTENANCE TASK MODAL ===== -->
+    <div id="createMaintenanceModal" class="modal hidden">
+      <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+          <h3>Create Maintenance Task</h3>
+          <button class="btn-icon" onclick="document.getElementById('createMaintenanceModal').classList.add('hidden')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div style="margin-bottom: 12px;">
+            <label class="label">Machine:</label>
+            <select id="maintMachineId" class="input" required>
+              <option value="">Select a machine...</option>
+            </select>
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label class="label">Description:</label>
+            <textarea id="maintDescription" class="input" placeholder="Describe the maintenance task" rows="4" required></textarea>
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label class="label">Priority:</label>
+            <select id="maintPriority" class="input">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label class="label">Scheduled Date:</label>
+            <input type="date" id="maintScheduledDate" class="input">
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label class="label">Technician (optional):</label>
+            <input type="text" id="maintTechnician" class="input" placeholder="Enter technician name">
+          </div>
+          <div class="btn-group">
+            <button class="btn" onclick="createMaintenanceTask()">Create Task</button>
+            <button class="btn" onclick="document.getElementById('createMaintenanceModal').classList.add('hidden')">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ACKNOWLEDGE ALERT MODAL ===== -->
+    <div id="acknowledgeAlertModal" class="modal hidden">
+      <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+          <h3>Acknowledge Alert</h3>
+          <button class="btn-icon" onclick="document.getElementById('acknowledgeAlertModal').classList.add('hidden')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div id="alertDetails" style="margin-bottom: 12px; padding: 12px; background: #f5f5f5; border-left: 4px solid #0066cc;">
+            <!-- Alert details will be populated here -->
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label class="label">Comment (optional):</label>
+            <textarea id="alertComment" class="input" placeholder="Add a comment..." rows="4"></textarea>
+          </div>
+          <div class="btn-group">
+            <button class="btn" onclick="acknowledgeAlert()">Acknowledge & Resolve</button>
+            <button class="btn" onclick="document.getElementById('acknowledgeAlertModal').classList.add('hidden')">Cancel</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <footer class="footer">
@@ -533,6 +674,7 @@
 <script src="/static/js/csv-viz.js" defer></script>
 <script src="/static/js/dashboard.js" defer></script>
 <script src="/static/js/dashboard-enhanced.js" defer></script>
+<script src="/static/js/dashboard-viz-integration.js" defer></script>
 <script src="/static/js/alerts.js" defer></script>
 
 <script>
@@ -561,7 +703,7 @@
     try {
       const response = await fetch('/api/dashboard/widgets');
       const data = await response.json();
-      
+
       if (data.overview) {
         const ov = data.overview;
         if (document.getElementById('k_running')) {
@@ -579,7 +721,7 @@
           document.getElementById('k_health_status').textContent = health;
         }
       }
-      
+
       // Location breakdown
       if (data.location_breakdown && document.getElementById('locationBreakdown')) {
         const locDiv = document.getElementById('locationBreakdown');
@@ -602,17 +744,287 @@
     }
   }
 
+  // Load machine status breakdown
+  async function loadMachineStatusBreakdown() {
+    try {
+      const machinesResp = await fetch('/api/machines');
+      const machines = await machinesResp.json();
+
+      if (!Array.isArray(machines)) return;
+
+      const statusCounts = {
+        running: 0,
+        idle: 0,
+        maintenance: 0,
+        offline: 0
+      };
+
+      machines.forEach(m => {
+        const status = (m.status || 'offline').toLowerCase();
+        if (status.includes('run')) statusCounts.running++;
+        else if (status.includes('idle')) statusCounts.idle++;
+        else if (status.includes('maint')) statusCounts.maintenance++;
+        else statusCounts.offline++;
+      });
+
+      const total = machines.length || 1;
+
+      document.getElementById('status_running').textContent = statusCounts.running;
+      document.getElementById('status_running_pct').textContent = `${Math.round((statusCounts.running/total)*100)}%`;
+
+      document.getElementById('status_idle').textContent = statusCounts.idle;
+      document.getElementById('status_idle_pct').textContent = `${Math.round((statusCounts.idle/total)*100)}%`;
+
+      document.getElementById('status_maintenance').textContent = statusCounts.maintenance;
+      document.getElementById('status_maintenance_pct').textContent = `${Math.round((statusCounts.maintenance/total)*100)}%`;
+
+      document.getElementById('status_offline').textContent = statusCounts.offline;
+      document.getElementById('status_offline_pct').textContent = `${Math.round((statusCounts.offline/total)*100)}%`;
+    } catch (e) {
+      console.error('Error loading machine status:', e);
+    }
+  }
+
+  // Load and display alerts with action buttons
+  async function loadAlerts() {
+    try {
+      const response = await fetch('/api/alerts?ack=0');
+      const alerts = await response.json();
+      const alertsList = document.getElementById('alertsList');
+
+      if (!Array.isArray(alerts) || alerts.length === 0) {
+        alertsList.innerHTML = '<div class="muted small">No active alerts</div>';
+        return;
+      }
+
+      alertsList.innerHTML = alerts.slice(0, 10).map(alert => `
+        <div style="padding: 8px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <strong>${alert.machine_id ? 'Machine ' + alert.machine_id : 'System'}</strong>
+            <div class="muted small" style="margin-top: 2px;">
+              <strong style="color: ${alert.severity === 'critical' ? '#cc0000' : alert.severity === 'warning' ? '#ff9900' : '#0066cc'};">${alert.severity || 'info'}</strong> - ${alert.message || 'No message'}
+            </div>
+            <div class="muted tiny" style="margin-top: 4px;">${new Date(alert.raised_at).toLocaleString()}</div>
+          </div>
+          <button class="btn" onclick="showAcknowledgeModal(${alert.id}, '${alert.machine_id || 'system'}', '${alert.message}', '${alert.severity}')" style="margin-left: 8px;">Acknowledge</button>
+        </div>
+      `).join('');
+    } catch (e) {
+      console.error('Error loading alerts:', e);
+      document.getElementById('alertsList').innerHTML = '<div class="muted small">Error loading alerts</div>';
+    }
+  }
+
+  // Show acknowledge alert modal
+  function showAcknowledgeModal(alertId, machine, message, severity) {
+    window.currentAlertId = alertId;
+    const details = document.getElementById('alertDetails');
+    details.innerHTML = `
+      <strong>Machine:</strong> ${machine}<br>
+      <strong>Severity:</strong> ${severity}<br>
+      <strong>Message:</strong> ${message}
+    `;
+    document.getElementById('alertComment').value = '';
+    document.getElementById('acknowledgeAlertModal').classList.remove('hidden');
+  }
+
+  // Acknowledge alert
+  async function acknowledgeAlert() {
+    if (!window.currentAlertId) return;
+
+    const comment = document.getElementById('alertComment').value;
+    try {
+      const response = await fetch(`/api/alerts/${window.currentAlertId}/ack`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comment: comment })
+      });
+
+      if (response.ok) {
+        alert('Alert acknowledged successfully');
+        document.getElementById('acknowledgeAlertModal').classList.add('hidden');
+        loadAlerts();
+      } else {
+        alert('Error acknowledging alert');
+      }
+    } catch (e) {
+      console.error('Error:', e);
+      alert('Error acknowledging alert: ' + e.message);
+    }
+  }
+
+  // Load machines for maintenance task creation
+  async function loadMachinesForMaintenance() {
+    try {
+      const response = await fetch('/api/machines');
+      const machines = await response.json();
+
+      if (!Array.isArray(machines)) return;
+
+      const select = document.getElementById('maintMachineId');
+      select.innerHTML = '<option value="">Select a machine...</option>';
+
+      machines.forEach(m => {
+        const option = document.createElement('option');
+        option.value = m.id;
+        option.textContent = `${m.name} (${m.type})`;
+        select.appendChild(option);
+      });
+    } catch (e) {
+      console.error('Error loading machines:', e);
+    }
+  }
+
+  // Create maintenance task
+  async function createMaintenanceTask() {
+    const machineId = document.getElementById('maintMachineId').value;
+    const description = document.getElementById('maintDescription').value;
+    const priority = document.getElementById('maintPriority').value;
+    const scheduledDate = document.getElementById('maintScheduledDate').value;
+    const technician = document.getElementById('maintTechnician').value;
+
+    if (!machineId || !description) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/maintenance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          machine_id: parseInt(machineId),
+          description: description,
+          priority: priority,
+          scheduled_date: scheduledDate || null,
+          technician: technician || null
+        })
+      });
+
+      if (response.ok) {
+        alert('Maintenance task created successfully');
+        document.getElementById('createMaintenanceModal').classList.add('hidden');
+        document.getElementById('maintDescription').value = '';
+        document.getElementById('maintTechnician').value = '';
+        document.getElementById('maintScheduledDate').value = '';
+      } else {
+        const error = await response.json();
+        alert('Error creating task: ' + (error.error || 'Unknown error'));
+      }
+    } catch (e) {
+      console.error('Error:', e);
+      alert('Error creating task: ' + e.message);
+    }
+  }
+
+  // Create performance matrix chart
+  async function createPerformanceMatrix() {
+    try {
+      const response = await fetch('/api/machines');
+      const machines = await response.json();
+
+      if (!Array.isArray(machines) || machines.length === 0) return;
+
+      const canvas = document.getElementById('performanceMatrixChart');
+      if (!canvas) return;
+
+      // Prepare data
+      const statusMap = { 'running': 10, 'idle': 5, 'maintenance': 3, 'offline': 1 };
+      const colors = machines.map(m => {
+        const status = (m.status || 'offline').toLowerCase();
+        if (status.includes('run')) return '#107e3e';
+        if (status.includes('maint')) return '#ff9900';
+        if (status.includes('idle')) return '#0066cc';
+        return '#cc0000';
+      });
+
+      // Create chart
+      const ctx = canvas.getContext('2d');
+      if (window.performanceChartInstance) {
+        window.performanceChartInstance.destroy();
+      }
+
+      window.performanceChartInstance = new Chart(ctx, {
+        type: 'bubble',
+        data: {
+          datasets: [{
+            label: 'Machine Efficiency (bubble size = running hours)',
+            data: machines.map((m, idx) => ({
+              x: m.efficiency || 0,
+              y: statusMap[(m.status || 'offline').toLowerCase()] || 1,
+              r: (m.efficiency || 0) / 10
+            })),
+            backgroundColor: colors,
+            borderColor: colors,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: { display: true }
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'Efficiency %' },
+              min: 0,
+              max: 100
+            },
+            y: {
+              title: { display: true, text: 'Status (running=10, idle=5, maintenance=3, offline=1)' },
+              min: 0,
+              max: 12
+            }
+          }
+        }
+      });
+    } catch (e) {
+      console.error('Error creating performance matrix:', e);
+    }
+  }
+
   // Initialize CSV upload and Dataset Manager
   document.addEventListener('DOMContentLoaded', async () => {
     // Load enhanced widgets
     loadDashboardWidgets();
     setInterval(loadDashboardWidgets, 60000); // Refresh every minute
-    
+
+    // Load machine status breakdown
+    loadMachineStatusBreakdown();
+    setInterval(loadMachineStatusBreakdown, 60000);
+
+    // Load alerts
+    loadAlerts();
+    setInterval(loadAlerts, 30000); // Refresh every 30 seconds
+
+    // Load machines for maintenance modal
+    loadMachinesForMaintenance();
+
+    // Create performance matrix chart
+    createPerformanceMatrix();
+    setInterval(createPerformanceMatrix, 120000); // Refresh every 2 minutes
+
+    // Listen for visualization events to reload data
+    window.addEventListener('viz:data-generated', () => {
+      loadDashboardWidgets();
+      loadMachineStatusBreakdown();
+      loadAlerts();
+      createPerformanceMatrix();
+    });
+
+    window.addEventListener('viz:data-cleared', () => {
+      loadDashboardWidgets();
+      loadMachineStatusBreakdown();
+      loadAlerts();
+      createPerformanceMatrix();
+    });
+
     // Initialize IndexedDB
     if (window.IMCSCSV) {
       await window.IMCSCSV.initDB();
     }
-    
+
     // Dataset Manager UI
     const datasetManagerBtn = document.getElementById('datasetManagerBtn');
     const datasetManagerPanel = document.getElementById('datasetManagerPanel');
@@ -624,7 +1036,22 @@
         }
       });
     }
-    
+
+    // Maintenance Task Button
+    const createMaintenanceBtn = document.querySelector('[onclick*="createMaintenanceModal"]') ||
+                                  Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('Create Task')) ||
+                                  document.createElement('button');
+
+    // Add create maintenance button to header if it doesn't exist
+    const headerBtnGroup = document.querySelector('.btn-group');
+    if (headerBtnGroup && !Array.from(headerBtnGroup.querySelectorAll('button')).some(b => b.textContent.includes('Create Task'))) {
+      const createBtn = document.createElement('button');
+      createBtn.className = 'btn';
+      createBtn.innerHTML = '<img src="/static/icons/add-machine.svg" width="16" height="16" alt=""> Create Maintenance';
+      createBtn.onclick = () => document.getElementById('createMaintenanceModal').classList.remove('hidden');
+      headerBtnGroup.appendChild(createBtn);
+    }
+
     // Demo Data Generation
     const demoDataBtn = document.getElementById('demoDataBtn');
     const generateDemoBtn = document.getElementById('generateDemoBtn');

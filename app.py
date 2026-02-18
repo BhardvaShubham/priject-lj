@@ -1179,7 +1179,158 @@ def acknowledge_alert(alert_id):
     
     return jsonify({"success": True, "message": "Alert acknowledged"})
 
-# ===================== MAINTENANCE API =====================
+# ===================== SENSOR READINGS LIST API =====================
+
+# ===================== SENSOR READINGS API =====================
+
+@app.route("/api/sensor-readings", methods=["GET"])
+@login_required
+def sensor_readings_list():
+    """Paginated list of sensor readings for this company."""
+    company_id = get_current_company_id()
+    limit = min(int(request.args.get("limit", 100)), 500)
+    offset = int(request.args.get("offset", 0))
+    machine_id = request.args.get("machine_id", type=int)
+
+    with db() as c:
+        base = """
+            SELECT sr.id, sr.value, sr.timestamp,
+                   s.name AS sensor_name, s.unit,
+                   m.id AS machine_id, m.name AS machine_name
+            FROM sensor_readings sr
+            JOIN sensors s ON sr.sensor_id = s.id
+            JOIN machines m ON s.machine_id = m.id
+            WHERE m.company_id = ?
+        """
+        params = [company_id]
+        if machine_id:
+            base += " AND m.id = ?"
+            params.append(machine_id)
+        base += " ORDER BY sr.timestamp DESC LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
+        rows = c.execute(base, params).fetchall()
+
+        total = c.execute("""
+            SELECT COUNT(*) FROM sensor_readings sr
+            JOIN sensors s ON sr.sensor_id = s.id
+            JOIN machines m ON s.machine_id = m.id
+            WHERE m.company_id = ?
+        """, (company_id,)).fetchone()[0]
+
+    return jsonify({
+        "total": total,
+        "offset": offset,
+        "limit": limit,
+        "rows": [dict(r) for r in rows]
+    })
+
+# (sensor reading PUT handled by existing /api/data/sensors/<sid> route)
+
+# ===================== REPORTS PERFORMANCE API =====================
+
+@app.route("/api/reports/performance")
+@login_required
+def reports_performance():
+    """30-day performance metrics for the Reports page."""
+    company_id = get_current_company_id()
+    try:
+        with db() as c:
+            # Daily avg efficiency last 30 days
+            daily = c.execute("""
+                SELECT DATE(sr.timestamp) as d,
+                       AVG(sr.value) as avg_eff,
+                       MIN(sr.value) as min_eff,
+                       MAX(sr.value) as max_eff,
+                       COUNT(sr.id) as readings
+                FROM sensor_readings sr
+                JOIN sensors s ON sr.sensor_id = s.id
+                JOIN machines m ON s.machine_id = m.id
+                WHERE m.company_id = ?
+                  AND sr.timestamp >= date('now', '-30 days')
+                GROUP BY DATE(sr.timestamp)
+                ORDER BY d ASC
+            """, (company_id,)).fetchall()
+
+            # Per-machine summary
+            machines = c.execute("""
+                SELECT m.id, m.name, m.type, m.location, m.status,
+                       AVG(sr.value) as avg_eff,
+                       MIN(sr.value) as min_eff,
+                       MAX(sr.value) as max_eff,
+                       COUNT(sr.id) as readings,
+                       MAX(sr.timestamp) as last_reading
+                FROM machines m
+                LEFT JOIN sensors s ON s.machine_id = m.id
+                LEFT JOIN sensor_readings sr ON sr.sensor_id = s.id
+                  AND sr.timestamp >= date('now', '-30 days')
+                WHERE m.company_id = ?
+                GROUP BY m.id
+                ORDER BY avg_eff DESC
+            """, (company_id,)).fetchall()
+
+            # Totals
+            total_machines = c.execute(
+                "SELECT COUNT(*) FROM machines WHERE company_id=?", (company_id,)
+            ).fetchone()[0]
+            running = c.execute(
+                "SELECT COUNT(*) FROM machines WHERE status='running' AND company_id=?", (company_id,)
+            ).fetchone()[0]
+            open_tasks = c.execute(
+                "SELECT COUNT(*) FROM maintenance_tasks WHERE status='open' AND company_id=?", (company_id,)
+            ).fetchone()[0]
+            total_alerts = c.execute(
+                "SELECT COUNT(*) FROM alarms WHERE company_id=? AND raised_at >= date('now','-30 days')", (company_id,)
+            ).fetchone()[0]
+            unack_alerts = c.execute(
+                "SELECT COUNT(*) FROM alarms WHERE acknowledged=0 AND company_id=?", (company_id,)
+            ).fetchone()[0]
+            total_readings = c.execute("""
+                SELECT COUNT(*) FROM sensor_readings sr
+                JOIN sensors s ON sr.sensor_id = s.id
+                JOIN machines m ON s.machine_id = m.id
+                WHERE m.company_id = ?
+                  AND sr.timestamp >= date('now','-30 days')
+            """, (company_id,)).fetchone()[0]
+
+        overall_avg = sum(r[1] or 0 for r in daily) / len(daily) if daily else 0
+
+        return jsonify({
+            "summary": {
+                "total_machines": total_machines,
+                "running_machines": running,
+                "uptime_pct": round(running / max(total_machines, 1) * 100, 1),
+                "avg_efficiency": round(overall_avg, 1),
+                "open_tasks": open_tasks,
+                "alerts_30d": total_alerts,
+                "unack_alerts": unack_alerts,
+                "total_readings_30d": total_readings
+            },
+            "daily_trend": [
+                {
+                    "date": str(r[0]),
+                    "avg": round(r[1] or 0, 1),
+                    "min": round(r[2] or 0, 1),
+                    "max": round(r[3] or 0, 1),
+                    "readings": r[4] or 0
+                }
+                for r in daily
+            ],
+            "machines": [
+                {
+                    "id": r[0], "name": r[1], "type": r[2],
+                    "location": r[3], "status": r[4],
+                    "avg_eff": round(r[5] or 0, 1),
+                    "min_eff": round(r[6] or 0, 1) if r[6] else None,
+                    "max_eff": round(r[7] or 0, 1) if r[7] else None,
+                    "readings": r[8] or 0,
+                    "last_reading": str(r[9]) if r[9] else None
+                }
+                for r in machines
+            ]
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route("/api/maintenance", methods=["GET", "POST"])
 @login_required

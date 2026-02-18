@@ -1,13 +1,11 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>IMCS - Reports</title>
-
-  <!-- Load layout CSS synchronously (NO preload swap) -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>IMCS – Analytics & Reports</title>
   <link rel="stylesheet" href="/static/css/sap90.css">
-
   <style>
     .app-shell {
       display: flex;
@@ -16,40 +14,66 @@
       background: #DFDFDF;
     }
 
-
-    
-
-    /* CLS-safe chart container */
-    .chart-wrap {
-      width: 100%;
-      aspect-ratio: 10 / 3;
-      min-height: 220px;
-      background: #F2F2F2;
-      border: 1px solid #A0A0A0;
-    }
-
-    .chart-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-    }
-
-    .charts-grid {
+    /* ── Metric KPI cards ── */
+    .metrics-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+      padding: 12px;
     }
 
-    .chart-card {
-      background: #EFEFEF;
-      border: 1px solid #A0A0A0;
+    .metric-card {
+      background: #fff;
+      border: 2px solid;
+      border-color: #fff #808080 #808080 #fff;
+      padding: 14px 12px;
+      text-align: center;
+      transition: all .2s;
+      position: relative;
+      overflow: hidden;
     }
 
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #000080, #1084d7);
+    }
+
+    .metric-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 102, 204, .15);
+      transform: translateY(-2px);
+    }
+
+    .metric-val {
+      font-size: 26px;
+      font-weight: 700;
+      color: #003366;
+      line-height: 1;
+    }
+
+    .metric-lbl {
+      font-size: 11px;
+      color: #666;
+      margin-top: 5px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .metric-sub {
+      font-size: 11px;
+      color: #0a6ed1;
+      margin-top: 3px;
+      font-weight: 600;
+    }
+
+    /* ── Chart container ── */
     .chart-container {
       position: relative;
-      width: auto;
-      height: 280px;
+      height: 260px;
       background: #F9F9F9;
       border: 1px solid #D5D5D5;
       padding: 8px;
@@ -60,549 +84,1146 @@
       max-height: 100%;
     }
 
-    .chart-fallback {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
+    /* ── Editable table ── */
+    .tbl-wrap {
+      overflow-x: auto;
+      max-height: 420px;
+      overflow-y: auto;
     }
 
-    .csv-drop-zone {
-      border: 2px dashed #A0A0A0;
-      border-radius: 4px;
-      padding: 24px;
-      text-align: center;
-      background: #F9F9F9;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .csv-drop-zone:hover,
-    .csv-drop-zone.drag-over {
-      border-color: #0a6ed1;
-      background: #E6F2FF;
-    }
-
-    .drop-zone-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .drop-zone-text {
-      color: #003366;
-      font-size: 14px;
-    }
-
-    /* Editable Table Styles */
-    .editable-cell {
+    .table td.editable {
       cursor: pointer;
       position: relative;
-      padding: 4px 6px;
     }
 
-    .editable-cell:hover {
-      background-color: #E6F2FF;
+    .table td.editable:hover {
+      background: #E6F2FF !important;
     }
 
-    .editable-cell.editing {
+    .table td.editable.editing {
       padding: 0;
     }
 
-    .editable-cell input {
+    .table td.editable input {
       width: 100%;
       padding: 4px 6px;
-      border: 2px solid #003366;
-      background: #FFFFFF;
-      font-size: 13px;
+      border: 2px solid #0a6ed1;
+      background: #fff;
+      font-size: 12px;
       font-family: Tahoma, Arial, sans-serif;
       box-sizing: border-box;
     }
 
-    .editable-cell input:focus {
+    .table td.editable input:focus {
       outline: none;
-      border-color: #0a6ed1;
     }
 
-    .table-actions {
-      display: flex;
-      gap: 4px;
-      align-items: center;
+    .edit-hint {
+      font-size: 10px;
+      color: #888;
+      margin-left: 6px;
+      font-style: italic;
     }
 
-    .table-actions .btn-icon {
-      padding: 2px 6px;
-      font-size: 11px;
-      cursor: pointer;
-      border: 1px solid #A0A0A0;
-      background: #F5F5F5;
-      border-radius: 2px;
-      transition: all 0.2s;
-    }
-
-    .table-actions .btn-icon:hover {
-      background: #E0E0E0;
-    }
-
-    .table-actions .btn-save {
-      background: #D4EDDA;
-      border-color: #28a745;
-      color: #107e3e;
-    }
-
-    .table-actions .btn-save:hover {
-      background: #C3E6CB;
-    }
-
-    .table-actions .btn-cancel {
-      background: #F8D7DA;
-      border-color: #dc3545;
-      color: #721c24;
-    }
-
-    .table-actions .btn-cancel:hover {
-      background: #F5C6CB;
-    }
-
-    .table-actions .btn-edit {
-      background: #D7DFEF;
-      border-color: #7A8BA8;
-      color: #003366;
-    }
-
-    .table-actions .btn-edit:hover {
-      background: #C3D0E5;
-    }
-
-    .table-actions .btn-delete {
-      background: #F8D7DA;
-      border-color: #dc3545;
-      color: #721c24;
-    }
-
-    .table-actions .btn-delete:hover {
-      background: #F5C6CB;
-    }
-
-    .save-status {
-      display: inline-block;
-      padding: 2px 6px;
-      font-size: 11px;
+    /* ── Save toast ── */
+    #saveToast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 8px 20px;
+      background: #107e3e;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
       border-radius: 3px;
-      margin-left: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .3);
+      display: none;
+      z-index: 9999;
+      animation: toastIn .3s ease;
     }
 
-    .save-status.saving {
-      background: #FFF3CD;
+    @keyframes toastIn {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    #saveToast.err {
+      background: #bb0000;
+    }
+
+    /* ── Export panel ── */
+    .export-panel {
+      background: #E8EEF8;
+      border: 2px solid;
+      border-color: #fff #7A8BA8 #7A8BA8 #fff;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+
+    .export-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .export-btn {
+      padding: 8px 16px;
+      background: linear-gradient(135deg, #D0D8E8, #C8D0E0);
+      border: 2px solid;
+      border-color: #fff #7A8BA8 #7A8BA8 #fff;
+      color: #003366;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .export-btn:hover {
+      background: linear-gradient(135deg, #DFEFFF, #D7DFEF);
+      box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .8);
+    }
+
+    .export-btn.primary {
+      background: linear-gradient(135deg, #000080, #1084d7);
+      color: #fff;
+      border-color: #000080 #00004a #00004a #000080;
+    }
+
+    .export-btn.primary:hover {
+      background: linear-gradient(135deg, #0000aa, #1494f7);
+    }
+
+    /* ── Pagination ── */
+    .pager {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 12px;
+    }
+
+    .pager button {
+      padding: 3px 10px;
+      background: #E8EEF8;
+      border: 2px solid;
+      border-color: #fff #7A8BA8 #7A8BA8 #fff;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .pager button:disabled {
+      opacity: .4;
+      cursor: default;
+    }
+
+    .pager span {
+      color: #666;
+    }
+
+    /* ── Status badge ── */
+    .sb {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .sb-running {
+      background: #d4edda;
+      color: #107e3e;
+      border: 1px solid #c3e6cb;
+    }
+
+    .sb-idle {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+
+    .sb-maintenance {
+      background: #fff3cd;
       color: #856404;
+      border: 1px solid #ffeeba;
     }
 
-    .save-status.saved {
-      background: #D4EDDA;
-      color: #155724;
+    .sb-offline,
+    .sb-down {
+      background: #f8d7da;
+      color: #bb0000;
+      border: 1px solid #f5c6cb;
     }
 
-    .save-status.error {
-      background: #F8D7DA;
-      color: #721c24;
+    /* ── Trend sparkline ── */
+    .trend-bar {
+      display: inline-flex;
+      align-items: flex-end;
+      gap: 1px;
+      height: 20px;
+      vertical-align: middle;
+    }
+
+    .trend-bar span {
+      width: 4px;
+      background: #0a6ed1;
+      border-radius: 1px 1px 0 0;
+      min-height: 2px;
+    }
+
+    /* ── Section header ── */
+    .sec-hdr {
+      background: linear-gradient(90deg, #000080, #1084d7);
+      color: #fff;
+      padding: 9px 14px;
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .sec-hdr .sec-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .sec-body {
+      background: #F7F7F7;
+      border: 2px solid;
+      border-color: #DFDFDF #808080 #808080 #DFDFDF;
+      border-top: none;
+      padding: 14px;
+    }
+
+    .chart-wrap {
+      width: 100%;
+      aspect-ratio: 10/3;
+      min-height: 200px;
+      background: #F2F2F2;
+      border: 1px solid #A0A0A0;
+    }
+
+    .chart-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
     }
   </style>
 </head>
 
 <body>
-<div class="app-shell">
+  <div id="saveToast"></div>
+  <div class="app-shell">
 
-  <!-- ================= SIDEBAR ================= -->
-  <aside class="app-sidebar">
-    <button class="sidebar-toggle" title="Collapse sidebar">◀</button>
-    <div class="brand">
-      <img src="/static/icons/logo-imcs.svg" class="logo-img" alt="IMCS"/>
-      <div class="title">Industrial Hub</div>
-      <div class="muted small">Reports</div>
-    </div>
-
-    <nav class="nav">
-      <div class="nav-section">
-        <div class="nav-section-header" data-section="main">
-          <span class="nav-section-chevron">▼</span>
-          <span class="nav-section-title">Main</span>
-        </div>
-        <div class="nav-section-items">
-          <a href="/dashboard" class="nav-item" data-label="Dashboard"><img src="/static/icons/home.svg" width="16" height="16" alt=""/> <span>Dashboard</span></a>
-          <a href="/machinery" class="nav-item" data-label="Machinery"><img src="/static/icons/machine.svg" width="16" height="16" alt=""/> <span>Machinery</span></a>
-        </div>
-      </div>
-
-      <div class="nav-section">
-        <div class="nav-section-header" data-section="operations">
-          <span class="nav-section-chevron">▼</span>
-          <span class="nav-section-title">Operations</span>
-        </div>
-        <div class="nav-section-items">
-          <a href="/maintenance" class="nav-item" data-label="Maintenance"><img src="/static/icons/wrench.svg" width="16" height="16" alt=""/> <span>Maintenance</span></a>
-          <a href="/alerts" class="nav-item" data-label="Alerts"><img src="/static/icons/alert.svg" width="16" height="16" alt=""/> <span>Alerts</span></a>
-        </div>
-      </div>
-
-      <div class="nav-section">
-        <div class="nav-section-header" data-section="reporting">
-          <span class="nav-section-chevron">▼</span>
-          <span class="nav-section-title">Reporting</span>
-        </div>
-        <div class="nav-section-items">
-          <a href="/reports" class="nav-item active" data-label="Reports"><img src="/static/icons/chart.svg" width="16" height="16" alt=""/> <span>Reports</span></a>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Navigation Footer -->
-    <div class="nav-footer">
-      <a href="/logout" class="nav-footer-btn" title="Sign out">
-        <img src="/static/icons/alert.svg" width="14" height="14" alt=""> Sign Out
-      </a>
-    </div>
-  </aside>
-
-  <!-- ================= MAIN ================= -->
-  <main class="app-main">
-    <header class="app-header">
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside class="app-sidebar">
+      <button class="sidebar-toggle" title="Collapse sidebar">◀</button>
       <div class="brand">
-        <div class="sap-badge">IMCS</div>
-        <div>
-          <div class="hdr-title">Analytics & Trends</div>
-        </div>
+        <img src="/static/icons/logo-imcs.svg" class="logo-img" alt="IMCS" />
+        <div class="title">Industrial Hub</div>
+        <div class="muted small">Reports</div>
       </div>
-      <div class="btn-group">
-        <button class="btn" id="refreshBtn">
-          <img src="/static/icons/refresh.svg" width="16" height="16" alt=""> Refresh
-        </button>
-        <a href="/logout" class="btn" title="Logout">
-          <img src="/static/icons/alert.svg" width="16" height="16" alt=""> Logout
-        </a>
+      <nav class="nav">
+        <div class="nav-search-container">
+          <input type="text" id="navSearch" class="nav-search" placeholder="Search..." title="Search navigation">
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-header" data-section="dashboard"><span class="nav-section-chevron">▼</span><span
+              class="nav-section-title">Dashboard</span></div>
+          <div class="nav-section-items">
+            <a href="/dashboard" class="nav-item" data-label="Overview"><img src="/static/icons/home.svg" width="16"
+                height="16" alt=""> <span>Overview</span></a>
+          </div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-header" data-section="operations"><span class="nav-section-chevron">▼</span><span
+              class="nav-section-title">Operations</span></div>
+          <div class="nav-section-items">
+            <a href="/machinery" class="nav-item" data-label="Machinery"><img src="/static/icons/machine.svg" width="16"
+                height="16" alt=""> <span>Machinery</span></a>
+            <a href="/maintenance" class="nav-item" data-label="Maintenance"><img src="/static/icons/wrench.svg"
+                width="16" height="16" alt=""> <span>Maintenance</span>
+              <span class="nav-badge nav-badge-warning" id="badge-maintenance" style="display:none;">0</span></a>
+          </div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-header" data-section="monitoring"><span class="nav-section-chevron">▼</span><span
+              class="nav-section-title">Monitoring</span></div>
+          <div class="nav-section-items">
+            <a href="/alerts" class="nav-item" data-label="Alerts"><img src="/static/icons/alert.svg" width="16"
+                height="16" alt=""> <span>Alerts</span>
+              <span class="nav-badge nav-badge-danger" id="badge-alerts" style="display:none;">0</span></a>
+          </div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-header" data-section="reporting"><span class="nav-section-chevron">▼</span><span
+              class="nav-section-title">Reporting</span></div>
+          <div class="nav-section-items">
+            <a href="/reports" class="nav-item active" data-label="Reports"><img src="/static/icons/chart.svg"
+                width="16" height="16" alt=""> <span>Reports</span></a>
+          </div>
+        </div>
+      </nav>
+      <div class="nav-footer">
+        <a href="/help" class="nav-footer-btn" title="Help">❓ Help</a>
+        <a href="/logout" class="nav-footer-btn" title="Sign out">🚪 Sign Out</a>
       </div>
-    </header>
+    </aside>
 
-    <div class="container">
+    <!-- ═══ MAIN ═══ -->
+    <main class="app-main">
+      <header class="app-header">
+        <div class="brand">
+          <div class="sap-badge">IMCS</div>
+          <div>
+            <div class="hdr-title">Analytics &amp; Reports</div>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn" id="refreshBtn">🔄 Refresh</button>
+          <a href="/logout" class="btn">🚪 Logout</a>
+        </div>
+      </header>
 
-      <!-- ===== DATA SUMMARY ===== -->
-      <div class="card">
-        <div class="card-title">Data Summary</div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; padding: 12px;">
-          <div style="text-align: center;">
-            <div style="font-size: 24px; font-weight: bold; color: #003366;" id="summaryMachines">—</div>
-            <div style="font-size: 12px; color: #666; margin-top: 4px;">Total Machines</div>
-          </div>
-          <div style="text-align: center;">
-            <div style="font-size: 24px; font-weight: bold; color: #003366;" id="summarySensors">—</div>
-            <div style="font-size: 12px; color: #666; margin-top: 4px;">Sensor Readings</div>
-          </div>
-          <div style="text-align: center;">
-            <div style="font-size: 24px; font-weight: bold; color: #003366;" id="summaryEfficiency">—</div>
-            <div style="font-size: 12px; color: #666; margin-top: 4px;">Avg Efficiency</div>
-          </div>
-          <div style="text-align: center;">
-            <div style="font-size: 24px; font-weight: bold; color: #003366;" id="summaryAlerts">—</div>
-            <div style="font-size: 12px; color: #666; margin-top: 4px;">Active Alerts</div>
-          </div>
-        </div>
-      </div>
+      <div class="container" id="mainScroll">
 
-      <!-- ===== SUMMARY CHART ===== -->
-      <div class="card">
-        <div class="card-title">Overall Efficiency Trend</div>
-
-        <div class="chart-wrap">
-          <img
-            id="summaryChart"
-            src="/chart/summary.png"
-            alt="Overall efficiency trend"
-            decoding="async"
-          />
-        </div>
-      </div>
-
-      <!-- ===== MACHINE PERFORMANCE DATA ===== -->
-      <div class="card">
-        <div class="card-title">
-          Machine Performance Data
-          <button class="btn" id="loadMachinesDataBtn" style="padding:4px 8px; font-size:11px;">
-            <img src="/static/icons/refresh.svg" width="12" height="12" alt=""> Load Data
-          </button>
-        </div>
-        <div class="chart-container" style="height: 350px;">
-          <canvas id="machinesPerformanceChart"></canvas>
-        </div>
-        <div id="machinesDataTableContainer" style="margin-top: 16px; display: none;">
-          <div class="card-title" style="margin-bottom: 10px;">
-            Performance Data Table
-            <button class="btn" id="exportMachinesBtn" style="padding:4px 8px; font-size:11px;">
-              <img src="/static/icons/chart.svg" width="12" height="12" alt=""> Export
-            </button>
-          </div>
-          <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
-            <table class="table" id="machinesDataTable">
-              <thead>
-                <tr>
-                  <th>Machine ID</th>
-                  <th>Name</th>
-                  <th>Type</th>
-                  <th>Location</th>
-                  <th>Status</th>
-                  <th>Efficiency</th>
-                  <th>Last Updated</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="machinesDataTableBody">
-                <tr><td colspan="8" class="muted small" style="text-align:center; padding:20px;">Click "Load Data" to view machine performance</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== SENSOR READINGS DATA ===== -->
-      <div class="card">
-        <div class="card-title">
-          Sensor Readings Analysis
-          <button class="btn" id="loadSensorsDataBtn" style="padding:4px 8px; font-size:11px;">
-            <img src="/static/icons/refresh.svg" width="12" height="12" alt=""> Load Data
-          </button>
-        </div>
-        <div class="chart-container" style="height: 350px;">
-          <canvas id="sensorsDataChart"></canvas>
-        </div>
-        <div id="sensorsDataTableContainer" style="margin-top: 16px; display: none;">
-          <div class="card-title" style="margin-bottom: 10px;">
-            Sensor Readings Table
-            <button class="btn" id="exportSensorsBtn" style="padding:4px 8px; font-size:11px;">
-              <img src="/static/icons/chart.svg" width="12" height="12" alt=""> Export
-            </button>
-          </div>
-          <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
-            <table class="table" id="sensorsDataTable">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Sensor Name</th>
-                  <th>Machine</th>
-                  <th>Value</th>
-                  <th>Unit</th>
-                  <th>Timestamp</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="sensorsDataTableBody">
-                <tr><td colspan="7" class="muted small" style="text-align:center; padding:20px;">Click "Load Data" to view sensor readings</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== CSV VISUALIZATION ===== -->
-      <div class="card">
-        <div class="card-title">CSV Data Analysis</div>
-        <div id="csvDropZoneReports" class="csv-drop-zone">
-          <div class="drop-zone-content">
-            <img src="/static/icons/chart.svg" width="48" height="48" style="opacity:0.5; margin-bottom:8px;" alt="">
-            <div class="drop-zone-text">
-              <strong>Drop CSV file here for analysis</strong><br>
-              <span class="muted small">Supports time series, numeric data, and more</span>
+        <!-- ── EXPORT PANEL ── -->
+        <div class="card">
+          <div class="sec-hdr">📤 Export Reports</div>
+          <div class="sec-body">
+            <div style="font-size:12px;color:#444;margin-bottom:8px;">Generate and download high-quality reports in
+              multiple formats. All exports include live data from the last 30 days.</div>
+            <div class="export-grid">
+              <button class="export-btn primary" id="exportFullPDF">📄 Full Report (PDF)</button>
+              <button class="export-btn" id="exportMachinesCSV">📊 Machine Data (CSV)</button>
+              <button class="export-btn" id="exportSensorsCSV">📡 Sensor Readings (CSV)</button>
+              <button class="export-btn" id="exportPerformanceCSV">📈 Performance Metrics (CSV)</button>
+              <button class="export-btn" id="exportPrintView">🖨️ Print View</button>
             </div>
-            <input type="file" id="csvFileInputReports" accept=".csv" style="display:none;">
           </div>
         </div>
-        <div id="csvChartsContainer" style="display:none;">
-          <div class="charts-grid" style="margin-top:12px;">
-            <div class="card chart-card">
-              <div class="card-title">CSV Line Chart</div>
-              <div class="chart-container">
-                <canvas id="csvLineChart"></canvas>
+
+        <!-- ── PERFORMANCE METRICS (LAST 30 DAYS) ── -->
+        <div class="card" id="perfMetricsCard">
+          <div class="sec-hdr">
+            📊 Performance Metrics — Last 30 Days
+            <div class="sec-actions">
+              <button class="export-btn" style="padding:4px 10px;font-size:11px;" id="exportPerfBtn">📥 Export</button>
+            </div>
+          </div>
+          <div class="sec-body">
+            <!-- KPI row -->
+            <div class="metrics-grid" id="metricsGrid">
+              <div class="metric-card">
+                <div class="metric-val" id="m-machines">—</div>
+                <div class="metric-lbl">Total Machines</div>
+                <div class="metric-sub" id="m-running">— running</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-val" id="m-uptime">—</div>
+                <div class="metric-lbl">Uptime %</div>
+                <div class="metric-sub">Running / Total</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-val" id="m-efficiency">—</div>
+                <div class="metric-lbl">Avg Efficiency</div>
+                <div class="metric-sub">30-day average</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-val" id="m-readings">—</div>
+                <div class="metric-lbl">Sensor Readings</div>
+                <div class="metric-sub">Last 30 days</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-val" id="m-alerts">—</div>
+                <div class="metric-lbl">Alerts Raised</div>
+                <div class="metric-sub" id="m-unack">— unresolved</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-val" id="m-tasks">—</div>
+                <div class="metric-lbl">Open Tasks</div>
+                <div class="metric-sub">Maintenance queue</div>
               </div>
             </div>
-            <div class="card chart-card">
-              <div class="card-title">CSV Bar Chart</div>
-              <div class="chart-container">
-                <canvas id="csvBarChart"></canvas>
+            <!-- 30-day trend chart -->
+            <div style="margin-top:12px;">
+              <div style="font-size:12px;font-weight:700;color:#003366;margin-bottom:6px;">Daily Efficiency Trend (30
+                days)</div>
+              <div class="chart-container" style="height:220px;">
+                <canvas id="perfTrendChart"></canvas>
+              </div>
+            </div>
+            <!-- Per-machine breakdown table -->
+            <div style="margin-top:14px;">
+              <div style="font-size:12px;font-weight:700;color:#003366;margin-bottom:6px;">Per-Machine Breakdown</div>
+              <div class="tbl-wrap">
+                <table class="table" id="perfMachineTable">
+                  <thead>
+                    <tr>
+                      <th>Machine</th>
+                      <th>Type</th>
+                      <th>Location</th>
+                      <th>Status</th>
+                      <th>Avg Eff%</th>
+                      <th>Min</th>
+                      <th>Max</th>
+                      <th>Readings</th>
+                      <th>Last Reading</th>
+                    </tr>
+                  </thead>
+                  <tbody id="perfMachineBody">
+                    <tr>
+                      <td colspan="9" style="text-align:center;padding:20px;" class="muted small">Loading…</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
         </div>
-        <div id="csvDataTableContainer" style="margin-top: 16px; display: none;">
-          <div class="card-title" style="margin-bottom: 10px;">
-            CSV Data Table
-            <button class="btn" id="exportCSVBtn" style="padding:4px 8px; font-size:11px;">
-              <img src="/static/icons/chart.svg" width="12" height="12" alt=""> Export
-            </button>
+
+        <!-- ── PERFORMANCE DATA TABLE (EDITABLE) ── -->
+        <div class="card">
+          <div class="sec-hdr">
+            🏭 Performance Data Table
+            <span class="edit-hint" style="color:rgba(255,255,255,.7);">Click any cell to edit</span>
+            <div class="sec-actions">
+              <button class="export-btn" style="padding:4px 10px;font-size:11px;" id="loadMachinesDataBtn">🔄
+                Load</button>
+              <button class="export-btn" style="padding:4px 10px;font-size:11px;" id="exportMachinesTableBtn">📥
+                CSV</button>
+            </div>
           </div>
-          <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
-            <table class="table" id="csvDataTable">
-              <thead id="csvDataTableHead">
-                <tr></tr>
-              </thead>
-              <tbody id="csvDataTableBody">
-              </tbody>
-            </table>
+          <div class="sec-body">
+            <div style="margin-bottom:10px;">
+              <div class="chart-container" style="height:240px;"><canvas id="machinesPerformanceChart"></canvas></div>
+            </div>
+            <div class="tbl-wrap">
+              <table class="table" id="machinesDataTable">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name ✏️</th>
+                    <th>Type ✏️</th>
+                    <th>Location ✏️</th>
+                    <th>Status ✏️</th>
+                    <th>Efficiency</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="machinesDataTableBody">
+                  <tr>
+                    <td colspan="7" style="text-align:center;padding:20px;" class="muted small">Click "Load" to view
+                      machine data</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="pager" id="machinesPager" style="display:none;">
+              <button id="machinesPrev" disabled>◀ Prev</button>
+              <span id="machinesPageInfo"></span>
+              <button id="machinesNext">Next ▶</button>
+            </div>
           </div>
         </div>
-        <div id="csvInfoReports" class="muted small" style="margin-top:8px;"></div>
-      </div>
 
-      <!-- ===== PERFORMANCE METRICS ===== -->
-      <div class="card">
-        <div class="card-title">Performance Metrics (Last 30 Days)</div>
-        <div class="chart-container">
-          <canvas id="performanceChartReports"></canvas>
-          <img id="performanceChartFallbackReports" src="/chart/performance.png" alt="Performance" class="chart-fallback" style="display:none;">
+        <!-- ── SENSOR READINGS TABLE (EDITABLE) ── -->
+        <div class="card">
+          <div class="sec-hdr">
+            📡 Sensor Readings Table
+            <span class="edit-hint" style="color:rgba(255,255,255,.7);">Click value cell to edit</span>
+            <div class="sec-actions">
+              <button class="export-btn" style="padding:4px 10px;font-size:11px;" id="loadSensorsDataBtn">🔄
+                Load</button>
+              <button class="export-btn" style="padding:4px 10px;font-size:11px;" id="exportSensorsTableBtn">📥
+                CSV</button>
+            </div>
+          </div>
+          <div class="sec-body">
+            <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center;">
+              <label style="font-size:12px;font-weight:600;color:#003366;">Filter by machine:</label>
+              <select id="sensorMachineFilter" class="input" style="width:200px;padding:4px 6px;font-size:12px;">
+                <option value="">All machines</option>
+              </select>
+            </div>
+            <div class="chart-container" style="height:220px;margin-bottom:10px;"><canvas
+                id="sensorsDataChart"></canvas></div>
+            <div class="tbl-wrap">
+              <table class="table" id="sensorsDataTable">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Machine</th>
+                    <th>Sensor</th>
+                    <th>Value ✏️</th>
+                    <th>Unit</th>
+                    <th>Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody id="sensorsDataTableBody">
+                  <tr>
+                    <td colspan="6" style="text-align:center;padding:20px;" class="muted small">Click "Load" to view
+                      sensor readings</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="pager" id="sensorsPager" style="display:none;">
+              <button id="sensorsPrev" disabled>◀ Prev</button>
+              <span id="sensorsPageInfo"></span>
+              <button id="sensorsNext">Next ▶</button>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <!-- ===== STATUS HEATMAP ===== -->
-      <div class="card">
-        <div class="card-title">Machine Status Heatmap by Location</div>
-        <div class="chart-wrap">
-          <img id="heatmapChart" src="/chart/heatmap.png" alt="Status Heatmap" decoding="async">
+        <!-- ── SUMMARY CHART ── -->
+        <div class="card">
+          <div class="sec-hdr">📉 Overall Efficiency Trend</div>
+          <div class="sec-body" style="padding:8px;">
+            <div class="chart-wrap">
+              <img id="summaryChart" src="/chart/summary.png" alt="Overall efficiency trend" decoding="async" />
+            </div>
+          </div>
         </div>
-      </div>
 
-    </div>
-  </main>
-</div>
+        <!-- ── STATUS HEATMAP ── -->
+        <div class="card">
+          <div class="sec-hdr">🗺️ Machine Status Heatmap by Location</div>
+          <div class="sec-body" style="padding:8px;">
+            <div class="chart-wrap">
+              <img id="heatmapChart" src="/chart/heatmap.png" alt="Status Heatmap" decoding="async" />
+            </div>
+          </div>
+        </div>
 
-<!-- ================= SCRIPTS ================= -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="/static/js/app.js" defer></script>
-<script src="/static/js/charts.js" defer></script>
-<script src="/static/js/csv-viz.js" defer></script>
-<script src="/static/js/reports.js" defer></script>
-<script src="/static/js/reports-enhanced.js" defer></script>
+      </div><!-- /container -->
+      <footer class="footer">IMCS · Analytics &amp; Reports</footer>
+    </main>
+  </div>
 
-<script>
-  // Initialize CSV upload for reports
-  document.addEventListener('DOMContentLoaded', async () => {
-    if (window.IMCSCSV) {
-      await window.IMCSCSV.initDB();
-    }
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="/static/js/app.js"></script>
+  <script>
+    (function () {
+      'use strict';
 
-    const dropZone = document.getElementById('csvDropZoneReports');
-    const fileInput = document.getElementById('csvFileInputReports');
-    const csvCharts = document.getElementById('csvChartsContainer');
-    const csvInfo = document.getElementById('csvInfoReports');
+      // ── helpers ──
+      const el = id => document.getElementById(id);
+      let perfTrendChartInst = null;
+      let machinesChartInst = null;
+      let sensorsChartInst = null;
 
-    if (dropZone && window.IMCSCSV) {
-      dropZone.addEventListener('click', () => fileInput.click());
-      
-      fileInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (file) await handleCSVUpload(file);
+      // ── toast ──
+      function toast(msg, isErr) {
+        const t = el('saveToast');
+        t.textContent = msg;
+        t.className = isErr ? 'err' : '';
+        t.style.display = 'block';
+        setTimeout(() => { t.style.display = 'none'; }, 2800);
+      }
+
+      // ── status badge ──
+      function badge(status) {
+        const s = (status || 'unknown').toLowerCase();
+        const cls = { running: 'sb-running', idle: 'sb-idle', maintenance: 'sb-maintenance', offline: 'sb-offline', down: 'sb-offline' };
+        return `<span class="sb ${cls[s] || ''}">${s}</span>`;
+      }
+
+      // ── efficiency colour ──
+      function effColor(v) {
+        if (v >= 80) return '#107e3e';
+        if (v >= 60) return '#e9730c';
+        return '#bb0000';
+      }
+
+      // ── sparkline ──
+      function sparkline(vals) {
+        if (!vals || !vals.length) return '';
+        const max = Math.max(...vals, 1);
+        return '<div class="trend-bar">' + vals.slice(-8).map(v => {
+          const h = Math.max(2, Math.round((v / max) * 20));
+          return `<span style="height:${h}px;background:${effColor(v)};"></span>`;
+        }).join('') + '</div>';
+      }
+
+      // ══════════════════════════════════════════
+      // PERFORMANCE METRICS (30 DAYS)
+      // ══════════════════════════════════════════
+      async function loadPerformanceMetrics() {
+        try {
+          const res = await fetch('/api/reports/performance');
+          if (!res.ok) throw new Error('API error');
+          const data = await res.json();
+          const s = data.summary;
+
+          el('m-machines').textContent = s.total_machines;
+          el('m-running').textContent = `${s.running_machines} running`;
+          el('m-uptime').textContent = s.uptime_pct + '%';
+          el('m-efficiency').textContent = s.avg_efficiency + '%';
+          el('m-readings').textContent = s.total_readings_30d.toLocaleString();
+          el('m-alerts').textContent = s.alerts_30d;
+          el('m-unack').textContent = `${s.unack_alerts} unresolved`;
+          el('m-tasks').textContent = s.open_tasks;
+
+          // Colour efficiency card
+          const effVal = s.avg_efficiency;
+          const effCard = el('m-efficiency').closest('.metric-card');
+          effCard.style.borderTopColor = effColor(effVal);
+
+          // Trend chart
+          const labels = data.daily_trend.map(d => d.date.slice(5));
+          const avgs = data.daily_trend.map(d => d.avg);
+          const mins = data.daily_trend.map(d => d.min);
+          const maxs = data.daily_trend.map(d => d.max);
+
+          if (perfTrendChartInst) perfTrendChartInst.destroy();
+          const ctx = el('perfTrendChart');
+          if (ctx && window.Chart) {
+            perfTrendChartInst = new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels,
+                datasets: [
+                  {
+                    label: 'Avg Efficiency %',
+                    data: avgs,
+                    borderColor: '#0a6ed1',
+                    backgroundColor: 'rgba(10,110,209,.12)',
+                    fill: true,
+                    tension: 0.35,
+                    pointRadius: avgs.length > 20 ? 2 : 4,
+                    borderWidth: 2
+                  },
+                  {
+                    label: 'Max',
+                    data: maxs,
+                    borderColor: '#107e3e',
+                    borderDash: [4, 3],
+                    fill: false,
+                    tension: 0.35,
+                    pointRadius: 0,
+                    borderWidth: 1.5
+                  },
+                  {
+                    label: 'Min',
+                    data: mins,
+                    borderColor: '#bb0000',
+                    borderDash: [4, 3],
+                    fill: false,
+                    tension: 0.35,
+                    pointRadius: 0,
+                    borderWidth: 1.5
+                  }
+                ]
+              },
+              options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                  legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 14 } },
+                  tooltip: { mode: 'index', intersect: false }
+                },
+                scales: {
+                  y: { min: 0, max: 100, ticks: { callback: v => v + '%', font: { size: 11 } }, grid: { color: 'rgba(0,0,0,.06)' } },
+                  x: { ticks: { font: { size: 10 }, maxRotation: 45 }, grid: { display: false } }
+                }
+              }
+            });
+          }
+
+          // Per-machine table
+          const tbody = el('perfMachineBody');
+          if (!data.machines.length) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;" class="muted small">No data for last 30 days — generate demo data first</td></tr>';
+            return;
+          }
+          tbody.innerHTML = data.machines.map(m => {
+            const effStyle = `color:${effColor(m.avg_eff)};font-weight:700;`;
+            return `<tr>
+          <td><a href="/machine/${m.id}" style="color:#0a6ed1;text-decoration:none;">${m.name}</a></td>
+          <td>${m.type || '—'}</td>
+          <td>${m.location || '—'}</td>
+          <td>${badge(m.status)}</td>
+          <td style="${effStyle}">${m.avg_eff}%</td>
+          <td class="muted small">${m.min_eff !== null ? m.min_eff + '%' : '—'}</td>
+          <td class="muted small">${m.max_eff !== null ? m.max_eff + '%' : '—'}</td>
+          <td>${m.readings.toLocaleString()}</td>
+          <td class="muted small">${m.last_reading ? m.last_reading.slice(0, 16) : '—'}</td>
+        </tr>`;
+          }).join('');
+
+          // Store for export
+          window._perfData = data;
+
+        } catch (e) {
+          console.error('[Reports] performance metrics error:', e);
+          el('perfMachineBody').innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:#bb0000;">Failed to load — check server connection</td></tr>';
+        }
+      }
+
+      // ══════════════════════════════════════════
+      // MACHINES TABLE (EDITABLE)
+      // ══════════════════════════════════════════
+      let machinesData = [];
+      let machinesPage = 0;
+      const MACHINES_PER_PAGE = 20;
+
+      async function loadMachinesTable() {
+        const tbody = el('machinesDataTableBody');
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;" class="muted small">Loading…</td></tr>';
+        try {
+          const res = await fetch('/api/machines');
+          if (!res.ok) throw new Error('API error');
+          machinesData = await res.json();
+          renderMachinesPage(0);
+          renderMachinesChart();
+        } catch (e) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:#bb0000;">Error: ${e.message}</td></tr>`;
+        }
+      }
+
+      function renderMachinesPage(page) {
+        machinesPage = page;
+        const start = page * MACHINES_PER_PAGE;
+        const slice = machinesData.slice(start, start + MACHINES_PER_PAGE);
+        const tbody = el('machinesDataTableBody');
+
+        if (!machinesData.length) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;" class="muted small">No machines found</td></tr>';
+          el('machinesPager').style.display = 'none';
+          return;
+        }
+
+        tbody.innerHTML = slice.map(m => {
+          const eff = m.efficiency || 0;
+          const effBar = `<div style="display:flex;align-items:center;gap:6px;">
+        <div style="flex:1;height:8px;background:#E0E0E0;border:1px solid #C0C0C0;">
+          <div style="width:${Math.min(eff, 100)}%;height:100%;background:${effColor(eff)};"></div>
+        </div>
+        <span style="font-size:11px;font-weight:700;color:${effColor(eff)};">${eff}%</span>
+      </div>`;
+          return `<tr data-id="${m.id}">
+        <td class="muted small">${m.id}</td>
+        <td class="editable" data-field="name" data-id="${m.id}">${m.name || ''}</td>
+        <td class="editable" data-field="type" data-id="${m.id}">${m.type || ''}</td>
+        <td class="editable" data-field="location" data-id="${m.id}">${m.location || ''}</td>
+        <td class="editable" data-field="status" data-id="${m.id}">${badge(m.status)}</td>
+        <td>${effBar}</td>
+        <td><a href="/machine/${m.id}" class="btn" style="padding:3px 8px;font-size:11px;">Details</a></td>
+      </tr>`;
+        }).join('');
+
+        // Pager
+        const total = machinesData.length;
+        const totalPages = Math.ceil(total / MACHINES_PER_PAGE);
+        el('machinesPager').style.display = totalPages > 1 ? 'flex' : 'none';
+        el('machinesPageInfo').textContent = `Page ${page + 1} of ${totalPages} (${total} machines)`;
+        el('machinesPrev').disabled = page === 0;
+        el('machinesNext').disabled = page >= totalPages - 1;
+
+        // Wire editable cells
+        tbody.querySelectorAll('td.editable').forEach(td => {
+          td.addEventListener('click', () => startMachineEdit(td));
+        });
+      }
+
+      function startMachineEdit(td) {
+        if (td.querySelector('input')) return;
+        const field = td.dataset.field;
+        const id = td.dataset.id;
+        let currentVal = td.textContent.trim();
+
+        if (field === 'status') {
+          // Use select for status
+          const sel = document.createElement('select');
+          sel.style.cssText = 'width:100%;padding:4px;border:2px solid #0a6ed1;font-size:12px;';
+          ['running', 'idle', 'maintenance', 'offline'].forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s; opt.textContent = s;
+            if (currentVal.toLowerCase().includes(s)) opt.selected = true;
+            sel.appendChild(opt);
+          });
+          td.innerHTML = '';
+          td.appendChild(sel);
+          sel.focus();
+          sel.addEventListener('change', () => saveMachineEdit(td, id, field, sel.value));
+          sel.addEventListener('blur', () => saveMachineEdit(td, id, field, sel.value));
+        } else {
+          const inp = document.createElement('input');
+          inp.value = currentVal;
+          inp.type = 'text';
+          td.classList.add('editing');
+          td.innerHTML = '';
+          td.appendChild(inp);
+          inp.focus(); inp.select();
+          inp.addEventListener('keydown', e => {
+            if (e.key === 'Enter') saveMachineEdit(td, id, field, inp.value);
+            if (e.key === 'Escape') { renderMachinesPage(machinesPage); }
+          });
+          inp.addEventListener('blur', () => saveMachineEdit(td, id, field, inp.value));
+        }
+      }
+
+      async function saveMachineEdit(td, id, field, value) {
+        try {
+          const res = await fetch(`/api/data/machines/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ [field]: value })
+          });
+          if (!res.ok) throw new Error((await res.json()).error || 'Save failed');
+          // Update local data
+          const m = machinesData.find(x => x.id == id);
+          if (m) m[field] = value;
+          toast(`✓ ${field} updated`);
+        } catch (e) {
+          toast(`✗ ${e.message}`, true);
+        }
+        renderMachinesPage(machinesPage);
+      }
+
+      function renderMachinesChart() {
+        const ctx = el('machinesPerformanceChart');
+        if (!ctx || !window.Chart) return;
+        const top = machinesData.slice(0, 12);
+        if (machinesChartInst) machinesChartInst.destroy();
+        machinesChartInst = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: top.map(m => m.name),
+            datasets: [{
+              label: 'Efficiency %',
+              data: top.map(m => m.efficiency || 0),
+              backgroundColor: top.map(m => effColor(m.efficiency || 0) + 'CC'),
+              borderColor: top.map(m => effColor(m.efficiency || 0)),
+              borderWidth: 1.5
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { min: 0, max: 100, ticks: { callback: v => v + '%', font: { size: 11 } } },
+              y: { ticks: { font: { size: 11 } } }
+            }
+          }
+        });
+      }
+
+      el('machinesPrev').addEventListener('click', () => renderMachinesPage(machinesPage - 1));
+      el('machinesNext').addEventListener('click', () => renderMachinesPage(machinesPage + 1));
+      el('loadMachinesDataBtn').addEventListener('click', loadMachinesTable);
+
+      // ══════════════════════════════════════════
+      // SENSOR READINGS TABLE (EDITABLE)
+      // ══════════════════════════════════════════
+      let sensorsOffset = 0;
+      let sensorsTotal = 0;
+      const SENSORS_LIMIT = 50;
+      let sensorsRows = [];
+
+      async function loadSensorsTable(offset = 0) {
+        const tbody = el('sensorsDataTableBody');
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;" class="muted small">Loading…</td></tr>';
+        const machineId = el('sensorMachineFilter').value;
+        const url = `/api/sensor-readings?limit=${SENSORS_LIMIT}&offset=${offset}${machineId ? '&machine_id=' + machineId : ''}`;
+        try {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error('API error');
+          const data = await res.json();
+          sensorsOffset = offset;
+          sensorsTotal = data.total;
+          sensorsRows = data.rows;
+          renderSensorsTable(data.rows);
+          renderSensorsChart(data.rows);
+        } catch (e) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:#bb0000;">Error: ${e.message}</td></tr>`;
+        }
+      }
+
+      function renderSensorsTable(rows) {
+        const tbody = el('sensorsDataTableBody');
+        if (!rows.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;" class="muted small">No sensor readings found</td></tr>';
+          el('sensorsPager').style.display = 'none';
+          return;
+        }
+        tbody.innerHTML = rows.map(r => `<tr data-rid="${r.id}">
+      <td class="muted small">${r.id}</td>
+      <td>${r.machine_name || '—'}</td>
+      <td>${r.sensor_name || '—'}</td>
+      <td class="editable" data-field="value" data-rid="${r.id}">${parseFloat(r.value || 0).toFixed(2)}</td>
+      <td class="muted small">${r.unit || '—'}</td>
+      <td class="muted small">${(r.timestamp || '').slice(0, 16)}</td>
+    </tr>`).join('');
+
+        // Pager
+        const totalPages = Math.ceil(sensorsTotal / SENSORS_LIMIT);
+        const curPage = Math.floor(sensorsOffset / SENSORS_LIMIT);
+        el('sensorsPager').style.display = totalPages > 1 ? 'flex' : 'none';
+        el('sensorsPageInfo').textContent = `${sensorsOffset + 1}–${Math.min(sensorsOffset + SENSORS_LIMIT, sensorsTotal)} of ${sensorsTotal.toLocaleString()} readings`;
+        el('sensorsPrev').disabled = sensorsOffset === 0;
+        el('sensorsNext').disabled = sensorsOffset + SENSORS_LIMIT >= sensorsTotal;
+
+        // Wire editable cells
+        tbody.querySelectorAll('td.editable').forEach(td => {
+          td.addEventListener('click', () => startSensorEdit(td));
+        });
+      }
+
+      function startSensorEdit(td) {
+        if (td.querySelector('input')) return;
+        const rid = td.dataset.rid;
+        const currentVal = td.textContent.trim();
+        const inp = document.createElement('input');
+        inp.value = currentVal;
+        inp.type = 'number';
+        inp.step = '0.01';
+        td.classList.add('editing');
+        td.innerHTML = '';
+        td.appendChild(inp);
+        inp.focus(); inp.select();
+        inp.addEventListener('keydown', e => {
+          if (e.key === 'Enter') saveSensorEdit(td, rid, inp.value);
+          if (e.key === 'Escape') renderSensorsTable(sensorsRows);
+        });
+        inp.addEventListener('blur', () => saveSensorEdit(td, rid, inp.value));
+      }
+
+      async function saveSensorEdit(td, rid, value) {
+        const numVal = parseFloat(value);
+        if (isNaN(numVal)) { toast('✗ Value must be a number', true); renderSensorsTable(sensorsRows); return; }
+        try {
+          const res = await fetch(`/api/data/sensors/${rid}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ value: numVal })
+          });
+          if (!res.ok) throw new Error((await res.json()).error || 'Save failed');
+          const row = sensorsRows.find(r => r.id == rid);
+          if (row) row.value = numVal;
+          toast('✓ Reading updated');
+        } catch (e) {
+          toast(`✗ ${e.message}`, true);
+        }
+        renderSensorsTable(sensorsRows);
+      }
+
+      function renderSensorsChart(rows) {
+        const ctx = el('sensorsDataChart');
+        if (!ctx || !window.Chart || !rows.length) return;
+        const last30 = rows.slice(0, 30).reverse();
+        if (sensorsChartInst) sensorsChartInst.destroy();
+        sensorsChartInst = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: last30.map(r => (r.timestamp || '').slice(11, 16)),
+            datasets: [{
+              label: 'Sensor Value',
+              data: last30.map(r => parseFloat(r.value || 0)),
+              borderColor: '#0a6ed1',
+              backgroundColor: 'rgba(10,110,209,.1)',
+              fill: true, tension: 0.3, pointRadius: 3, borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { font: { size: 10 }, maxRotation: 45 }, grid: { display: false } },
+              y: { ticks: { font: { size: 11 } }, grid: { color: 'rgba(0,0,0,.06)' } }
+            }
+          }
+        });
+      }
+
+      el('sensorsPrev').addEventListener('click', () => loadSensorsTable(sensorsOffset - SENSORS_LIMIT));
+      el('sensorsNext').addEventListener('click', () => loadSensorsTable(sensorsOffset + SENSORS_LIMIT));
+      el('loadSensorsDataBtn').addEventListener('click', () => loadSensorsTable(0));
+      el('sensorMachineFilter').addEventListener('change', () => loadSensorsTable(0));
+
+      // ══════════════════════════════════════════
+      // POPULATE MACHINE FILTER DROPDOWN
+      // ══════════════════════════════════════════
+      async function populateMachineFilter() {
+        try {
+          const res = await fetch('/api/machines');
+          if (!res.ok) return;
+          const machines = await res.json();
+          const sel = el('sensorMachineFilter');
+          machines.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.id;
+            opt.textContent = `${m.name} (${m.type || '?'})`;
+            sel.appendChild(opt);
+          });
+        } catch (_) { }
+      }
+
+      // ══════════════════════════════════════════
+      // EXPORTS
+      // ══════════════════════════════════════════
+      function downloadCSV(filename, headers, rows) {
+        const lines = [headers.join(','), ...rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))];
+        const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+      }
+
+      el('exportMachinesCSV').addEventListener('click', async () => {
+        let data = machinesData;
+        if (!data.length) { const r = await fetch('/api/machines'); data = await r.json(); }
+        downloadCSV('imcs_machines.csv',
+          ['ID', 'Name', 'Type', 'Location', 'Status', 'Efficiency%'],
+          data.map(m => [m.id, m.name, m.type, m.location, m.status, m.efficiency])
+        );
+        toast('✓ Machine data exported');
       });
 
-      window.IMCSCSV.handleFileDrop(
-        dropZone,
-        async (result) => {
-          csvInfo.textContent = `✓ ${result.data.filename} loaded (${result.data.row_count} rows)`;
-          csvCharts.style.display = 'block';
-          
-          // Store CSV data globally
-          window.csvDataCache = result.data;
-          
-          // Visualize with multiple chart types
-          window.IMCSCSV.visualizeCSVData(result.data, 'csvLineChart', 'line');
-          window.IMCSCSV.visualizeCSVData(result.data, 'csvBarChart', 'bar');
-          
-          // Render CSV data table
-          if (window.ReportsEnhanced && window.ReportsEnhanced.renderCSVTable) {
-            window.ReportsEnhanced.renderCSVTable(result.data);
-          }
-        },
-        (error) => {
-          csvInfo.textContent = `✗ ${error}`;
-          csvInfo.style.color = '#bb0000';
-        }
-      );
-    }
+      el('exportMachinesTableBtn').addEventListener('click', () => {
+        if (!machinesData.length) { toast('✗ Load data first', true); return; }
+        downloadCSV('imcs_machines.csv',
+          ['ID', 'Name', 'Type', 'Location', 'Status', 'Efficiency%'],
+          machinesData.map(m => [m.id, m.name, m.type, m.location, m.status, m.efficiency])
+        );
+        toast('✓ Exported');
+      });
 
-    async function handleCSVUpload(file) {
-      const formData = new FormData();
-      formData.append('file', file);
+      el('exportSensorsCSV').addEventListener('click', async () => {
+        const res = await fetch('/api/sensor-readings?limit=500');
+        const data = await res.json();
+        downloadCSV('imcs_sensor_readings.csv',
+          ['ID', 'Machine', 'Sensor', 'Value', 'Unit', 'Timestamp'],
+          data.rows.map(r => [r.id, r.machine_name, r.sensor_name, r.value, r.unit, r.timestamp])
+        );
+        toast('✓ Sensor readings exported');
+      });
 
-      try {
-        const response = await fetch('/api/upload-csv', {
-          method: 'POST',
-          body: formData
-        });
-        const result = await response.json();
-        
-        if (result.success) {
-          csvInfo.textContent = `✓ ${result.data.filename} loaded (${result.data.row_count} rows)`;
-          csvCharts.style.display = 'block';
-          window.IMCSCSV.visualizeCSVData(result.data, 'csvLineChart', 'line');
-          window.IMCSCSV.visualizeCSVData(result.data, 'csvBarChart', 'bar');
-          
-          // Store CSV data globally and render table
-          window.csvDataCache = result.data;
-          if (window.ReportsEnhanced && window.ReportsEnhanced.renderCSVTable) {
-            window.ReportsEnhanced.renderCSVTable(result.data);
-          }
-        }
-      } catch (error) {
-        csvInfo.textContent = `✗ Upload failed: ${error.message}`;
-        csvInfo.style.color = '#bb0000';
+      el('exportSensorsTableBtn').addEventListener('click', () => {
+        if (!sensorsRows.length) { toast('✗ Load data first', true); return; }
+        downloadCSV('imcs_sensor_readings.csv',
+          ['ID', 'Machine', 'Sensor', 'Value', 'Unit', 'Timestamp'],
+          sensorsRows.map(r => [r.id, r.machine_name, r.sensor_name, r.value, r.unit, r.timestamp])
+        );
+        toast('✓ Exported');
+      });
+
+      el('exportPerformanceCSV').addEventListener('click', async () => {
+        const res = await fetch('/api/reports/performance');
+        const data = await res.json();
+        downloadCSV('imcs_performance_30d.csv',
+          ['Date', 'Avg Efficiency%', 'Min%', 'Max%', 'Readings'],
+          data.daily_trend.map(d => [d.date, d.avg, d.min, d.max, d.readings])
+        );
+        toast('✓ Performance data exported');
+      });
+
+      el('exportPerfBtn').addEventListener('click', () => {
+        if (!window._perfData) { toast('✗ Load metrics first', true); return; }
+        downloadCSV('imcs_performance_30d.csv',
+          ['Date', 'Avg Efficiency%', 'Min%', 'Max%', 'Readings'],
+          window._perfData.daily_trend.map(d => [d.date, d.avg, d.min, d.max, d.readings])
+        );
+        toast('✓ Exported');
+      });
+
+      el('exportPrintView').addEventListener('click', () => window.print());
+
+      el('exportFullPDF').addEventListener('click', () => {
+        // Build a print-friendly summary and trigger print
+        const printWin = window.open('', '_blank');
+        const now = new Date().toLocaleString();
+        const s = window._perfData?.summary || {};
+        const machines = window._perfData?.machines || machinesData;
+        printWin.document.write(`<!DOCTYPE html><html><head><title>IMCS Full Report</title>
+    <style>
+      body{font-family:Arial,sans-serif;font-size:12px;color:#000;margin:20px;}
+      h1{font-size:18px;color:#000080;border-bottom:2px solid #000080;padding-bottom:6px;}
+      h2{font-size:14px;color:#003366;margin-top:20px;border-bottom:1px solid #ccc;padding-bottom:4px;}
+      table{width:100%;border-collapse:collapse;margin-top:8px;font-size:11px;}
+      th{background:#000080;color:#fff;padding:6px 8px;text-align:left;}
+      td{padding:5px 8px;border-bottom:1px solid #ddd;}
+      tr:nth-child(even) td{background:#f5f5f5;}
+      .kpi-row{display:flex;gap:20px;flex-wrap:wrap;margin:10px 0;}
+      .kpi{background:#f0f4ff;border:1px solid #ccc;padding:10px 16px;min-width:120px;}
+      .kv{font-size:20px;font-weight:700;color:#000080;}
+      .kl{font-size:10px;color:#666;text-transform:uppercase;}
+      .footer{margin-top:30px;font-size:10px;color:#888;border-top:1px solid #ccc;padding-top:8px;}
+    </style></head><body>
+    <h1>📊 IMCS Industrial Machine Control System — Full Report</h1>
+    <p style="color:#666;font-size:11px;">Generated: ${now} &nbsp;|&nbsp; Period: Last 30 Days</p>
+    <h2>Performance Summary</h2>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kv">${s.total_machines || '—'}</div><div class="kl">Total Machines</div></div>
+      <div class="kpi"><div class="kv">${s.running_machines || '—'}</div><div class="kl">Running</div></div>
+      <div class="kpi"><div class="kv">${s.uptime_pct || '—'}%</div><div class="kl">Uptime</div></div>
+      <div class="kpi"><div class="kv">${s.avg_efficiency || '—'}%</div><div class="kl">Avg Efficiency</div></div>
+      <div class="kpi"><div class="kv">${(s.total_readings_30d || 0).toLocaleString()}</div><div class="kl">Sensor Readings</div></div>
+      <div class="kpi"><div class="kv">${s.alerts_30d || '—'}</div><div class="kl">Alerts (30d)</div></div>
+      <div class="kpi"><div class="kv">${s.open_tasks || '—'}</div><div class="kl">Open Tasks</div></div>
+    </div>
+    <h2>Machine Performance (Last 30 Days)</h2>
+    <table>
+      <thead><tr><th>Machine</th><th>Type</th><th>Location</th><th>Status</th><th>Avg Eff%</th><th>Min%</th><th>Max%</th><th>Readings</th></tr></thead>
+      <tbody>${machines.map(m => `<tr>
+        <td>${m.name || m.id}</td><td>${m.type || '—'}</td><td>${m.location || '—'}</td>
+        <td>${m.status || '—'}</td>
+        <td style="font-weight:700;">${m.avg_eff !== undefined ? m.avg_eff : (m.efficiency || 0)}%</td>
+        <td>${m.min_eff !== undefined ? (m.min_eff !== null ? m.min_eff + '%' : '—') : '—'}</td>
+        <td>${m.max_eff !== undefined ? (m.max_eff !== null ? m.max_eff + '%' : '—') : '—'}</td>
+        <td>${(m.readings || 0).toLocaleString()}</td>
+      </tr>`).join('')}</tbody>
+    </table>
+    <div class="footer">IMCS Industrial Hub &nbsp;·&nbsp; Confidential &nbsp;·&nbsp; ${now}</div>
+    </body></html>`);
+        printWin.document.close();
+        printWin.focus();
+        setTimeout(() => printWin.print(), 600);
+      });
+
+      // ══════════════════════════════════════════
+      // SIDEBAR BADGES
+      // ══════════════════════════════════════════
+      async function loadBadges() {
+        try { const r = await fetch('/api/alerts?ack=0'); if (r.ok) { const d = await r.json(); const b = el('badge-alerts'); if (b) { b.textContent = d.length; b.style.display = d.length > 0 ? '' : 'none'; } } } catch (_) { }
+        try { const r = await fetch('/api/maintenance?status=open'); if (r.ok) { const d = await r.json(); const b = el('badge-maintenance'); if (b) { b.textContent = d.length; b.style.display = d.length > 0 ? '' : 'none'; } } } catch (_) { }
       }
-    }
 
-    // Make handleCSVUpload available globally
-    window.handleCSVUpload = handleCSVUpload;
-
-    // Load summary data
-    try {
-      const summaryRes = await fetch('/api/summary');
-      if (summaryRes.ok) {
-        const summary = await summaryRes.json();
-        const machinesEl = document.getElementById('summaryMachines');
-        const sensorsEl = document.getElementById('summarySensors');
-        const efficiencyEl = document.getElementById('summaryEfficiency');
-        const alertsEl = document.getElementById('summaryAlerts');
-        
-        if (machinesEl) machinesEl.textContent = summary.total_machines || 0;
-        if (efficiencyEl) efficiencyEl.textContent = (summary.avg_efficiency || 0) + '%';
-        if (alertsEl) alertsEl.textContent = summary.active_alerts || 0;
-        
-        // Get sensor count
-        const sensorsRes = await fetch('/api/data/sensors/all');
-        if (sensorsRes.ok) {
-          const sensors = await sensorsRes.json();
-          if (sensorsEl) sensorsEl.textContent = sensors.length || 0;
-        }
+      // ══════════════════════════════════════════
+      // REFRESH & INIT
+      // ══════════════════════════════════════════
+      async function refreshAll() {
+        await loadPerformanceMetrics();
+        // Cache-bust static images
+        const si = el('summaryChart');
+        if (si) si.src = '/chart/summary.png?ts=' + Date.now();
+        const hm = el('heatmapChart');
+        if (hm) hm.src = '/chart/heatmap.png?ts=' + Date.now();
       }
-    } catch (e) {
-      console.warn('Failed to load summary:', e);
-    }
 
-    // Load performance chart
-    const perfData = await window.IMCSCharts?.fetchChartData('/api/chart-data/summary');
-    if (perfData && window.IMCSCharts) {
-      window.IMCSCharts.renderPerformanceChart('performanceChartReports', perfData);
-    } else {
-      const fallback = document.getElementById('performanceChartFallbackReports');
-      if (fallback) fallback.style.display = 'block';
-    }
+      document.addEventListener('DOMContentLoaded', async () => {
+        await Promise.all([refreshAll(), populateMachineFilter(), loadBadges()]);
+        el('refreshBtn').addEventListener('click', refreshAll);
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('/static/sw.js').catch(() => { });
+      });
 
-    // Cache-bust images
-    const img = document.getElementById('summaryChart');
-    if (img) img.src = img.src + '?ts=' + Date.now();
-    
-    const heatmap = document.getElementById('heatmapChart');
-    if (heatmap) heatmap.src = heatmap.src.split('?')[0] + '?ts=' + Date.now();
-  });
-
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/static/sw.js').catch(()=>{});
-    });
-  }
-</script>
-
+    })();
+  </script>
 </body>
+
 </html>

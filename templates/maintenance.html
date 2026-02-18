@@ -1,117 +1,600 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>IMCS - Maintenance</title>
-
+  <link rel="stylesheet" href="/static/css/sap90.css">
   <style>
-    .app-shell{display:flex;height:100vh;overflow:hidden;background:#DFDFDF;}
-  </style>
+    .app-shell {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      background: #DFDFDF;
+    }
 
-  <link rel="preload" href="/static/css/sap90.css" as="style" onload="this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="/static/css/sap90.css"></noscript>
+    /* priority badges */
+    .pri-high {
+      background: #f8d7da;
+      color: #bb0000;
+      border: 1px solid #f5c6cb;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .pri-medium {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .pri-low {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    /* status badges */
+    .st-open {
+      background: #d1ecf1;
+      color: #0c5460;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .st-in_progress {
+      background: #fff3cd;
+      color: #856404;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .st-completed {
+      background: #d4edda;
+      color: #155724;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    /* stats */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .stat-card {
+      background: #EFEFEF;
+      border: 2px solid;
+      border-color: #FFF #808080 #808080 #FFF;
+      padding: 10px 14px;
+      text-align: center;
+    }
+
+    .stat-card .stat-val {
+      font-size: 26px;
+      font-weight: 700;
+      color: #003366;
+    }
+
+    .stat-card .stat-lbl {
+      font-size: 11px;
+      color: #555;
+      margin-top: 2px;
+    }
+
+    /* modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.45);
+    }
+
+    .modal:not(.hidden) {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.hidden {
+      display: none !important;
+    }
+
+    .modal-content {
+      background: #DFDFDF;
+      border: 2px solid;
+      border-color: #FFF #808080 #808080 #FFF;
+      box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
+      width: 90%;
+      max-width: 480px;
+      padding: 6px;
+    }
+
+    .modal-header {
+      background: linear-gradient(90deg, #000080, #1084d7);
+      color: #fff;
+      padding: 5px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: -6px -6px 12px -6px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .modal-close {
+      background: #D4D0C8;
+      border: 1px solid;
+      border-color: #FFF #808080 #808080 #FFF;
+      color: #000;
+      cursor: pointer;
+      width: 18px;
+      height: 18px;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .modal-body {
+      padding: 4px 8px 8px;
+    }
+
+    .form-row {
+      margin-bottom: 10px;
+    }
+
+    .form-row label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #002244;
+      margin-bottom: 4px;
+    }
+
+    .form-row input,
+    .form-row select,
+    .form-row textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 5px 7px;
+      border: 2px solid;
+      border-color: #808080 #FFF #FFF #808080;
+      background: #FFF;
+      font-size: 13px;
+      font-family: Tahoma, Arial, sans-serif;
+      box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      padding: 8px 8px 4px;
+      border-top: 1px solid #A0A0A0;
+      margin-top: 8px;
+    }
+
+    /* filter */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .filter-bar label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #002244;
+    }
+  </style>
 </head>
 
 <body>
-<div class="app-shell">
-  <aside class="app-sidebar">
-    <button class="sidebar-toggle" title="Collapse sidebar">◀</button>
-    <div class="brand">
-      <img src="/static/icons/logo-imcs.svg" class="logo-img" alt="IMCS"/>
-      <div class="title">Industrial Hub</div>
-      <div class="muted small">Maintenance</div>
-    </div>
-    <nav class="nav">
-      <div class="nav-section">
-        <div class="nav-section-header" data-section="main">
-          <span class="nav-section-chevron">▼</span>
-          <span class="nav-section-title">Main</span>
-        </div>
-        <div class="nav-section-items">
-          <a href="/dashboard" class="nav-item" data-label="Dashboard"><img src="/static/icons/home.svg" width="16" height="16" alt=""/> <span>Dashboard</span></a>
-          <a href="/machinery" class="nav-item" data-label="Machinery"><img src="/static/icons/machine.svg" width="16" height="16" alt=""/> <span>Machinery</span></a>
-        </div>
-      </div>
+  <div class="app-shell">
 
-      <div class="nav-section">
-        <div class="nav-section-header" data-section="operations">
-          <span class="nav-section-chevron">▼</span>
-          <span class="nav-section-title">Operations</span>
-        </div>
-        <div class="nav-section-items">
-          <a href="/maintenance" class="nav-item active" data-label="Maintenance"><img src="/static/icons/wrench.svg" width="16" height="16" alt=""/> <span>Maintenance</span></a>
-          <a href="/alerts" class="nav-item" data-label="Alerts"><img src="/static/icons/alert.svg" width="16" height="16" alt=""/> <span>Alerts</span></a>
-        </div>
-      </div>
-
-      <div class="nav-section">
-        <div class="nav-section-header" data-section="reporting">
-          <span class="nav-section-chevron">▼</span>
-          <span class="nav-section-title">Reporting</span>
-        </div>
-        <div class="nav-section-items">
-          <a href="/reports" class="nav-item" data-label="Reports"><img src="/static/icons/chart.svg" width="16" height="16" alt=""/> <span>Reports</span></a>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Navigation Footer -->
-    <div class="nav-footer">
-      <a href="/logout" class="nav-footer-btn" title="Sign out">
-        <img src="/static/icons/alert.svg" width="14" height="14" alt=""> Sign Out
-      </a>
-    </div>
-  </aside>
-
-  <main class="app-main">
-    <header class="app-header">
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside class="app-sidebar">
+      <button class="sidebar-toggle" title="Collapse sidebar">◀</button>
       <div class="brand">
-        <div class="sap-badge">IMCS</div>
-        <div>
-          <div class="hdr-title">Maintenance Management</div>
+        <img src="/static/icons/logo-imcs.svg" class="logo-img" alt="IMCS" />
+        <div class="title">Industrial Hub</div>
+        <div class="muted small">Maintenance</div>
+      </div>
+      <nav class="nav">
+        <div class="nav-search-container">
+          <input type="text" id="navSearch" class="nav-search" placeholder="Search..." title="Search navigation">
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-header" data-section="dashboard"><span class="nav-section-chevron">▼</span><span
+              class="nav-section-title">Dashboard</span></div>
+          <div class="nav-section-items">
+            <a href="/dashboard" class="nav-item" data-label="Overview" data-search="overview dashboard home"><img
+                src="/static/icons/home.svg" width="16" height="16" alt=""> <span>Overview</span></a>
+          </div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-header" data-section="operations"><span class="nav-section-chevron">▼</span><span
+              class="nav-section-title">Operations</span></div>
+          <div class="nav-section-items">
+            <a href="/machinery" class="nav-item" data-label="Machinery" data-search="machinery equipment machines"><img
+                src="/static/icons/machine.svg" width="16" height="16" alt=""> <span>Machinery</span></a>
+            <a href="/maintenance" class="nav-item active" data-label="Maintenance"
+              data-search="maintenance service repair"><img src="/static/icons/wrench.svg" width="16" height="16"
+                alt=""> <span>Maintenance</span>
+              <span class="nav-badge nav-badge-warning" id="badge-maintenance" style="display:none;">0</span></a>
+          </div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-header" data-section="monitoring"><span class="nav-section-chevron">▼</span><span
+              class="nav-section-title">Monitoring</span></div>
+          <div class="nav-section-items">
+            <a href="/alerts" class="nav-item" data-label="Alerts" data-search="alerts warnings notifications"><img
+                src="/static/icons/alert.svg" width="16" height="16" alt=""> <span>Alerts</span>
+              <span class="nav-badge nav-badge-danger" id="badge-alerts" style="display:none;">0</span></a>
+          </div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-header" data-section="reporting"><span class="nav-section-chevron">▼</span><span
+              class="nav-section-title">Reporting</span></div>
+          <div class="nav-section-items">
+            <a href="/reports" class="nav-item" data-label="Reports" data-search="reports analytics data insights"><img
+                src="/static/icons/chart.svg" width="16" height="16" alt=""> <span>Reports</span></a>
+          </div>
+        </div>
+      </nav>
+      <div class="nav-footer">
+        <a href="/logout" class="nav-footer-btn" title="Sign out"><img src="/static/icons/alert.svg" width="14"
+            height="14" alt=""> Sign Out</a>
+      </div>
+    </aside>
+
+    <!-- ═══ MAIN ═══ -->
+    <main class="app-main">
+      <header class="app-header">
+        <div class="brand">
+          <div class="sap-badge">IMCS</div>
+          <div>
+            <div class="hdr-title">Maintenance Management</div>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn" id="refreshBtn"><img src="/static/icons/refresh.svg" width="16" height="16" alt="">
+            Refresh</button>
+          <button class="btn" id="createTaskBtn"><img src="/static/icons/wrench.svg" width="16" height="16" alt=""> New
+            Task</button>
+          <a href="/logout" class="btn"><img src="/static/icons/alert.svg" width="16" height="16" alt=""> Logout</a>
+        </div>
+      </header>
+
+      <div class="container">
+
+        <!-- Stats -->
+        <div class="stats-row">
+          <div class="stat-card">
+            <div id="stat_total" class="stat-val">—</div>
+            <div class="stat-lbl">Total Tasks</div>
+          </div>
+          <div class="stat-card">
+            <div id="stat_open" class="stat-val" style="color:#0c5460;">—</div>
+            <div class="stat-lbl">Open</div>
+          </div>
+          <div class="stat-card">
+            <div id="stat_inprog" class="stat-val" style="color:#856404;">—</div>
+            <div class="stat-lbl">In Progress</div>
+          </div>
+          <div class="stat-card">
+            <div id="stat_done" class="stat-val" style="color:#107e3e;">—</div>
+            <div class="stat-lbl">Completed</div>
+          </div>
+        </div>
+
+        <!-- Task list -->
+        <div class="card">
+          <div class="card-title">Maintenance Tasks</div>
+          <div class="filter-bar">
+            <label>Status:</label>
+            <select id="statusFilter" class="input" style="width:150px;">
+              <option value="">All</option>
+              <option value="open" selected>Open</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+            <label>Priority:</label>
+            <select id="priorityFilter" class="input" style="width:130px;">
+              <option value="">All</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+            <input type="text" id="taskSearch" class="input" placeholder="Search tasks…"
+              style="flex:1;min-width:140px;">
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="table" id="maintTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Machine</th>
+                  <th>Description</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Technician</th>
+                  <th>Scheduled</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="8" class="muted small" style="text-align:center;padding:20px;">Loading…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-      <div class="btn-group">
-        <button class="btn" id="refreshBtn"><img src="/static/icons/refresh.svg" width="16" height="16" alt=""/> Refresh</button>
-        <a href="/logout" class="btn" title="Logout"><img src="/static/icons/alert.svg" width="16" height="16" alt=""/> Logout</a>
-      </div>
-    </header>
 
-    <div class="container">
-      <div class="card">
-        <div class="card-title">Create Maintenance Task</div>
-        <label class="label">Machine ID</label>
-        <input id="m_id" class="input" placeholder="Machine ID" style="margin-bottom:10px;">
-        <label class="label">Description</label>
-        <input id="m_desc" class="input" placeholder="Description" style="margin-bottom:10px;">
-        <label class="label">Technician</label>
-        <input id="m_tech" class="input" placeholder="Technician" style="margin-bottom:10px;">
-        <label class="label">Scheduled Date</label>
-        <input id="m_date" class="input" type="date" style="margin-bottom:12px;">
-        <button class="btn" id="createTaskBtn">Create Task</button>
-      </div>
+      <footer class="footer">IMCS · Maintenance Center</footer>
+    </main>
+  </div>
 
-      <div class="card">
-        <div class="card-title">Pending Maintenance Tasks</div>
-        <table class="table" id="maintTable">
-          <thead><tr><th>ID</th><th>Machine</th><th>Description</th><th>Priority</th><th>Technician</th><th>Date</th></tr></thead>
-          <tbody><tr><td colspan="6">Loading…</td></tr></tbody>
-        </table>
+  <!-- Create Task Modal -->
+  <div id="createModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        Create Maintenance Task
+        <button class="modal-close" onclick="document.getElementById('createModal').classList.add('hidden')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <label>Machine *</label>
+          <select id="m_machine_id">
+            <option value="">Select a machine…</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Description *</label>
+          <textarea id="m_desc" rows="3" placeholder="Describe the maintenance task"></textarea>
+        </div>
+        <div class="form-row">
+          <label>Priority</label>
+          <select id="m_priority">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Scheduled Date</label>
+          <input type="date" id="m_date">
+        </div>
+        <div class="form-row">
+          <label>Technician</label>
+          <input type="text" id="m_tech" placeholder="Technician name">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="saveTaskBtn">Create Task</button>
+        <button class="btn" onclick="document.getElementById('createModal').classList.add('hidden')">Cancel</button>
       </div>
     </div>
+  </div>
 
-    <footer class="footer">IMCS · Maintenance Center</footer>
-  </main>
-</div>
+  <!-- Update Status Modal -->
+  <div id="updateModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        Update Task Status
+        <button class="modal-close" onclick="document.getElementById('updateModal').classList.add('hidden')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="updateTaskInfo"
+          style="padding:10px;background:#F5F5F5;border-left:4px solid #0a6ed1;margin-bottom:12px;font-size:13px;line-height:1.6;">
+        </div>
+        <div class="form-row">
+          <label>New Status</label>
+          <select id="updateStatus">
+            <option value="open">Open</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Technician</label>
+          <input type="text" id="updateTech" placeholder="Assign technician">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="saveUpdateBtn">Update</button>
+        <button class="btn" onclick="document.getElementById('updateModal').classList.add('hidden')">Cancel</button>
+      </div>
+    </div>
+  </div>
 
-<script src="/static/js/app.js" defer></script>
-<script src="/static/js/lazy.js" defer></script>
-<script src="/static/js/maintenance.js" defer></script>
+  <script src="/static/js/app.js" defer></script>
+  <script>
+    (function () {
+      'use strict';
+      function esc(s) { if (s == null) return ''; return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+      function el(id) { return document.getElementById(id); }
+      function setText(id, v) { const e = el(id); if (e) e.textContent = v; }
 
-<script>
-  if('serviceWorker' in navigator) window.addEventListener('load', ()=> navigator.serviceWorker.register('/static/sw.js').catch(()=>{}));
-</script>
+      let allTasks = [];
+      let updateTaskId = null;
 
+      function priBadge(p) {
+        const cls = p === 'high' ? 'pri-high' : p === 'low' ? 'pri-low' : 'pri-medium';
+        return `<span class="${cls}">${esc(p || 'medium')}</span>`;
+      }
+      function stBadge(s) {
+        const cls = s === 'completed' ? 'st-completed' : s === 'in_progress' ? 'st-in_progress' : 'st-open';
+        return `<span class="${cls}">${esc(s || 'open').replace('_', ' ')}</span>`;
+      }
+
+      function renderTable(list) {
+        const tbody = document.querySelector('#maintTable tbody');
+        if (!tbody) return;
+        if (!list || list.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" class="muted small" style="text-align:center;padding:20px;">No tasks found</td></tr>';
+          return;
+        }
+        tbody.innerHTML = list.map(t => {
+          const sched = t.scheduled_date || '—';
+          const mach = t.machine || `Machine #${t.machine_id || '?'}`;
+          return `<tr>
+        <td>${t.id}</td>
+        <td><a href="/machine/${t.machine_id || ''}">${esc(mach)}</a></td>
+        <td style="max-width:240px;word-break:break-word;">${esc(t.description || '—')}</td>
+        <td>${priBadge(t.priority)}</td>
+        <td>${stBadge(t.status)}</td>
+        <td>${esc(t.technician || '—')}</td>
+        <td>${esc(sched)}</td>
+        <td><button class="btn" style="padding:2px 8px;font-size:11px;" onclick="openUpdate(${t.id},'${esc(mach)}','${esc(t.status || 'open')}','${esc(t.technician || '')}')">Update</button></td>
+      </tr>`;
+        }).join('');
+      }
+
+      function applyFilters() {
+        const st = el('statusFilter')?.value || '';
+        const pr = el('priorityFilter')?.value || '';
+        const q = (el('taskSearch')?.value || '').toLowerCase();
+        let list = allTasks;
+        if (st) list = list.filter(t => (t.status || 'open') === st);
+        if (pr) list = list.filter(t => (t.priority || 'medium') === pr);
+        if (q) list = list.filter(t => (t.machine || '').toLowerCase().includes(q) || (t.description || '').toLowerCase().includes(q) || (t.technician || '').toLowerCase().includes(q));
+        renderTable(list);
+      }
+
+      function updateStats(list) {
+        setText('stat_total', list.length);
+        setText('stat_open', list.filter(t => t.status === 'open').length);
+        setText('stat_inprog', list.filter(t => t.status === 'in_progress').length);
+        setText('stat_done', list.filter(t => t.status === 'completed').length);
+        const bm = el('badge-maintenance');
+        const open = list.filter(t => t.status === 'open').length;
+        if (bm) { bm.textContent = open; bm.style.display = open > 0 ? '' : 'none'; }
+      }
+
+      async function loadMachinesForSelect() {
+        try {
+          const res = await fetch('/api/machines');
+          if (!res.ok) return;
+          const machines = await res.json();
+          const sel = el('m_machine_id');
+          if (!sel) return;
+          sel.innerHTML = '<option value="">Select a machine…</option>';
+          (machines || []).forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.id;
+            opt.textContent = `${m.name} (${m.type || '?'}) — ${m.location || '?'}`;
+            sel.appendChild(opt);
+          });
+        } catch (e) { console.error('[MAINT] machines load error', e); }
+      }
+
+      async function load() {
+        try {
+          const res = await fetch('/api/maintenance');
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          allTasks = await res.json();
+          updateStats(allTasks);
+          applyFilters();
+        } catch (e) {
+          console.error('[MAINT]', e);
+          document.querySelector('#maintTable tbody').innerHTML = '<tr><td colspan="8" class="muted small" style="text-align:center;padding:20px;">Error loading tasks</td></tr>';
+        }
+        // alerts badge
+        try {
+          const ar = await fetch('/api/alerts?ack=0');
+          if (ar.ok) { const at = await ar.json(); const ba = el('badge-alerts'); if (ba) { ba.textContent = at.length; ba.style.display = at.length > 0 ? '' : 'none'; } }
+        } catch (_) { }
+      }
+
+      // Create task
+      el('createTaskBtn')?.addEventListener('click', () => {
+        loadMachinesForSelect();
+        el('m_desc').value = '';
+        el('m_tech').value = '';
+        el('m_date').value = '';
+        el('m_priority').value = 'medium';
+        el('createModal').classList.remove('hidden');
+      });
+
+      el('saveTaskBtn')?.addEventListener('click', async () => {
+        const machineId = el('m_machine_id')?.value;
+        const desc = el('m_desc')?.value?.trim();
+        const priority = el('m_priority')?.value || 'medium';
+        const date = el('m_date')?.value || null;
+        const tech = el('m_tech')?.value?.trim() || null;
+        if (!machineId || !desc) { alert('Machine and Description are required.'); return; }
+        try {
+          const res = await fetch('/api/maintenance', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ machine_id: parseInt(machineId), description: desc, priority, scheduled_date: date, technician: tech })
+          });
+          if (res.ok) { el('createModal').classList.add('hidden'); load(); }
+          else { const err = await res.json(); alert('Error: ' + (err.error || 'Unknown')); }
+        } catch (e) { alert('Network error: ' + e.message); }
+      });
+
+      // Update task
+      window.openUpdate = function (id, machine, status, tech) {
+        updateTaskId = id;
+        const info = el('updateTaskInfo');
+        if (info) info.innerHTML = `<strong>Task #${id}</strong><br><strong>Machine:</strong> ${esc(machine)}`;
+        const us = el('updateStatus'); if (us) us.value = status || 'open';
+        const ut = el('updateTech'); if (ut) ut.value = tech || '';
+        el('updateModal').classList.remove('hidden');
+      };
+
+      el('saveUpdateBtn')?.addEventListener('click', async () => {
+        if (!updateTaskId) return;
+        const status = el('updateStatus')?.value || 'open';
+        const tech = el('updateTech')?.value?.trim() || null;
+        try {
+          const res = await fetch(`/api/maintenance/${updateTaskId}`, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status, technician: tech })
+          });
+          if (res.ok) { el('updateModal').classList.add('hidden'); updateTaskId = null; load(); }
+          else { const err = await res.json(); alert('Error: ' + (err.error || 'Unknown')); }
+        } catch (e) { alert('Network error: ' + e.message); }
+      });
+
+      el('refreshBtn')?.addEventListener('click', load);
+      el('statusFilter')?.addEventListener('change', applyFilters);
+      el('priorityFilter')?.addEventListener('change', applyFilters);
+      el('taskSearch')?.addEventListener('input', applyFilters);
+
+      document.addEventListener('DOMContentLoaded', load);
+      if ('serviceWorker' in navigator) navigator.serviceWorker.register('/static/sw.js').catch(() => { });
+    })();
+  </script>
 </body>
+
 </html>

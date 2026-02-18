@@ -1,225 +1,147 @@
-/* app.js - global JS for theme cycle toggle + sidebar collapse + small helpers
-   Cycle sequence: belize-light -> belize-dark -> signature -> belize-light -> ...
-   Saves selection in localStorage to persist between page loads.
-   Sidebar collapse state is also persisted in localStorage.
+/* app.js — Global: sidebar collapse, nav-section collapse, nav search, theme cycle
+   Works on ALL pages. Sidebar state persisted in localStorage.
 */
-
 (function () {
-    "use strict";
+  'use strict';
 
-    const THEME_KEY = "sap_theme_choice";
-    const SIDEBAR_COLLAPSED_KEY = "sap_sidebar_collapsed";
-    const sequence = ["belize-light", "belize-dark", "signature"];
-    // default to belize-light (official)
-    const defaultTheme = "belize-light";
+  const SIDEBAR_KEY = 'sap_sidebar_collapsed';
+  const THEME_KEY = 'sap_theme_choice';
+  const THEMES = ['belize-light', 'belize-dark', 'signature'];
 
-    function readTheme() {
-      try {
-        const x = localStorage.getItem(THEME_KEY);
-        if (x && sequence.includes(x)) return x;
-      } catch (e) { /* ignore storage errors */ }
-      return defaultTheme;
+  /* ── theme ── */
+  function readTheme() {
+    try { const t = localStorage.getItem(THEME_KEY); if (t && THEMES.includes(t)) return t; } catch (_) { }
+    return 'belize-light';
+  }
+  function applyTheme(t) {
+    if (!THEMES.includes(t)) t = 'belize-light';
+    document.documentElement.setAttribute('data-theme', t);
+    try { localStorage.setItem(THEME_KEY, t); } catch (_) { }
+    const btn = document.getElementById('themeCycleBtn');
+    if (btn) btn.textContent = { 'belize-light': 'Belize Light', 'belize-dark': 'Belize Dark', 'signature': 'Signature' }[t] || 'Theme';
+  }
+
+  /* ── sidebar collapse ── */
+  function isSidebarCollapsed() {
+    try { return localStorage.getItem(SIDEBAR_KEY) === 'true'; } catch (_) { return false; }
+  }
+  function saveSidebarState(collapsed) {
+    try { localStorage.setItem(SIDEBAR_KEY, collapsed ? 'true' : 'false'); } catch (_) { }
+  }
+
+  function applySidebar(collapsed) {
+    const sidebar = document.querySelector('.app-sidebar');
+    if (!sidebar) return;
+    if (collapsed) {
+      sidebar.classList.add('collapsed');
+    } else {
+      sidebar.classList.remove('collapsed');
     }
+    saveSidebarState(collapsed);
+    updateToggleBtn(collapsed);
+  }
 
-    function writeTheme(t) {
-      try {
-        localStorage.setItem(THEME_KEY, t);
-      } catch (e) { /* ignore */ }
-    }
+  function updateToggleBtn(collapsed) {
+    const btn = document.querySelector('.sidebar-toggle');
+    if (!btn) return;
+    btn.textContent = collapsed ? '▶' : '◀';
+    btn.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+  }
 
-    function applyTheme(theme) {
-      if (!theme || !sequence.includes(theme)) theme = defaultTheme;
-      document.documentElement.setAttribute("data-theme", theme);
-      writeTheme(theme);
-      // update any visible theme labels/buttons
-      const btn = document.getElementById("themeCycleBtn");
-      if (btn) btn.textContent = themeLabel(theme);
-    }
+  function toggleSidebar() {
+    const sidebar = document.querySelector('.app-sidebar');
+    if (!sidebar) return;
+    const nowCollapsed = sidebar.classList.contains('collapsed');
+    applySidebar(!nowCollapsed);
+  }
 
-    function nextTheme(current) {
-      const i = sequence.indexOf(current);
-      return sequence[(i + 1) % sequence.length];
-    }
+  /* ── nav section collapse ── */
+  function initNavSections() {
+    document.querySelectorAll('.nav-section-header').forEach(header => {
+      const section = header.closest('.nav-section');
+      if (!section) return;
+      const id = header.getAttribute('data-section') || Math.random();
+      const key = 'nav_sec_' + id;
+      // restore state
+      if (localStorage.getItem(key) === 'true') section.classList.add('collapsed');
 
-    function themeLabel(theme) {
-      switch (theme) {
-        case "belize-light": return "Belize Light";
-        case "belize-dark": return "Belize Dark";
-        case "signature": return "Signature";
-        default: return "Theme";
+      header.addEventListener('click', e => {
+        e.preventDefault();
+        section.classList.toggle('collapsed');
+        try { localStorage.setItem(key, section.classList.contains('collapsed') ? 'true' : 'false'); } catch (_) { }
+      });
+    });
+  }
+
+  /* ── nav search ── */
+  function initNavSearch() {
+    const input = document.getElementById('navSearch');
+    if (!input) return;
+    input.addEventListener('input', () => {
+      const q = input.value.toLowerCase().trim();
+      document.querySelectorAll('.nav-item').forEach(item => {
+        const text = (item.getAttribute('data-search') || '') + ' ' + (item.textContent || '');
+        const show = !q || text.toLowerCase().includes(q);
+        item.style.display = show ? '' : 'none';
+        if (q && show) item.style.background = 'rgba(255,200,87,0.15)';
+        else item.style.background = '';
+      });
+      // auto-expand sections with visible items
+      if (q) {
+        document.querySelectorAll('.nav-section').forEach(sec => {
+          const hasVisible = [...sec.querySelectorAll('.nav-item')].some(i => i.style.display !== 'none');
+          if (hasVisible) sec.classList.remove('collapsed');
+        });
       }
+    });
+  }
+
+  /* ── fetch helper ── */
+  async function fetchJsonLow(url, opts) {
+    try {
+      const res = await fetch(url, Object.assign({ cache: 'no-store' }, opts || {}));
+      if (!res.ok) throw new Error('network');
+      return await res.json();
+    } catch (_) { return null; }
+  }
+
+  /* ── expose API ── */
+  window.__sapApp = window.__sapApp || {};
+  Object.assign(window.__sapApp, { applyTheme, readTheme, fetchJsonLow, toggleSidebar, applySidebar });
+
+  /* ── init on DOM ready ── */
+  function init() {
+    // theme
+    applyTheme(readTheme());
+    const themeBtn = document.getElementById('themeCycleBtn');
+    if (themeBtn) {
+      themeBtn.addEventListener('click', () => {
+        const cur = readTheme();
+        applyTheme(THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length]);
+      });
     }
 
-    // Sidebar collapse functionality
-    function readSidebarCollapsed() {
-      try {
-        const x = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
-        return x === "true";
-      } catch (e) { /* ignore storage errors */ }
-      return false;
-    }
+    // sidebar — apply saved state first, then wire button
+    const collapsed = isSidebarCollapsed();
+    applySidebar(collapsed);
 
-    function writeSidebarCollapsed(collapsed) {
-      try {
-        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, collapsed ? "true" : "false");
-      } catch (e) { /* ignore */ }
-    }
-
-    function applySidebarCollapsed(collapsed) {
-      const sidebar = document.querySelector(".app-sidebar");
-      if (!sidebar) return;
-
-      if (collapsed) {
-        sidebar.classList.add("collapsed");
-      } else {
-        sidebar.classList.remove("collapsed");
-      }
-      writeSidebarCollapsed(collapsed);
-    }
-
-    function toggleSidebar() {
-      const sidebar = document.querySelector(".app-sidebar");
-      if (!sidebar) return;
-      const isCollapsed = sidebar.classList.contains("collapsed");
-      applySidebarCollapsed(!isCollapsed);
-    }
-
-    // Attach to the sidebar toggle button if present on page
-    function attachSidebarToggle() {
-      const btn = document.querySelector(".sidebar-toggle");
-      if (!btn) return;
-      btn.addEventListener("click", function (ev) {
-        ev.preventDefault();
+    const toggleBtn = document.querySelector('.sidebar-toggle');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', e => {
+        e.preventDefault();
         toggleSidebar();
       });
-      // update button text based on state
-      updateSidebarToggleButton();
     }
 
-    function updateSidebarToggleButton() {
-      const btn = document.querySelector(".sidebar-toggle");
-      if (!btn) return;
-      const isCollapsed = document.querySelector(".app-sidebar")?.classList.contains("collapsed");
-      btn.textContent = isCollapsed ? "▶" : "◀";
-      btn.title = isCollapsed ? "Expand sidebar" : "Collapse sidebar";
-    }
+    // nav sections & search
+    initNavSections();
+    initNavSearch();
+  }
 
-    // Attach to the single-cycle button if present on page
-    function attachCycleButton() {
-      const btn = document.getElementById("themeCycleBtn");
-      if (!btn) return;
-      btn.addEventListener("click", function (ev) {
-        ev.preventDefault();
-        const current = readTheme();
-        const next = nextTheme(current);
-        applyTheme(next);
-      });
-      // set initial text
-      btn.textContent = themeLabel(readTheme());
-    }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init(); // already ready (e.g. script loaded after DOM)
+  }
 
-    // Small fetch helper for low-bandwidth tolerance
-    async function fetchJsonLow(url, opts) {
-      try {
-        const res = await fetch(url, Object.assign({ cache: "no-store" }, (opts || {})));
-        if (!res.ok) throw new Error("network");
-        return await res.json();
-      } catch (e) {
-        // return null to calling code so it can fallback
-        return null;
-      }
-    }
-
-    // Expose a tiny API for pages
-    window.__sapApp = window.__sapApp || {};
-    window.__sapApp.applyTheme = applyTheme;
-    window.__sapApp.readTheme = readTheme;
-    window.__sapApp.fetchJsonLow = fetchJsonLow;
-    window.__sapApp.toggleSidebar = toggleSidebar;
-    window.__sapApp.applySidebarCollapsed = applySidebarCollapsed;
-
-    // Init: apply persisted theme and attach, apply sidebar state
-    document.addEventListener("DOMContentLoaded", () => {
-      applyTheme(readTheme());
-      attachCycleButton();
-      // Apply sidebar state
-      applySidebarCollapsed(readSidebarCollapsed());
-      attachSidebarToggle();
-
-      // Initialize enhanced sidebar features
-      initializeNavSections();
-      initializeNavSearch();
-    });
-
-    // ===== ENHANCED SIDEBAR FEATURES =====
-
-    // Initialize collapsible nav sections
-    function initializeNavSections() {
-      const sectionHeaders = document.querySelectorAll(".nav-section-header");
-
-      sectionHeaders.forEach((header) => {
-        const section = header.closest(".nav-section");
-        if (!section) return;
-
-        // Load collapsed state from localStorage
-        const sectionId = header.getAttribute("data-section");
-        const collapsedKey = `nav_section_collapsed_${sectionId}`;
-        const isCollapsed = localStorage.getItem(collapsedKey) === "true";
-
-        if (isCollapsed) {
-          section.classList.add("collapsed");
-        }
-
-        // Add click handler
-        header.addEventListener("click", (e) => {
-          e.preventDefault();
-          section.classList.toggle("collapsed");
-
-          // Save to localStorage
-          const newCollapsed = section.classList.contains("collapsed");
-          localStorage.setItem(collapsedKey, newCollapsed ? "true" : "false");
-        });
-      });
-    }
-
-    // Initialize nav search functionality
-    function initializeNavSearch() {
-      const searchInput = document.getElementById("navSearch");
-      if (!searchInput) return;
-
-      searchInput.addEventListener("input", (e) => {
-        const query = e.target.value.toLowerCase().trim();
-        const navItems = document.querySelectorAll(".nav-item, .nav-section-header");
-
-        navItems.forEach((item) => {
-          const searchText = item.getAttribute("data-search") || "";
-          const label = item.getAttribute("data-label") || item.textContent || "";
-          const matchesQuery = searchText.toLowerCase().includes(query) ||
-                              label.toLowerCase().includes(query) ||
-                              query === "";
-
-          item.style.display = matchesQuery ? "" : "none";
-
-          // Highlight search match
-          if (query && matchesQuery) {
-            item.style.background = "rgba(255, 200, 87, 0.15)";
-          } else if (matchesQuery) {
-            item.style.background = "";
-          }
-        });
-
-        // Auto-expand sections that have visible items
-        if (query.trim()) {
-          document.querySelectorAll(".nav-section").forEach((section) => {
-            const hasVisibleItems = Array.from(section.querySelectorAll(".nav-item"))
-              .some(item => item.style.display !== "none");
-
-            if (hasVisibleItems) {
-              section.classList.remove("collapsed");
-            }
-          });
-        }
-      });
-    }
-
-  })();
+})();

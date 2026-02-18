@@ -1,168 +1,110 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>IMCS - Industrial Machinery Control System</title>
-
-  <!-- INDUSTRIAL RULE: load layout CSS synchronously -->
+  <title>IMCS - Operational Dashboard</title>
   <link rel="stylesheet" href="/static/css/sap90.css">
-  
-  <!-- Dataset Manager -->
-  <script src="/static/js/dataset-manager.js" defer></script>
-
-  <!-- Visualization Manager - Connected real-time chart updates -->
-  <script src="/static/js/viz-manager.js" defer></script>
-
-  <!-- Chart Synchronization System -->
-  <script src="/static/js/chart-sync.js" defer></script>
-
-<style>
-  /* Modal styles */
-  .modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.4);
-  }
-
-  .modal.hidden {
-    display: none;
-  }
-
-  .modal:not(.hidden) {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .modal-content {
-    background-color: #fefefe;
-    margin: auto;
-    padding: 0;
-    border: 1px solid #888;
-    width: 90%;
-    border-radius: 4px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-  }
-
-  .modal-header {
-    padding: 12px 16px;
-    border-bottom: 1px solid #ddd;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .modal-header h3 {
-    margin: 0;
-    font-size: 16px;
-  }
-
-  .modal-body {
-    padding: 16px;
-  }
-
-  .btn-icon {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 20px;
-    color: #666;
-  }
-
-  .btn-icon:hover {
-    color: #000;
-  }
-</style>
-
-   <style>
-
-    /* ===== CLS-SAFE CHART CONTAINER ===== */
-    .chart-wrap {
-      width: 100%;
-      aspect-ratio: 10 / 3;
-      min-height: 240px;
-      background: #F2F2F2;
-      border: 1px solid #A0A0A0;
+  <style>
+    /* ── layout ── */
+    .app-shell {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      background: #DFDFDF;
     }
 
-    .chart-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
+    /* ── KPI row ── */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
     }
 
-    /* Enhanced chart containers */
+    .kpi {
+      padding: 14px 16px;
+      min-height: 90px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .kpi-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .kpi-header .label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #555;
+      margin: 0;
+    }
+
+    .kpi-icon {
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .kpi .value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #003366;
+      line-height: 1;
+      margin: 4px 0;
+    }
+
+    .kpi-footer {
+      margin-top: 4px;
+    }
+
+    .kpi-sub {
+      font-size: 11px;
+      color: #666;
+    }
+
+    /* ── charts grid ── */
     .charts-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
       gap: 16px;
-      margin-bottom: 20px;
-      width: 100%;
+      margin-bottom: 16px;
     }
 
     .chart-card {
-      background: #EFEFEF;
-      border: 1px solid #A0A0A0;
-      padding: 12px;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-
-    .card {
-      box-sizing: border-box;
-    }
-
-    .card-title {
-      font-weight: bold;
-      font-size: 14px;
-      margin-bottom: 12px;
-      color: #ffffff;
+      padding: 0;
     }
 
     .chart-container {
       position: relative;
       width: 100%;
-      height: 280px;
+      height: 260px;
       background: #F9F9F9;
       border: 1px solid #D5D5D5;
-      padding: 8px;
       box-sizing: border-box;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
     .chart-container canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100% !important;
       height: 100% !important;
-      max-width: 100%;
-      max-height: calc(100% - 16px);
-      display: block;
-    }
-
-    .chart-container img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
     }
 
     .chart-fallback {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       object-fit: contain;
-    }
-
-    .chart-card-enhanced {
-      position: relative;
     }
 
     .chart-export-btn {
@@ -171,8 +113,8 @@
       border: none;
       cursor: pointer;
       font-size: 14px;
-      padding: 2px 6px;
-      opacity: 0.6;
+      padding: 0 4px;
+      opacity: 0.55;
       transition: opacity 0.2s;
     }
 
@@ -180,36 +122,37 @@
       opacity: 1;
     }
 
+    /* ── location grid ── */
     .location-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
-      margin-top: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
     }
 
     .location-card {
       background: #F5F5F5;
       border: 1px solid #D5D5D5;
-      padding: 10px;
-      border-radius: 4px;
+      border-left: 3px solid #0a6ed1;
+      padding: 10px 12px;
     }
 
-    .location-card .location-name {
-      font-weight: bold;
+    .location-name {
+      font-weight: 700;
       color: #003366;
       margin-bottom: 4px;
+      font-size: 13px;
     }
 
-    .location-card .location-stats {
+    .location-stats {
       font-size: 12px;
-      color: #666;
+      color: #555;
+      line-height: 1.6;
     }
 
-    /* CSV Drop Zone */
+    /* ── CSV drop zone ── */
     .csv-drop-zone {
       border: 2px dashed #A0A0A0;
-      border-radius: 4px;
-      padding: 24px;
+      padding: 28px;
       text-align: center;
       background: #F9F9F9;
       cursor: pointer;
@@ -222,1437 +165,568 @@
       background: #E6F2FF;
     }
 
-    .drop-zone-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-    }
-
     .drop-zone-text {
       color: #003366;
       font-size: 14px;
+      margin-top: 8px;
     }
 
-    /* Live indicator */
-    .live-indicator {
+    /* ── alerts list ── */
+    #alertsList {
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    /* ── modals ── */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.45);
+    }
+
+    .modal:not(.hidden) {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.hidden {
+      display: none !important;
+    }
+
+    .modal-content {
+      background: #DFDFDF;
+      border: 2px solid;
+      border-color: #FFFFFF #808080 #808080 #FFFFFF;
+      box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
+      width: 90%;
+      max-width: 480px;
+      padding: 6px;
+    }
+
+    .modal-header {
+      background: linear-gradient(90deg, #000080 0%, #1084d7 100%);
+      color: #fff;
+      padding: 5px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: -6px -6px 12px -6px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .modal-close {
+      background: #D4D0C8;
+      border: 1px solid;
+      border-color: #FFFFFF #808080 #808080 #FFFFFF;
+      color: #000;
+      cursor: pointer;
+      width: 18px;
+      height: 18px;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .modal-body {
+      padding: 4px 8px 8px;
+    }
+
+    .modal-body .form-row {
+      margin-bottom: 10px;
+    }
+
+    .modal-body .form-row label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #002244;
+      margin-bottom: 4px;
+      letter-spacing: 0.4px;
+    }
+
+    .modal-body .form-row input,
+    .modal-body .form-row select,
+    .modal-body .form-row textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 5px 7px;
+      border: 2px solid;
+      border-color: #808080 #FFFFFF #FFFFFF #808080;
+      background: #FFFFFF;
+      font-size: 13px;
+      font-family: Tahoma, Arial, sans-serif;
+      box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      padding: 8px 8px 4px;
+      border-top: 1px solid #A0A0A0;
+      margin-top: 8px;
+    }
+
+    /* ── dataset panel ── */
+    #datasetManagerPanel {
+      margin-bottom: 16px;
+    }
+
+    /* ── live dot ── */
+    .live-dot {
       display: inline-block;
       width: 8px;
       height: 8px;
       background: #107e3e;
       border-radius: 50%;
-      animation: pulse 2s infinite;
-      margin-right: 6px;
+      animation: blink 2s infinite;
+      margin-right: 5px;
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }</style>
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0.3
+      }
+    }
+
+    /* ── search bar ── */
+    #searchInput {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 5px 8px;
+      margin-bottom: 10px;
+      border: 2px solid;
+      border-color: #808080 #FFFFFF #FFFFFF #808080;
+      font-size: 12px;
+      font-family: Tahoma, Arial, sans-serif;
+      background: #FFFFFF;
+    }
   </style>
 </head>
 
 <body>
+  <div class="app-shell">
 
-<div class="app-shell">
-
-  <!-- ================= SIDEBAR ================= -->
-  <aside class="app-sidebar">
-    <button class="sidebar-toggle" title="Collapse sidebar">◀</button>
-    <div class="brand">
-      <img src="/static/icons/logo-imcs.svg" alt="IMCS Logo" class="logo-img"/>
-      <div class="title">Industrial Hub</div>
-      <div class="muted small">Dashboard</div>
-    </div>
-
-    <nav class="nav">
-      <!-- Search Bar -->
-      <div class="nav-search-container">
-        <input type="text" id="navSearch" class="nav-search" placeholder="Search..." title="Search navigation">
-      </div>
-
-      <!-- Dashboard Section -->
-      <div class="nav-section">
-        <div class="nav-section-header" data-section="dashboard">
-          <span class="nav-section-chevron">▼</span>
-          <span class="nav-section-title">Dashboard</span>
-        </div>
-        <div class="nav-section-items">
-          <a href="/dashboard" class="nav-item active" data-label="Overview" data-search="overview dashboard home">
-            <img src="/static/icons/home.svg" width="16" height="16" alt=""> <span>Overview</span>
-          </a>
-        </div>
-      </div>
-
-      <!-- Operations Section -->
-      <div class="nav-section">
-        <div class="nav-section-header" data-section="operations">
-          <span class="nav-section-chevron">▼</span>
-          <span class="nav-section-title">Operations</span>
-        </div>
-        <div class="nav-section-items">
-          <a href="/machinery" class="nav-item" data-label="Machinery" data-search="machinery equipment machines production">
-            <img src="/static/icons/machine.svg" width="16" height="16" alt=""> <span>Machinery</span>
-          </a>
-          <a href="/maintenance" class="nav-item" data-label="Maintenance" data-search="maintenance service repair upkeep">
-            <img src="/static/icons/wrench.svg" width="16" height="16" alt="">
-            <span>Maintenance</span>
-            <span class="nav-badge nav-badge-warning" id="badge-maintenance" style="display: none;">0</span>
-          </a>
-        </div>
-      </div>
-
-      <!-- Monitoring Section -->
-      <div class="nav-section">
-        <div class="nav-section-header" data-section="monitoring">
-          <span class="nav-section-chevron">▼</span>
-          <span class="nav-section-title">Monitoring</span>
-        </div>
-        <div class="nav-section-items">
-          <a href="/alerts" class="nav-item" data-label="Alerts" data-search="alerts warnings notifications">
-            <img src="/static/icons/alert.svg" width="16" height="16" alt="">
-            <span>Alerts</span>
-            <span class="nav-badge nav-badge-danger" id="badge-alerts" style="display: none;">0</span>
-          </a>
-        </div>
-      </div>
-
-      <!-- Reporting Section -->
-      <div class="nav-section">
-        <div class="nav-section-header" data-section="reporting">
-          <span class="nav-section-chevron">▼</span>
-          <span class="nav-section-title">Reporting</span>
-        </div>
-        <div class="nav-section-items">
-          <a href="/reports" class="nav-item" data-label="Reports" data-search="reports analytics data insights statistics">
-            <img src="/static/icons/chart.svg" width="16" height="16" alt=""> <span>Reports</span>
-          </a>
-        </div>
-      </div>
-    </nav>
-<!--
-    <button class="btn" id="themeCycleBtn">Theme</button> -->
-
-    <!-- Navigation Footer -->
-    <div class="nav-footer">
-      <a href="/dashboard" class="nav-footer-btn" title="User Dashboard">
-        <img src="/static/icons/home.svg" width="14" height="14" alt=""> Profile
-      </a>
-      <a href="/logout" class="nav-footer-btn" title="Sign out">
-        <img src="/static/icons/alert.svg" width="14" height="14" alt=""> Sign Out
-      </a>
-    </div>
-  </aside>
-
-  <!-- ================= MAIN ================= -->
-  <main class="app-main">
-
-    <header class="app-header">
+    <!-- ═══════════ SIDEBAR ═══════════ -->
+    <aside class="app-sidebar">
+      <button class="sidebar-toggle" title="Collapse sidebar">◀</button>
       <div class="brand">
-        <div class="sap-badge">IMCS</div>
-        <div>
-          <div class="hdr-title">Operational Dashboard</div>
-        </div>
+        <img src="/static/icons/logo-imcs.svg" alt="IMCS" class="logo-img" />
+        <div class="title">Industrial Hub</div>
+        <div class="muted small">Dashboard</div>
       </div>
-      <div class="btn-group">
-        <button class="btn" id="refreshBtn">
-          <img src="/static/icons/refresh.svg" width="16" height="16" alt=""> Refresh
-        </button>
-        <button class="btn" id="demoDataBtn" title="Generate Demo Data">
-          <img src="/static/icons/add-machine.svg" width="16" height="16" alt=""> Demo Data
-        </button>
-        <button class="btn" id="datasetManagerBtn" title="Dataset Manager">
-          <img src="/static/icons/chart.svg" width="16" height="16" alt=""> Datasets
-        </button>
-        <a href="/logout" class="btn" title="Logout">
-          <img src="/static/icons/alert.svg" width="16" height="16" alt=""> Logout
+
+      <nav class="nav">
+        <div class="nav-search-container">
+          <input type="text" id="navSearch" class="nav-search" placeholder="Search..." title="Search navigation">
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-header" data-section="dashboard">
+            <span class="nav-section-chevron">▼</span>
+            <span class="nav-section-title">Dashboard</span>
+          </div>
+          <div class="nav-section-items">
+            <a href="/dashboard" class="nav-item active" data-label="Overview" data-search="overview dashboard home">
+              <img src="/static/icons/home.svg" width="16" height="16" alt=""> <span>Overview</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-header" data-section="operations">
+            <span class="nav-section-chevron">▼</span>
+            <span class="nav-section-title">Operations</span>
+          </div>
+          <div class="nav-section-items">
+            <a href="/machinery" class="nav-item" data-label="Machinery" data-search="machinery equipment machines">
+              <img src="/static/icons/machine.svg" width="16" height="16" alt=""> <span>Machinery</span>
+            </a>
+            <a href="/maintenance" class="nav-item" data-label="Maintenance" data-search="maintenance service repair">
+              <img src="/static/icons/wrench.svg" width="16" height="16" alt="">
+              <span>Maintenance</span>
+              <span class="nav-badge nav-badge-warning" id="badge-maintenance" style="display:none;">0</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-header" data-section="monitoring">
+            <span class="nav-section-chevron">▼</span>
+            <span class="nav-section-title">Monitoring</span>
+          </div>
+          <div class="nav-section-items">
+            <a href="/alerts" class="nav-item" data-label="Alerts" data-search="alerts warnings notifications">
+              <img src="/static/icons/alert.svg" width="16" height="16" alt="">
+              <span>Alerts</span>
+              <span class="nav-badge nav-badge-danger" id="badge-alerts" style="display:none;">0</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-header" data-section="reporting">
+            <span class="nav-section-chevron">▼</span>
+            <span class="nav-section-title">Reporting</span>
+          </div>
+          <div class="nav-section-items">
+            <a href="/reports" class="nav-item" data-label="Reports" data-search="reports analytics data insights">
+              <img src="/static/icons/chart.svg" width="16" height="16" alt=""> <span>Reports</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="nav-footer">
+        <a href="/logout" class="nav-footer-btn" title="Sign out">
+          <img src="/static/icons/alert.svg" width="14" height="14" alt=""> Sign Out
         </a>
       </div>
-    </header>
+    </aside>
 
-    <div class="container">
+    <!-- ═══════════ MAIN ═══════════ -->
+    <main class="app-main">
 
-      <!-- ===== DATASET MANAGEMENT PANEL ===== -->
-      <div id="datasetManagerPanel" class="card" style="display: none; margin-bottom: 20px;">
-        <div class="card-title">
-          Dataset Management
-          <button class="btn-icon" onclick="document.getElementById('datasetManagerPanel').style.display='none'" style="float: right;">✕</button>
+      <header class="app-header">
+        <div class="brand">
+          <div class="sap-badge">IMCS</div>
+          <div>
+            <div class="hdr-title">Operational Dashboard</div>
+            <div class="muted small" style="font-size:10px;">
+              <span class="live-dot"></span>Live · Auto-refresh every 60s
+            </div>
+          </div>
         </div>
-        <div style="padding: 12px;">
-          <div class="btn-group" style="margin-bottom: 12px;">
-            <button class="btn" id="generateDemoBtn">Generate Demo Data</button>
-            <button class="btn" id="clearDemoBtn">Clear Demo Data</button>
-            <button class="btn" id="importDatasetBtn">Import Dataset</button>
-            <button class="btn" id="createDatasetBtn">Create Dataset</button>
-            <input type="file" id="datasetFileInput" accept=".csv,.json" style="display: none;">
+        <div class="btn-group" id="headerBtnGroup">
+          <button class="btn" id="refreshBtn">
+            <img src="/static/icons/refresh.svg" width="16" height="16" alt=""> Refresh
+          </button>
+          <button class="btn" id="createMaintenanceBtn">
+            <img src="/static/icons/wrench.svg" width="16" height="16" alt=""> Maintenance
+          </button>
+          <button class="btn" id="demoDataBtn">
+            <img src="/static/icons/add-machine.svg" width="16" height="16" alt=""> Demo Data
+          </button>
+          <button class="btn" id="datasetManagerBtn">
+            <img src="/static/icons/chart.svg" width="16" height="16" alt=""> Datasets
+          </button>
+          <a href="/logout" class="btn">
+            <img src="/static/icons/alert.svg" width="16" height="16" alt=""> Logout
+          </a>
+        </div>
+      </header>
+
+      <div class="container">
+
+        <!-- ── DATASET MANAGER PANEL ── -->
+        <div id="datasetManagerPanel" class="card" style="display:none;">
+          <div class="card-title">
+            Dataset Management
+            <button style="float:right;background:none;border:none;color:#fff;cursor:pointer;font-size:16px;"
+              onclick="document.getElementById('datasetManagerPanel').style.display='none'">✕</button>
           </div>
-          
-          <div style="margin-bottom: 12px;">
-            <label class="label">Select Dataset:</label>
-            <select id="datasetSelect" class="input" style="width: 100%; max-width: 400px;">
-              <option value="none">Select a dataset...</option>
-            </select>
+          <div style="padding:12px;">
+            <div class="btn-group" style="margin-bottom:10px;">
+              <button class="btn" id="generateDemoBtn">Generate Demo Data</button>
+              <button class="btn" id="clearDemoBtn">Clear Demo Data</button>
+            </div>
+            <div class="muted small">Use Demo Data to populate the dashboard with sample machines, sensors, alerts and
+              maintenance tasks.</div>
           </div>
-          
-          <div id="datasetInfo" style="margin-bottom: 12px;"></div>
-          
-          <div id="datasetOperations" style="display: none;">
-            <div class="card" style="background: #F9F9F9; padding: 12px;">
-              <div class="card-title" style="font-size: 13px;">Dataset Operations</div>
-              <div class="btn-group" style="margin-top: 8px;">
-                <button class="btn" id="filterDatasetBtn">Filter</button>
-                <button class="btn" id="transformDatasetBtn">Transform</button>
-                <button class="btn" id="exportDatasetBtn">Export</button>
-                <button class="btn" id="analyzeDatasetBtn">Analyze</button>
+        </div>
+
+        <!-- ── KPI ROW ── -->
+        <section class="kpi-row">
+          <div class="card kpi">
+            <div class="kpi-header">
+              <div class="label">Total Machines</div>
+              <div class="kpi-icon">🏭</div>
+            </div>
+            <div id="k_total" class="value">—</div>
+            <div class="kpi-footer"><span id="k_running" class="kpi-sub">Running: —</span></div>
+          </div>
+          <div class="card kpi">
+            <div class="kpi-header">
+              <div class="label">Avg Efficiency</div>
+              <div class="kpi-icon">⚡</div>
+            </div>
+            <div id="k_eff" class="value">—%</div>
+            <div class="kpi-footer"><span id="k_uptime" class="kpi-sub">Uptime: —%</span></div>
+          </div>
+          <div class="card kpi">
+            <div class="kpi-header">
+              <div class="label">Active Alerts</div>
+              <div class="kpi-icon">⚠️</div>
+            </div>
+            <div id="k_alerts" class="value">—</div>
+            <div class="kpi-footer"><span id="k_maintenance" class="kpi-sub">Pending: —</span></div>
+          </div>
+          <div class="card kpi">
+            <div class="kpi-header">
+              <div class="label">System Health</div>
+              <div class="kpi-icon">💚</div>
+            </div>
+            <div id="k_health" class="value">—</div>
+            <div class="kpi-footer"><span class="kpi-sub">Status: <span id="k_health_status">—</span></span></div>
+          </div>
+        </section>
+
+        <!-- ── LOCATION BREAKDOWN ── -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title">Location Performance</div>
+          <div id="locationBreakdown" class="location-grid">
+            <div class="muted small">Loading…</div>
+          </div>
+        </div>
+
+        <!-- ── CHARTS ROW 1: Performance Trend + Status Distribution ── -->
+        <div class="charts-grid">
+          <div class="card chart-card">
+            <div class="card-title">
+              Performance Trend — Last 7 Days
+              <button class="chart-export-btn" onclick="exportChart('performanceChart')" title="Export">📥</button>
+            </div>
+            <div class="chart-container">
+              <canvas id="performanceChart"></canvas>
+              <img id="performanceChartFallback" src="/chart/summary.png" alt="Performance" class="chart-fallback"
+                style="display:none;">
+            </div>
+          </div>
+          <div class="card chart-card">
+            <div class="card-title">
+              Machine Status Distribution
+              <button class="chart-export-btn" onclick="exportChart('statusChart')" title="Export">📥</button>
+            </div>
+            <div class="chart-container">
+              <canvas id="statusChart"></canvas>
+              <img id="statusChartFallback" src="/chart/status.png" alt="Status" class="chart-fallback"
+                style="display:none;">
+            </div>
+          </div>
+        </div>
+
+        <!-- ── ALERTS TREND ── -->
+        <div class="card chart-card" style="margin-bottom:16px;">
+          <div class="card-title">
+            Alerts Trend — Last 14 Days
+            <button class="chart-export-btn" onclick="exportChart('alertsChart')" title="Export">📥</button>
+          </div>
+          <div class="chart-container">
+            <canvas id="alertsChart"></canvas>
+            <img id="alertsChartFallback" src="/chart/alerts-trend.png" alt="Alerts Trend" class="chart-fallback"
+              style="display:none;">
+          </div>
+        </div>
+
+        <!-- ── MACHINE STATUS OVERVIEW (mini KPIs) ── -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title">Machine Status Overview</div>
+          <div class="kpi-row">
+            <div class="card kpi" style="border-left:3px solid #107e3e;">
+              <div class="kpi-header">
+                <div class="label">Running</div>
+                <div class="kpi-icon">▶️</div>
               </div>
+              <div id="status_running" class="value" style="color:#107e3e;">—</div>
+              <div class="kpi-footer"><span id="status_running_pct" class="kpi-sub">0%</span></div>
             </div>
-          </div>
-          
-          <div style="margin-top: 12px;">
-            <canvas id="datasetChart" style="max-height: 300px;"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== ENHANCED KPIs ===== -->
-      <section class="kpi-row">
-        <div class="card kpi kpi-enhanced">
-          <div class="kpi-header">
-            <div class="label">Total Machines</div>
-            <div class="kpi-icon">🏭</div>
-          </div>
-          <div id="k_total" class="value">—</div>
-          <div class="kpi-footer">
-            <span id="k_running" class="kpi-sub">Running: —</span>
-          </div>
-        </div>
-        <div class="card kpi kpi-enhanced">
-          <div class="kpi-header">
-            <div class="label">Avg Efficiency</div>
-            <div class="kpi-icon">⚡</div>
-          </div>
-          <div id="k_eff" class="value">—%</div>
-          <div class="kpi-footer">
-            <span id="k_uptime" class="kpi-sub">Uptime: —%</span>
-          </div>
-        </div>
-        <div class="card kpi kpi-enhanced">
-          <div class="kpi-header">
-            <div class="label">Active Alerts</div>
-            <div class="kpi-icon">⚠️</div>
-          </div>
-          <div id="k_alerts" class="value">—</div>
-          <div class="kpi-footer">
-            <span id="k_maintenance" class="kpi-sub">Maintenance: —</span>
-          </div>
-        </div>
-        <div class="card kpi kpi-enhanced">
-          <div class="kpi-header">
-            <div class="label">System Health</div>
-            <div class="kpi-icon">💚</div>
-          </div>
-          <div id="k_health" class="value">—</div>
-          <div class="kpi-footer">
-            <span class="kpi-sub">Status: <span id="k_health_status">—</span></span>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===== CREATE DATASET MODAL ===== -->
-      <div id="createDatasetModal" class="modal hidden">
-        <div class="modal-content" style="max-width: 600px;">
-          <div class="modal-header">
-            <h3>Create New Dataset</h3>
-            <button class="btn-icon" onclick="document.getElementById('createDatasetModal').classList.add('hidden')">✕</button>
-          </div>
-          <div class="modal-body">
-            <div style="margin-bottom: 12px;">
-              <label class="label">Dataset Name:</label>
-              <input type="text" id="datasetName" class="input" placeholder="My Dataset">
+            <div class="card kpi" style="border-left:3px solid #0a6ed1;">
+              <div class="kpi-header">
+                <div class="label">Idle</div>
+                <div class="kpi-icon">⏸️</div>
+              </div>
+              <div id="status_idle" class="value" style="color:#0a6ed1;">—</div>
+              <div class="kpi-footer"><span id="status_idle_pct" class="kpi-sub">0%</span></div>
             </div>
-            <div style="margin-bottom: 12px;">
-              <label class="label">Dataset Type:</label>
-              <select id="datasetType" class="input">
-                <option value="time_series">Time Series Data</option>
-                <option value="numeric">Numeric Data</option>
-                <option value="categorical">Categorical Data</option>
-                <option value="mixed">Mixed Data Types</option>
-                <option value="sensor">Sensor Readings</option>
-                <option value="performance">Performance Metrics</option>
-              </select>
+            <div class="card kpi" style="border-left:3px solid #e9730c;">
+              <div class="kpi-header">
+                <div class="label">Maintenance</div>
+                <div class="kpi-icon">🔧</div>
+              </div>
+              <div id="status_maintenance" class="value" style="color:#e9730c;">—</div>
+              <div class="kpi-footer"><span id="status_maintenance_pct" class="kpi-sub">0%</span></div>
             </div>
-            <div style="margin-bottom: 12px;">
-              <label class="label">Number of Rows:</label>
-              <input type="number" id="datasetRows" class="input" value="100" min="10" max="10000">
+            <div class="card kpi" style="border-left:3px solid #bb0000;">
+              <div class="kpi-header">
+                <div class="label">Offline</div>
+                <div class="kpi-icon">❌</div>
+              </div>
+              <div id="status_offline" class="value" style="color:#bb0000;">—</div>
+              <div class="kpi-footer"><span id="status_offline_pct" class="kpi-sub">0%</span></div>
             </div>
-            <div style="margin-bottom: 12px;">
-              <label class="label">Data Pattern:</label>
-              <select id="dataPattern" class="input">
-                <option value="random">Random</option>
-                <option value="linear">Linear Trend</option>
-                <option value="sine">Sine Wave</option>
-                <option value="trend_up">Upward Trend</option>
-                <option value="trend_down">Downward Trend</option>
-              </select>
-            </div>
-            <div style="margin-bottom: 12px;">
-              <label class="label">Columns (comma-separated):</label>
-              <input type="text" id="datasetColumns" class="input" placeholder="timestamp, temperature, pressure, efficiency">
-            </div>
-            <div class="btn-group">
-              <button class="btn" onclick="createDatasetFromModal()">Create Dataset</button>
-              <button class="btn" onclick="document.getElementById('createDatasetModal').classList.add('hidden')">Cancel</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== LOCATION BREAKDOWN ===== -->
-      <div class="card">
-        <div class="card-title">Location Performance</div>
-        <div id="locationBreakdown" class="location-grid">
-          <div class="muted small">Loading location data...</div>
-        </div>
-      </div>
-
-      <!-- ===== CHARTS ROW ===== -->
-      <div class="charts-grid">
-        <!-- Performance Trend -->
-        <div class="card chart-card chart-card-enhanced">
-          <div class="card-title">
-            Performance Trend (Last 7 Days)
-            <button class="chart-export-btn" onclick="exportChart('performanceChart')" title="Export Chart">📥</button>
-          </div>
-          <div class="chart-container">
-            <canvas id="performanceChart" data-chart-type="performance" data-tracked="true"></canvas>
-            <img id="performanceChartFallback" src="/chart/summary.png" alt="Performance chart" class="chart-fallback" style="display:none;">
           </div>
         </div>
 
-        <!-- Status Distribution -->
-        <div class="card chart-card chart-card-enhanced">
-          <div class="card-title">
-            Machine Status Distribution
-            <button class="chart-export-btn" onclick="exportChart('statusChart')" title="Export Chart">📥</button>
-          </div>
-          <div class="chart-container">
-            <canvas id="statusChart" data-chart-type="status" data-tracked="true"></canvas>
-            <img id="statusChartFallback" src="/chart/status.png" alt="Status chart" class="chart-fallback" style="display:none;">
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== ALERTS TREND ===== -->
-      <div class="card chart-card">
-        <div class="card-title">Alerts Trend (Last 14 Days)</div>
-        <div class="chart-container">
-          <canvas id="alertsChart" data-chart-type="alerts" data-tracked="true"></canvas>
-          <img id="alertsChartFallback" src="/chart/alerts-trend.png" alt="Alerts trend" class="chart-fallback" style="display:none;">
-        </div>
-      </div>
-
-      <!-- ===== MACHINE STATUS BREAKDOWN ===== -->
-      <div class="card">
-        <div class="card-title">Machine Status Overview</div>
-        <div class="kpi-row">
-          <div class="card kpi kpi-enhanced">
-            <div class="kpi-header">
-              <div class="label">Running</div>
-              <div class="kpi-icon">▶️</div>
+        <!-- ── CHARTS ROW 2: Machine Comparison + Performance Matrix ── -->
+        <div class="charts-grid">
+          <div class="card chart-card">
+            <div class="card-title">
+              Top Machines by Efficiency
+              <button class="chart-export-btn" onclick="exportChart('machineComparisonChart')"
+                title="Export">📥</button>
             </div>
-            <div id="status_running" class="value">—</div>
-            <div class="kpi-footer">
-              <span id="status_running_pct" class="kpi-sub">0%</span>
+            <div class="chart-container">
+              <canvas id="machineComparisonChart"></canvas>
             </div>
           </div>
-          <div class="card kpi kpi-enhanced">
-            <div class="kpi-header">
-              <div class="label">Idle</div>
-              <div class="kpi-icon">⏸️</div>
+          <div class="card chart-card">
+            <div class="card-title">
+              Performance Matrix (Efficiency vs Status)
+              <button class="chart-export-btn" onclick="exportChart('performanceMatrixChart')"
+                title="Export">📥</button>
             </div>
-            <div id="status_idle" class="value">—</div>
-            <div class="kpi-footer">
-              <span id="status_idle_pct" class="kpi-sub">0%</span>
-            </div>
-          </div>
-          <div class="card kpi kpi-enhanced">
-            <div class="kpi-header">
-              <div class="label">Maintenance</div>
-              <div class="kpi-icon">🔧</div>
-            </div>
-            <div id="status_maintenance" class="value">—</div>
-            <div class="kpi-footer">
-              <span id="status_maintenance_pct" class="kpi-sub">0%</span>
-            </div>
-          </div>
-          <div class="card kpi kpi-enhanced">
-            <div class="kpi-header">
-              <div class="label">Offline</div>
-              <div class="kpi-icon">❌</div>
-            </div>
-            <div id="status_offline" class="value">—</div>
-            <div class="kpi-footer">
-              <span id="status_offline_pct" class="kpi-sub">0%</span>
+            <div class="chart-container">
+              <canvas id="performanceMatrixChart"></canvas>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- ===== ALERTS ===== -->
-      <div class="card">
-        <div class="card-title">Recent Alerts</div>
-        <div id="alertsList">Loading…</div>
-      </div>
-
-      <!-- ===== MACHINE COMPARISON ===== -->
-      <div class="card chart-card">
-        <div class="card-title">Top Machines by Efficiency</div>
-        <div class="chart-container">
-          <canvas id="machineComparisonChart"></canvas>
+        <!-- ── RECENT ALERTS ── -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title">Recent Alerts</div>
+          <div id="alertsList">
+            <div class="muted small" style="padding:12px;">Loading…</div>
+          </div>
         </div>
-      </div>
 
-      <!-- ===== CSV UPLOAD & VISUALIZATION ===== -->
-      <div class="card">
-        <div class="card-title">CSV Data Visualization</div>
-        <div id="csvDropZone" class="csv-drop-zone">
-          <div class="drop-zone-content">
-            <img src="/static/icons/chart.svg" width="48" height="48" style="opacity:0.5; margin-bottom:8px;">
+        <!-- ── CSV UPLOAD ── -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title">CSV Data Visualization</div>
+          <div id="csvDropZone" class="csv-drop-zone">
+            <img src="/static/icons/chart.svg" width="40" height="40" style="opacity:0.4;" alt="">
             <div class="drop-zone-text">
               <strong>Drop CSV file here</strong><br>
               <span class="muted small">or click to browse</span>
             </div>
             <input type="file" id="csvFileInput" accept=".csv" style="display:none;">
           </div>
+          <div id="csvVisualization" class="chart-container" style="display:none;margin-top:12px;height:220px;">
+            <canvas id="csvChart"></canvas>
+          </div>
+          <div id="csvInfo" class="muted small" style="margin-top:6px;padding:0 4px;"></div>
         </div>
-        <div id="csvVisualization" class="chart-container" style="display:none; margin-top:12px;">
-          <canvas id="csvChart"></canvas>
+
+        <!-- ── MACHINES TABLE ── -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title">Machine Overview</div>
+          <input type="text" id="searchInput" placeholder="Search machines…">
+          <div style="overflow-x:auto;">
+            <table class="table" id="machinesTable">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Location</th>
+                  <th>Status</th>
+                  <th>Efficiency</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="6" class="muted small" style="text-align:center;padding:20px;">Loading…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-        <div id="csvInfo" class="muted small" style="margin-top:8px;"></div>
+
+      </div><!-- /container -->
+
+      <footer class="footer">IMCS · Industrial Hub · Offline Ready</footer>
+    </main>
+  </div>
+
+  <!-- ═══════════ CREATE MAINTENANCE MODAL ═══════════ -->
+  <div id="createMaintenanceModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        Create Maintenance Task
+        <button class="modal-close"
+          onclick="document.getElementById('createMaintenanceModal').classList.add('hidden')">✕</button>
       </div>
-
-      <!-- ===== PERFORMANCE MATRIX ===== -->
-      <div class="card chart-card">
-        <div class="card-title">Performance Matrix (Efficiency vs Status)</div>
-        <div class="chart-container">
-          <canvas id="performanceMatrixChart"></canvas>
+      <div class="modal-body">
+        <div class="form-row">
+          <label>Machine</label>
+          <select id="maintMachineId">
+            <option value="">Select a machine…</option>
+          </select>
         </div>
-      </div>
-
-      <!-- ===== MACHINES ===== -->
-      <div class="card">
-        <div class="card-title">Machine Overview</div>
-        <table class="table" id="machinesTable">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Type</th>
-              <th>Location</th>
-              <th>Status</th>
-              <th>Eff%</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td colspan="6">Loading…</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-    </div>
-
-    <!-- ===== CREATE MAINTENANCE TASK MODAL ===== -->
-    <div id="createMaintenanceModal" class="modal hidden">
-      <div class="modal-content" style="max-width: 500px;">
-        <div class="modal-header">
-          <h3>Create Maintenance Task</h3>
-          <button class="btn-icon" onclick="document.getElementById('createMaintenanceModal').classList.add('hidden')">✕</button>
+        <div class="form-row">
+          <label>Description</label>
+          <textarea id="maintDescription" rows="3" placeholder="Describe the maintenance task"></textarea>
         </div>
-        <div class="modal-body">
-          <div style="margin-bottom: 12px;">
-            <label class="label">Machine:</label>
-            <select id="maintMachineId" class="input" required>
-              <option value="">Select a machine...</option>
-            </select>
-          </div>
-          <div style="margin-bottom: 12px;">
-            <label class="label">Description:</label>
-            <textarea id="maintDescription" class="input" placeholder="Describe the maintenance task" rows="4" required></textarea>
-          </div>
-          <div style="margin-bottom: 12px;">
-            <label class="label">Priority:</label>
-            <select id="maintPriority" class="input">
-              <option value="low">Low</option>
-              <option value="medium" selected>Medium</option>
-              <option value="high">High</option>
-              <option value="critical">Critical</option>
-            </select>
-          </div>
-          <div style="margin-bottom: 12px;">
-            <label class="label">Scheduled Date:</label>
-            <input type="date" id="maintScheduledDate" class="input">
-          </div>
-          <div style="margin-bottom: 12px;">
-            <label class="label">Technician (optional):</label>
-            <input type="text" id="maintTechnician" class="input" placeholder="Enter technician name">
-          </div>
-          <div class="btn-group">
-            <button class="btn" onclick="createMaintenanceTask()">Create Task</button>
-            <button class="btn" onclick="document.getElementById('createMaintenanceModal').classList.add('hidden')">Cancel</button>
-          </div>
+        <div class="form-row">
+          <label>Priority</label>
+          <select id="maintPriority">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Scheduled Date</label>
+          <input type="date" id="maintScheduledDate">
+        </div>
+        <div class="form-row">
+          <label>Technician (optional)</label>
+          <input type="text" id="maintTechnician" placeholder="Technician name">
         </div>
       </div>
-    </div>
-
-    <!-- ===== ACKNOWLEDGE ALERT MODAL ===== -->
-    <div id="acknowledgeAlertModal" class="modal hidden">
-      <div class="modal-content" style="max-width: 500px;">
-        <div class="modal-header">
-          <h3>Acknowledge Alert</h3>
-          <button class="btn-icon" onclick="document.getElementById('acknowledgeAlertModal').classList.add('hidden')">✕</button>
-        </div>
-        <div class="modal-body">
-          <div id="alertDetails" style="margin-bottom: 12px; padding: 12px; background: #f5f5f5; border-left: 4px solid #0066cc;">
-            <!-- Alert details will be populated here -->
-          </div>
-          <div style="margin-bottom: 12px;">
-            <label class="label">Comment (optional):</label>
-            <textarea id="alertComment" class="input" placeholder="Add a comment..." rows="4"></textarea>
-          </div>
-          <div class="btn-group">
-            <button class="btn" onclick="acknowledgeAlert()">Acknowledge & Resolve</button>
-            <button class="btn" onclick="document.getElementById('acknowledgeAlertModal').classList.add('hidden')">Cancel</button>
-          </div>
-        </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="createMaintenanceTask()">Create Task</button>
+        <button class="btn"
+          onclick="document.getElementById('createMaintenanceModal').classList.add('hidden')">Cancel</button>
       </div>
     </div>
-
-    <footer class="footer">
-      IMCS · Industrial Hub · Offline Ready
-    </footer>
-
-  </main>
-</div>
-
-<!-- ================= SCRIPTS ================= -->
-<!-- Chart.js for live visualization -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
-<script src="/static/js/app.js" defer></script>
-<script src="/static/js/charts.js" defer></script>
-<script src="/static/js/charts-enhanced.js" defer></script>
-<script src="/static/js/csv-viz.js" defer></script>
-<script src="/static/js/dashboard.js" defer></script>
-<script src="/static/js/dashboard-enhanced.js" defer></script>
-<script src="/static/js/dashboard-viz-integration.js" defer></script>
-<script src="/static/js/alerts.js" defer></script>
-
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/static/sw.js').catch(()=>{});
-    });
-  }
-</script>
-
-<script>
-  // Chart export function
-  function exportChart(canvasId) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
-    
-    const url = canvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.download = `${canvasId}_${new Date().toISOString().split('T')[0]}.png`;
-    link.href = url;
-    link.click();
-  }
-
-  // Load enhanced dashboard widgets
-  async function loadDashboardWidgets() {
-    try {
-      const response = await fetch('/api/dashboard/widgets');
-      const data = await response.json();
-
-      if (data.overview) {
-        const ov = data.overview;
-        if (document.getElementById('k_running')) {
-          document.getElementById('k_running').textContent = `Running: ${ov.running_machines || 0}`;
-        }
-        if (document.getElementById('k_uptime')) {
-          document.getElementById('k_uptime').textContent = `Uptime: ${ov.uptime_percentage || 0}%`;
-        }
-        if (document.getElementById('k_maintenance')) {
-          document.getElementById('k_maintenance').textContent = `Maintenance: ${ov.pending_maintenance || 0}`;
-        }
-        if (document.getElementById('k_health')) {
-          const health = ov.uptime_percentage >= 90 ? 'Excellent' : ov.uptime_percentage >= 70 ? 'Good' : 'Warning';
-          document.getElementById('k_health').textContent = `${ov.uptime_percentage || 0}%`;
-          document.getElementById('k_health_status').textContent = health;
-        }
-      }
-
-      // Location breakdown
-      if (data.location_breakdown && document.getElementById('locationBreakdown')) {
-        const locDiv = document.getElementById('locationBreakdown');
-        if (data.location_breakdown.length === 0) {
-          locDiv.innerHTML = '<div class="muted small">No location data</div>';
-        } else {
-          locDiv.innerHTML = data.location_breakdown.map(loc => `
-            <div class="location-card">
-              <div class="location-name">${loc.location}</div>
-              <div class="location-stats">
-                Machines: ${loc.machine_count}<br>
-                Avg Efficiency: ${loc.avg_efficiency}%
-              </div>
-            </div>
-          `).join('');
-        }
-      }
-    } catch (e) {
-      console.error('Error loading dashboard widgets:', e);
-    }
-  }
-
-  // Load machine status breakdown
-  async function loadMachineStatusBreakdown() {
-    try {
-      const machinesResp = await fetch('/api/machines');
-      const machines = await machinesResp.json();
-
-      if (!Array.isArray(machines)) return;
-
-      const statusCounts = {
-        running: 0,
-        idle: 0,
-        maintenance: 0,
-        offline: 0
-      };
-
-      machines.forEach(m => {
-        const status = (m.status || 'offline').toLowerCase();
-        if (status.includes('run')) statusCounts.running++;
-        else if (status.includes('idle')) statusCounts.idle++;
-        else if (status.includes('maint')) statusCounts.maintenance++;
-        else statusCounts.offline++;
-      });
-
-      const total = machines.length || 1;
-
-      document.getElementById('status_running').textContent = statusCounts.running;
-      document.getElementById('status_running_pct').textContent = `${Math.round((statusCounts.running/total)*100)}%`;
-
-      document.getElementById('status_idle').textContent = statusCounts.idle;
-      document.getElementById('status_idle_pct').textContent = `${Math.round((statusCounts.idle/total)*100)}%`;
-
-      document.getElementById('status_maintenance').textContent = statusCounts.maintenance;
-      document.getElementById('status_maintenance_pct').textContent = `${Math.round((statusCounts.maintenance/total)*100)}%`;
-
-      document.getElementById('status_offline').textContent = statusCounts.offline;
-      document.getElementById('status_offline_pct').textContent = `${Math.round((statusCounts.offline/total)*100)}%`;
-    } catch (e) {
-      console.error('Error loading machine status:', e);
-    }
-  }
-
-  // Load and display alerts with action buttons
-  async function loadAlerts() {
-    try {
-      const response = await fetch('/api/alerts?ack=0');
-      const alerts = await response.json();
-      const alertsList = document.getElementById('alertsList');
-
-      if (!alertsList) {
-        console.warn('[DASHBOARD] alertsList element not found');
-        return;
-      }
-
-      if (!Array.isArray(alerts) || alerts.length === 0) {
-        alertsList.innerHTML = '<div class="muted small">No active alerts</div>';
-        return;
-      }
-
-      alertsList.innerHTML = alerts.slice(0, 10).map(alert => {
-        const alertId = alert.id || 0;
-        const machineId = alert.machine_id || 'System';
-        const messageSafe = (alert.message || '').replace(/'/g, "\\'").replace(/"/g, '\\"');
-        const severity = alert.severity || 'info';
-        const severityColor =
-          severity === 'critical' ? '#cc0000' :
-          severity === 'warning' ? '#ff9900' :
-          '#0066cc';
-        const timestamp = alert.raised_at ? new Date(alert.raised_at).toLocaleString() : 'Unknown';
-
-        return `
-          <div style="padding: 8px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <strong>Machine ${machineId}</strong>
-              <div class="muted small" style="margin-top: 2px;">
-                <strong style="color: ${severityColor};">${severity}</strong> - ${alert.message || 'No message'}
-              </div>
-              <div class="muted tiny" style="margin-top: 4px;">${timestamp}</div>
-            </div>
-            <button class="btn" onclick="showAcknowledgeModal(${alertId}, '${machineId}', '${messageSafe}', '${severity}')" style="margin-left: 8px;">Acknowledge</button>
-          </div>
-        `;
-      }).join('');
-    } catch (e) {
-      console.error('[DASHBOARD] Error loading alerts:', e);
-      const alertsList = document.getElementById('alertsList');
-      if (alertsList) {
-        alertsList.innerHTML = '<div class="muted small">Error loading alerts</div>';
-      }
-    }
-  }
-
-  // Show acknowledge alert modal
-  function showAcknowledgeModal(alertId, machine, message, severity) {
-    window.currentAlertId = alertId;
-    const details = document.getElementById('alertDetails');
-    details.innerHTML = `
-      <strong>Machine:</strong> ${machine}<br>
-      <strong>Severity:</strong> ${severity}<br>
-      <strong>Message:</strong> ${message}
-    `;
-    document.getElementById('alertComment').value = '';
-    document.getElementById('acknowledgeAlertModal').classList.remove('hidden');
-  }
-
-  // Acknowledge alert
-  async function acknowledgeAlert() {
-    if (!window.currentAlertId) {
-      console.warn('[DASHBOARD] No alert ID set');
-      return;
-    }
-
-    const commentElem = document.getElementById('alertComment');
-    const comment = commentElem ? commentElem.value : '';
-
-    try {
-      const response = await fetch(`/api/alerts/${window.currentAlertId}/ack`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ comment: comment })
-      });
-
-      if (response.ok) {
-        alert('Alert acknowledged successfully');
-        const modal = document.getElementById('acknowledgeAlertModal');
-        if (modal) modal.classList.add('hidden');
-
-        // Clear the comment
-        if (commentElem) commentElem.value = '';
-
-        // Reload alerts list
-        loadAlerts();
-      } else {
-        const error = await response.json();
-        alert('Error acknowledging alert: ' + (error.error || 'Unknown error'));
-      }
-    } catch (e) {
-      console.error('[DASHBOARD] Error acknowledging:', e);
-      alert('Error acknowledging alert: ' + e.message);
-    }
-  }
-
-  // Load machines for maintenance task creation
-  async function loadMachinesForMaintenance() {
-    try {
-      const response = await fetch('/api/machines');
-      const machines = await response.json();
-
-      if (!Array.isArray(machines)) return;
-
-      const select = document.getElementById('maintMachineId');
-      select.innerHTML = '<option value="">Select a machine...</option>';
-
-      machines.forEach(m => {
-        const option = document.createElement('option');
-        option.value = m.id;
-        option.textContent = `${m.name} (${m.type})`;
-        select.appendChild(option);
-      });
-    } catch (e) {
-      console.error('Error loading machines:', e);
-    }
-  }
-
-  // Create maintenance task
-  async function createMaintenanceTask() {
-    const machineIdElem = document.getElementById('maintMachineId');
-    const descriptionElem = document.getElementById('maintDescription');
-    const priorityElem = document.getElementById('maintPriority');
-    const scheduledDateElem = document.getElementById('maintScheduledDate');
-    const technicianElem = document.getElementById('maintTechnician');
-
-    if (!machineIdElem || !descriptionElem) {
-      alert('Form elements not found. Please reload the page.');
-      return;
-    }
-
-    const machineId = machineIdElem.value;
-    const description = descriptionElem.value;
-    const priority = priorityElem?.value || 'medium';
-    const scheduledDate = scheduledDateElem?.value;
-    const technician = technicianElem?.value;
-
-    if (!machineId || !description) {
-      alert('Please fill in Machine and Description fields');
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/maintenance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          machine_id: parseInt(machineId),
-          description: description,
-          priority: priority,
-          scheduled_date: scheduledDate || null,
-          technician: technician || null
-        })
-      });
-
-      if (response.ok) {
-        alert('Maintenance task created successfully!');
-        const modal = document.getElementById('createMaintenanceModal');
-        if (modal) modal.classList.add('hidden');
-
-        // Clear form
-        if (descriptionElem) descriptionElem.value = '';
-        if (technicianElem) technicianElem.value = '';
-        if (scheduledDateElem) scheduledDateElem.value = '';
-
-        // Reload machines list
-        loadMachinesForMaintenance();
-      } else {
-        const error = await response.json();
-        alert('Error creating task: ' + (error.error || 'Unknown error'));
-      }
-    } catch (e) {
-      console.error('[DASHBOARD] Maintenance task error:', e);
-      alert('Error creating task: ' + e.message);
-    }
-  }
-
-  // Create performance matrix chart
-  async function createPerformanceMatrix() {
-    try {
-      const response = await fetch('/api/machines');
-      const machines = await response.json();
-
-      if (!Array.isArray(machines) || machines.length === 0) return;
-
-      const canvas = document.getElementById('performanceMatrixChart');
-      if (!canvas) return;
-
-      // Prepare data
-      const statusMap = { 'running': 10, 'idle': 5, 'maintenance': 3, 'offline': 1 };
-      const colors = machines.map(m => {
-        const status = (m.status || 'offline').toLowerCase();
-        if (status.includes('run')) return '#107e3e';
-        if (status.includes('maint')) return '#ff9900';
-        if (status.includes('idle')) return '#0066cc';
-        return '#cc0000';
-      });
-
-      // Create chart
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        console.error('[DASHBOARD] Could not get canvas context for Performance Matrix');
-        return;
-      }
-
-      // Destroy existing chart instance if it exists
-      if (window.performanceMatrixChartInstance) {
-        window.performanceMatrixChartInstance.destroy();
-        window.performanceMatrixChartInstance = null;
-      }
-
-      try {
-        window.performanceMatrixChartInstance = new Chart(ctx, {
-          type: 'bubble',
-          data: {
-            datasets: [{
-              label: 'Machine Efficiency (bubble size = efficiency %)',
-              data: machines.map((m, idx) => ({
-                x: m.efficiency || 0,
-                y: statusMap[(m.status || 'offline').toLowerCase()] || 1,
-                r: Math.max(5, (m.efficiency || 0) / 5)
-              })),
-              backgroundColor: colors,
-              borderColor: colors,
-              borderWidth: 1
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-              legend: { display: true, position: 'top' },
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    return 'Efficiency: ' + context.raw.x + '%';
-                  }
-                }
-              }
-            },
-            scales: {
-              x: {
-                title: { display: true, text: 'Efficiency %', font: { weight: 'bold' } },
-                min: 0,
-                max: 100,
-                ticks: { stepSize: 20 }
-              },
-              y: {
-                title: { display: true, text: 'Status Level', font: { weight: 'bold' } },
-                min: 0,
-                max: 12,
-                ticks: {
-                  callback: function(value) {
-                    const statusLabels = { 1: 'Offline', 3: 'Maintenance', 5: 'Idle', 10: 'Running' };
-                    return statusLabels[value] || value;
-                  }
-                }
-              }
-            }
-          }
-        });
-        console.log('[DASHBOARD] Performance Matrix chart created successfully');
-      } catch (chartError) {
-        console.error('[DASHBOARD] Error creating Performance Matrix chart:', chartError);
-      }
-    } catch (e) {
-      console.error('[DASHBOARD] Error in createPerformanceMatrix:', e);
-    }
-  }
-
-  // Create performance trend chart (line chart - 7 days)
-  async function createPerformanceTrendChart() {
-    try {
-      const canvas = document.getElementById('performanceChart');
-      if (!canvas) {
-        console.warn('[DASHBOARD] Performance chart canvas not found');
-        return;
-      }
-
-      let labels = [];
-      let data = [];
-
-      // Try to fetch real data from API
-      try {
-        const response = await fetch('/api/chart-data/summary');
-        const chartData = await response.json();
-
-        // Handle both response formats
-        if (chartData && chartData.performance_trend && Array.isArray(chartData.performance_trend)) {
-          // New format: performance_trend array
-          labels = chartData.performance_trend.map(p => p.date);
-          data = chartData.performance_trend.map(p => p.efficiency);
-        } else if (chartData && chartData.dates && chartData.values) {
-          // Old format: dates and values arrays
-          labels = chartData.dates;
-          data = chartData.values;
-        } else {
-          throw new Error('Unexpected response format');
-        }
-
-        // Ensure we have data
-        if (!labels || labels.length === 0 || !data || data.length === 0) {
-          throw new Error('No data from API');
-        }
-      } catch (apiError) {
-        console.warn('[DASHBOARD] Could not fetch chart data from API, using simulated data:', apiError);
-        // Generate dates and simulated data
-        const today = new Date();
-        for (let i = 6; i >= 0; i--) {
-          const date = new Date(today);
-          date.setDate(date.getDate() - i);
-          labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-        }
-        // Generate trend data
-        let baseValue = 75;
-        for (let i = 0; i < 7; i++) {
-          baseValue += (Math.random() - 0.5) * 10;
-          data.push(Math.max(50, Math.min(100, baseValue)));
-        }
-      }
-
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        console.error('[DASHBOARD] Could not get canvas context for Performance Trend');
-        return;
-      }
-
-      // Destroy existing instance
-      if (window.performanceTrendChartInstance) {
-        try {
-          window.performanceTrendChartInstance.destroy();
-          window.performanceTrendChartInstance = null;
-        } catch (destroyError) {
-          console.warn('[DASHBOARD] Error destroying previous chart:', destroyError);
-        }
-      }
-
-      try {
-        window.performanceTrendChartInstance = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: 'Efficiency %',
-              data: data,
-              borderColor: '#0a6ed1',
-              backgroundColor: 'rgba(10, 110, 209, 0.1)',
-              borderWidth: 2.5,
-              fill: true,
-              tension: 0.4,
-              pointRadius: 5,
-              pointHoverRadius: 7,
-              pointBackgroundColor: '#0a6ed1',
-              pointBorderColor: '#fff',
-              pointBorderWidth: 2
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-              legend: {
-                display: true,
-                position: 'top',
-                labels: { usePointStyle: true, padding: 15 }
-              },
-              tooltip: {
-                enabled: true,
-                mode: 'index',
-                intersect: false,
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                padding: 10,
-                borderRadius: 4
-              }
-            },
-            interaction: {
-              mode: 'nearest',
-              axis: 'x',
-              intersect: false
-            },
-            scales: {
-              x: {
-                title: { display: true, text: 'Date', font: { weight: 'bold', size: 12 } },
-                grid: { display: false }
-              },
-              y: {
-                title: { display: true, text: 'Efficiency %', font: { weight: 'bold', size: 12 } },
-                min: 0,
-                max: 100,
-                ticks: { stepSize: 20 },
-                grid: { color: 'rgba(0, 0, 0, 0.05)' }
-              }
-            }
-          }
-        });
-
-        console.log('[DASHBOARD] Performance trend chart created successfully with', labels.length, 'data points');
-      } catch (chartError) {
-        console.error('[DASHBOARD] Error creating Performance Trend chart:', chartError);
-      }
-    } catch (e) {
-      console.error('[DASHBOARD] Error in createPerformanceTrendChart:', e);
-    }
-  }
-
-  // Create machine status distribution chart (pie chart)
-  async function createStatusDistributionChart() {
-    try {
-      const canvas = document.getElementById('statusChart');
-      if (!canvas) {
-        console.warn('[DASHBOARD] Status chart canvas not found');
-        return;
-      }
-
-      // Fetch machines to count statuses
-      try {
-        const machinesResp = await fetch('/api/machines');
-        if (!machinesResp.ok) throw new Error('Failed to fetch machines');
-
-        const machines = await machinesResp.json();
-
-        if (!Array.isArray(machines) || machines.length === 0) {
-          console.warn('[DASHBOARD] No machines data for status chart');
-          return;
-        }
-
-        // Count statuses
-        const statusCounts = {
-          running: 0,
-          idle: 0,
-          maintenance: 0,
-          offline: 0
-        };
-
-        machines.forEach(m => {
-          const status = (m.status || 'offline').toLowerCase();
-          if (status.includes('run')) statusCounts.running++;
-          else if (status.includes('idle')) statusCounts.idle++;
-          else if (status.includes('maint')) statusCounts.maintenance++;
-          else statusCounts.offline++;
-        });
-
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          console.error('[DASHBOARD] Could not get canvas context for Status Distribution');
-          return;
-        }
-
-        // Destroy existing instance
-        if (window.statusDistributionChartInstance) {
-          try {
-            window.statusDistributionChartInstance.destroy();
-            window.statusDistributionChartInstance = null;
-          } catch (destroyError) {
-            console.warn('[DASHBOARD] Error destroying previous status chart:', destroyError);
-          }
-        }
-
-        try {
-          window.statusDistributionChartInstance = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-              labels: ['Running', 'Idle', 'Maintenance', 'Offline'],
-              datasets: [{
-                data: [
-                  statusCounts.running,
-                  statusCounts.idle,
-                  statusCounts.maintenance,
-                  statusCounts.offline
-                ],
-                backgroundColor: [
-                  '#107e3e', // Running - Green
-                  '#0066cc', // Idle - Blue
-                  '#ff9900', // Maintenance - Orange
-                  '#cc0000'  // Offline - Red
-                ],
-                borderColor: '#fff',
-                borderWidth: 2.5,
-                hoverOffset: 5
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: true,
-              plugins: {
-                legend: {
-                  display: true,
-                  position: 'bottom',
-                  labels: {
-                    usePointStyle: true,
-                    padding: 15,
-                    font: { size: 12 }
-                  }
-                },
-                tooltip: {
-                  enabled: true,
-                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                  padding: 10,
-                  borderRadius: 4,
-                  callbacks: {
-                    label: function(context) {
-                      const label = context.label || '';
-                      const value = context.parsed || 0;
-                      const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                      const percentage = ((value / total) * 100).toFixed(1);
-                      return label + ': ' + value + ' (' + percentage + '%)';
-                    }
-                  }
-                }
-              }
-            }
-          });
-
-          console.log('[DASHBOARD] Status distribution chart created successfully');
-        } catch (chartError) {
-          console.error('[DASHBOARD] Error creating Status Distribution chart:', chartError);
-        }
-      } catch (fetchError) {
-        console.error('[DASHBOARD] Error fetching machines for status chart:', fetchError);
-      }
-    } catch (e) {
-      console.error('[DASHBOARD] Error in createStatusDistributionChart:', e);
-    }
-  }
-
-  // Initialize CSV upload and Dataset Manager
-  document.addEventListener('DOMContentLoaded', async () => {
-    console.log('[DASHBOARD] Initializing dashboard...');
-
-    // Load enhanced widgets
-    try {
-      loadDashboardWidgets();
-      setInterval(loadDashboardWidgets, 60000); // Refresh every minute
-    } catch (e) { console.error('[DASHBOARD] Widget loading error:', e); }
-
-    // Load machine status breakdown
-    try {
-      loadMachineStatusBreakdown();
-      setInterval(loadMachineStatusBreakdown, 60000);
-    } catch (e) { console.error('[DASHBOARD] Status breakdown error:', e); }
-
-    // Load alerts
-    try {
-      loadAlerts();
-      setInterval(loadAlerts, 30000); // Refresh every 30 seconds
-    } catch (e) { console.error('[DASHBOARD] Alerts loading error:', e); }
-
-    // Load machines for maintenance modal
-    try {
-      loadMachinesForMaintenance();
-    } catch (e) { console.error('[DASHBOARD] Machines loading error:', e); }
-
-    // Create performance trend chart
-    try {
-      createPerformanceTrendChart();
-      setInterval(createPerformanceTrendChart, 120000); // Refresh every 2 minutes
-    } catch (e) { console.error('[DASHBOARD] Performance trend error:', e); }
-
-    // Create status distribution chart
-    try {
-      createStatusDistributionChart();
-      setInterval(createStatusDistributionChart, 120000); // Refresh every 2 minutes
-    } catch (e) { console.error('[DASHBOARD] Status distribution error:', e); }
-
-    // Create performance matrix chart
-    try {
-      createPerformanceMatrix();
-      setInterval(createPerformanceMatrix, 120000); // Refresh every 2 minutes
-    } catch (e) { console.error('[DASHBOARD] Performance matrix error:', e); }
-
-    // Listen for visualization events to reload data
-    window.addEventListener('viz:data-generated', () => {
-      console.log('[DASHBOARD] Data generated event received, refreshing...');
-      try { loadDashboardWidgets(); } catch (e) {}
-      try { loadMachineStatusBreakdown(); } catch (e) {}
-      try { loadAlerts(); } catch (e) {}
-      try { createPerformanceTrendChart(); } catch (e) {}
-      try { createStatusDistributionChart(); } catch (e) {}
-      try { createPerformanceMatrix(); } catch (e) {}
-    });
-
-    window.addEventListener('viz:data-cleared', () => {
-      console.log('[DASHBOARD] Data cleared event received, refreshing...');
-      try { loadDashboardWidgets(); } catch (e) {}
-      try { loadMachineStatusBreakdown(); } catch (e) {}
-      try { loadAlerts(); } catch (e) {}
-      try { createPerformanceTrendChart(); } catch (e) {}
-      try { createStatusDistributionChart(); } catch (e) {}
-      try { createPerformanceMatrix(); } catch (e) {}
-    });
-
-    // Initialize IndexedDB
-    if (window.IMCSCSV) {
-      try {
-        await window.IMCSCSV.initDB();
-      } catch (e) { console.error('[DASHBOARD] IndexedDB error:', e); }
-    }
-
-    // Dataset Manager UI
-    const datasetManagerBtn = document.getElementById('datasetManagerBtn');
-    const datasetManagerPanel = document.getElementById('datasetManagerPanel');
-    if (datasetManagerBtn && datasetManagerPanel) {
-      datasetManagerBtn.addEventListener('click', () => {
-        datasetManagerPanel.style.display = datasetManagerPanel.style.display === 'none' ? 'block' : 'none';
-        if (window.DatasetManager) {
-          try {
-            window.DatasetManager.loadAvailableDatasets();
-          } catch (e) { console.error('[DASHBOARD] Dataset manager error:', e); }
-        }
-      });
-    }
-
-    // Maintenance Task Button
-    try {
-      const headerBtnGroup = document.querySelector('.btn-group');
-      if (headerBtnGroup && !Array.from(headerBtnGroup.querySelectorAll('button')).some(b => b.textContent.includes('Create Task'))) {
-        const createBtn = document.createElement('button');
-        createBtn.className = 'btn';
-        createBtn.innerHTML = '<img src="/static/icons/add-machine.svg" width="16" height="16" alt=""> Create Maintenance';
-        createBtn.onclick = () => {
-          const modal = document.getElementById('createMaintenanceModal');
-          if (modal) modal.classList.remove('hidden');
-        };
-        headerBtnGroup.appendChild(createBtn);
-      }
-    } catch (e) { console.error('[DASHBOARD] Maintenance button error:', e); }
-
-    // Demo Data Generation
-    const demoDataBtn = document.getElementById('demoDataBtn');
-    const generateDemoBtn = document.getElementById('generateDemoBtn');
-    const clearDemoBtn = document.getElementById('clearDemoBtn');
-    
-    if (demoDataBtn) {
-      demoDataBtn.addEventListener('click', () => {
-        if (datasetManagerPanel) {
-          datasetManagerPanel.style.display = 'block';
-          if (window.DatasetManager) {
-            window.DatasetManager.loadAvailableDatasets();
-          }
-        }
-      });
-    }
-    
-    if (generateDemoBtn) {
-      generateDemoBtn.addEventListener('click', async () => {
-        const numMachines = prompt('Number of machines to generate?', '5');
-        const days = prompt('Days of historical data?', '30');
-        
-        if (numMachines && days) {
-          try {
-            const response = await fetch('/api/demo/generate', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                num_machines: parseInt(numMachines),
-                days: parseInt(days)
-              })
-            });
-            
-            const result = await response.json();
-            if (result.success) {
-              alert(`Demo data generated successfully!\n- ${result.data.machines} machines\n- ${result.data.readings} readings\n- ${result.data.alerts} alerts\n- ${result.data.maintenance} maintenance tasks`);
-              // Refresh dashboard
-              location.reload();
-            } else {
-              alert('Error: ' + (result.error || 'Failed to generate demo data'));
-            }
-          } catch (error) {
-            alert('Error: ' + error.message);
-          }
-        }
-      });
-    }
-    
-    if (clearDemoBtn) {
-      clearDemoBtn.addEventListener('click', async () => {
-        if (confirm('Are you sure you want to clear all demo data? This cannot be undone.')) {
-          try {
-            const response = await fetch('/api/demo/clear', { method: 'POST' });
-            const result = await response.json();
-            if (result.success) {
-              alert('Demo data cleared successfully!');
-              location.reload();
-            } else {
-              alert('Error: ' + (result.error || 'Failed to clear demo data'));
-            }
-          } catch (error) {
-            alert('Error: ' + error.message);
-          }
-        }
-      });
-    }
-    
-    // Dataset creation from modal
-    window.createDatasetFromModal = function() {
-      const name = document.getElementById('datasetName').value;
-      const type = document.getElementById('datasetType').value;
-      const numRows = parseInt(document.getElementById('datasetRows').value) || 100;
-      const pattern = document.getElementById('dataPattern').value;
-      const columnsInput = document.getElementById('datasetColumns').value;
-      
-      if (!name || !columnsInput) {
-        alert('Please provide dataset name and columns');
-        return;
-      }
-      
-      const columnNames = columnsInput.split(',').map(c => c.trim()).filter(c => c);
-      const columns = columnNames.map(col => {
-        let colType = 'numeric';
-        if (col.toLowerCase().includes('time') || col.toLowerCase().includes('date')) {
-          colType = 'timestamp';
-        } else if (col.toLowerCase().includes('status') || col.toLowerCase().includes('type')) {
-          colType = 'categorical';
-        }
-        return { name: col, type: colType };
-      });
-      
-      if (window.DatasetManager) {
-        const dataset = window.DatasetManager.createDataset({
-          name: name,
-          type: type,
-          columns: columns,
-          numRows: numRows,
-          dataPattern: pattern
-        });
-        
-        document.getElementById('createDatasetModal').classList.add('hidden');
-        if (window.DatasetManager.visualizeDataset) {
-          window.DatasetManager.visualizeDataset(dataset);
-        }
-        window.DatasetManager.loadAvailableDatasets();
-      }
-    };
-
-    // CSV Drop Zone
-    const dropZone = document.getElementById('csvDropZone');
-    const fileInput = document.getElementById('csvFileInput');
-    const csvViz = document.getElementById('csvVisualization');
-    const csvInfo = document.getElementById('csvInfo');
-
-    if (dropZone && window.IMCSCSV) {
-      // Click to browse
-      dropZone.addEventListener('click', () => fileInput.click());
-      
-      // File input change
-      fileInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (file) await handleCSVUpload(file);
-      });
-
-      // Drag and drop
-      window.IMCSCSV.handleFileDrop(
-        dropZone,
-        async (result) => {
-          csvInfo.textContent = `✓ ${result.data.filename} loaded (${result.data.row_count} rows)`;
-          csvViz.style.display = 'block';
-          
-          // Visualize
-          if (window.IMCSCSV.visualizeCSVData(result.data, 'csvChart')) {
-            csvInfo.textContent += ' - Chart rendered';
-          }
-        },
-        (error) => {
-          csvInfo.textContent = `✗ ${error}`;
-          csvInfo.style.color = '#bb0000';
-        }
-      );
-    }
-
-    async function handleCSVUpload(file) {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      try {
-        const response = await fetch('/api/upload-csv', {
-          method: 'POST',
-          body: formData
-        });
-        const result = await response.json();
-        
-        if (result.success) {
-          csvInfo.textContent = `✓ ${result.data.filename} loaded (${result.data.row_count} rows)`;
-          csvViz.style.display = 'block';
-          if (window.IMCSCSV.visualizeCSVData(result.data, 'csvChart')) {
-            csvInfo.textContent += ' - Chart rendered';
-          }
-        }
-      } catch (error) {
-        csvInfo.textContent = `✗ Upload failed: ${error.message}`;
-        csvInfo.style.color = '#bb0000';
-      }
-    }
-  });
-</script>
-
+  </div>
+
+  <!-- ═══════════ ACKNOWLEDGE ALERT MODAL ═══════════ -->
+  <div id="acknowledgeAlertModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        Acknowledge Alert
+        <button class="modal-close"
+          onclick="document.getElementById('acknowledgeAlertModal').classList.add('hidden')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="alertDetails"
+          style="padding:10px;background:#F5F5F5;border-left:4px solid #0a6ed1;margin-bottom:12px;font-size:13px;line-height:1.6;">
+        </div>
+        <div class="form-row">
+          <label>Comment (optional)</label>
+          <textarea id="alertComment" rows="3" placeholder="Add a comment…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="acknowledgeAlert()">Acknowledge &amp; Resolve</button>
+        <button class="btn"
+          onclick="document.getElementById('acknowledgeAlertModal').classList.add('hidden')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SCRIPTS ═══════════ -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="/static/js/app.js" defer></script>
+  <script src="/static/js/dashboard-main.js" defer></script>
 </body>
+
 </html>

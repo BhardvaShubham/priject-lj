@@ -240,6 +240,11 @@ def maintenance_page():
 def reports_page():
     return render_template("reports.html")
 
+@app.route("/help")
+@login_required
+def help_page():
+    return render_template("help.html")
+
 # ===================== APIs =====================
 
 @app.route("/api/summary")

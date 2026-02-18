@@ -256,6 +256,9 @@
                 else counts.offline++;
             });
 
+            // Cache for chart-type switcher
+            _dashChartData.status = { counts };
+
             makeChart('status', 'statusChart', {
                 type: 'doughnut',
                 data: {

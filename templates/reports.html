@@ -1074,126 +1074,359 @@
       }
 
       // ══════════════════════════════════════════
-      // EXPORTS
+      // EXPORTS — ENTERPRISE GRADE
       // ══════════════════════════════════════════
+
+      // ── CSV helper ──
       function downloadCSV(filename, headers, rows) {
-        const lines = [headers.join(','), ...rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))];
-        const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = filename;
-        a.click();
+        const BOM = '\uFEFF';
+        const lines = [headers.join(','), ...rows.map(r => r.map(v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`).join(','))];
+        const blob = new Blob([BOM + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click();
       }
+
+      // ── Timestamp for filenames ──
+      function ts() { return new Date().toISOString().slice(0, 10); }
 
       el('exportMachinesCSV').addEventListener('click', async () => {
         let data = machinesData;
         if (!data.length) { const r = await fetch('/api/machines'); data = await r.json(); }
-        downloadCSV('imcs_machines.csv',
-          ['ID', 'Name', 'Type', 'Location', 'Status', 'Efficiency%'],
-          data.map(m => [m.id, m.name, m.type, m.location, m.status, m.efficiency])
-        );
+        downloadCSV(`IMCS_Machines_${ts()}.csv`,
+          ['Machine ID', 'Name', 'Type', 'Location', 'Status', 'Efficiency %', 'Rated Capacity'],
+          data.map(m => [m.id, m.name, m.type, m.location, m.status, m.efficiency, m.rated_capacity || '']));
         toast('✓ Machine data exported');
       });
 
       el('exportMachinesTableBtn').addEventListener('click', () => {
         if (!machinesData.length) { toast('✗ Load data first', true); return; }
-        downloadCSV('imcs_machines.csv',
-          ['ID', 'Name', 'Type', 'Location', 'Status', 'Efficiency%'],
-          machinesData.map(m => [m.id, m.name, m.type, m.location, m.status, m.efficiency])
-        );
+        downloadCSV(`IMCS_Machines_${ts()}.csv`,
+          ['Machine ID', 'Name', 'Type', 'Location', 'Status', 'Efficiency %', 'Rated Capacity'],
+          machinesData.map(m => [m.id, m.name, m.type, m.location, m.status, m.efficiency, m.rated_capacity || '']));
         toast('✓ Exported');
       });
 
       el('exportSensorsCSV').addEventListener('click', async () => {
+        toast('⏳ Fetching sensor data…');
         const res = await fetch('/api/sensor-readings?limit=500');
         const data = await res.json();
-        downloadCSV('imcs_sensor_readings.csv',
-          ['ID', 'Machine', 'Sensor', 'Value', 'Unit', 'Timestamp'],
-          data.rows.map(r => [r.id, r.machine_name, r.sensor_name, r.value, r.unit, r.timestamp])
-        );
+        downloadCSV(`IMCS_SensorReadings_${ts()}.csv`,
+          ['Reading ID', 'Machine', 'Sensor Name', 'Value', 'Unit', 'Timestamp'],
+          data.rows.map(r => [r.id, r.machine_name, r.sensor_name, r.value, r.unit, r.timestamp]));
         toast('✓ Sensor readings exported');
       });
 
       el('exportSensorsTableBtn').addEventListener('click', () => {
         if (!sensorsRows.length) { toast('✗ Load data first', true); return; }
-        downloadCSV('imcs_sensor_readings.csv',
-          ['ID', 'Machine', 'Sensor', 'Value', 'Unit', 'Timestamp'],
-          sensorsRows.map(r => [r.id, r.machine_name, r.sensor_name, r.value, r.unit, r.timestamp])
-        );
+        downloadCSV(`IMCS_SensorReadings_${ts()}.csv`,
+          ['Reading ID', 'Machine', 'Sensor Name', 'Value', 'Unit', 'Timestamp'],
+          sensorsRows.map(r => [r.id, r.machine_name, r.sensor_name, r.value, r.unit, r.timestamp]));
         toast('✓ Exported');
       });
 
       el('exportPerformanceCSV').addEventListener('click', async () => {
         const res = await fetch('/api/reports/performance');
         const data = await res.json();
-        downloadCSV('imcs_performance_30d.csv',
-          ['Date', 'Avg Efficiency%', 'Min%', 'Max%', 'Readings'],
-          data.daily_trend.map(d => [d.date, d.avg, d.min, d.max, d.readings])
-        );
-        toast('✓ Performance data exported');
+        const rows = [];
+        // Summary block
+        const s = data.summary;
+        rows.push(['=== IMCS PERFORMANCE REPORT — LAST 30 DAYS ===', '', '', '', '']);
+        rows.push(['Generated', new Date().toLocaleString(), '', '', '']);
+        rows.push(['', '', '', '', '']);
+        rows.push(['SUMMARY KPIs', '', '', '', '']);
+        rows.push(['Total Machines', s.total_machines, '', '', '']);
+        rows.push(['Running Machines', s.running_machines, '', '', '']);
+        rows.push(['Uptime %', s.uptime_pct + '%', '', '', '']);
+        rows.push(['Avg Efficiency (30d)', s.avg_efficiency + '%', '', '', '']);
+        rows.push(['Sensor Readings (30d)', s.total_readings_30d, '', '', '']);
+        rows.push(['Alerts Raised (30d)', s.alerts_30d, '', '', '']);
+        rows.push(['Unacknowledged Alerts', s.unack_alerts, '', '', '']);
+        rows.push(['Open Maintenance Tasks', s.open_tasks, '', '', '']);
+        rows.push(['', '', '', '', '']);
+        rows.push(['DAILY TREND', '', '', '', '']);
+        rows.push(['Date', 'Avg Efficiency %', 'Min %', 'Max %', 'Readings']);
+        data.daily_trend.forEach(d => rows.push([d.date, d.avg, d.min, d.max, d.readings]));
+        rows.push(['', '', '', '', '']);
+        rows.push(['PER-MACHINE BREAKDOWN', '', '', '', '']);
+        rows.push(['Machine', 'Type', 'Location', 'Status', 'Avg Eff %', 'Min %', 'Max %', 'Readings', 'Last Reading']);
+        data.machines.forEach(m => rows.push([m.name, m.type, m.location, m.status, m.avg_eff, m.min_eff ?? '', m.max_eff ?? '', m.readings, m.last_reading ?? '']));
+        downloadCSV(`IMCS_PerformanceReport_${ts()}.csv`, ['A', 'B', 'C', 'D', 'E'], rows.map(r => { while (r.length < 5) r.push(''); return r; }));
+        toast('✓ Performance report exported');
       });
 
       el('exportPerfBtn').addEventListener('click', () => {
         if (!window._perfData) { toast('✗ Load metrics first', true); return; }
-        downloadCSV('imcs_performance_30d.csv',
-          ['Date', 'Avg Efficiency%', 'Min%', 'Max%', 'Readings'],
-          window._perfData.daily_trend.map(d => [d.date, d.avg, d.min, d.max, d.readings])
-        );
+        downloadCSV(`IMCS_Performance_${ts()}.csv`,
+          ['Date', 'Avg Efficiency %', 'Min %', 'Max %', 'Readings'],
+          window._perfData.daily_trend.map(d => [d.date, d.avg, d.min, d.max, d.readings]));
         toast('✓ Exported');
       });
 
       el('exportPrintView').addEventListener('click', () => window.print());
 
-      el('exportFullPDF').addEventListener('click', () => {
-        // Build a print-friendly summary and trigger print
-        const printWin = window.open('', '_blank');
-        const now = new Date().toLocaleString();
-        const s = window._perfData?.summary || {};
-        const machines = window._perfData?.machines || machinesData;
-        printWin.document.write(`<!DOCTYPE html><html><head><title>IMCS Full Report</title>
-    <style>
-      body{font-family:Arial,sans-serif;font-size:12px;color:#000;margin:20px;}
-      h1{font-size:18px;color:#000080;border-bottom:2px solid #000080;padding-bottom:6px;}
-      h2{font-size:14px;color:#003366;margin-top:20px;border-bottom:1px solid #ccc;padding-bottom:4px;}
-      table{width:100%;border-collapse:collapse;margin-top:8px;font-size:11px;}
-      th{background:#000080;color:#fff;padding:6px 8px;text-align:left;}
-      td{padding:5px 8px;border-bottom:1px solid #ddd;}
-      tr:nth-child(even) td{background:#f5f5f5;}
-      .kpi-row{display:flex;gap:20px;flex-wrap:wrap;margin:10px 0;}
-      .kpi{background:#f0f4ff;border:1px solid #ccc;padding:10px 16px;min-width:120px;}
-      .kv{font-size:20px;font-weight:700;color:#000080;}
-      .kl{font-size:10px;color:#666;text-transform:uppercase;}
-      .footer{margin-top:30px;font-size:10px;color:#888;border-top:1px solid #ccc;padding-top:8px;}
-    </style></head><body>
-    <h1>📊 IMCS Industrial Machine Control System — Full Report</h1>
-    <p style="color:#666;font-size:11px;">Generated: ${now} &nbsp;|&nbsp; Period: Last 30 Days</p>
-    <h2>Performance Summary</h2>
-    <div class="kpi-row">
-      <div class="kpi"><div class="kv">${s.total_machines || '—'}</div><div class="kl">Total Machines</div></div>
-      <div class="kpi"><div class="kv">${s.running_machines || '—'}</div><div class="kl">Running</div></div>
-      <div class="kpi"><div class="kv">${s.uptime_pct || '—'}%</div><div class="kl">Uptime</div></div>
-      <div class="kpi"><div class="kv">${s.avg_efficiency || '—'}%</div><div class="kl">Avg Efficiency</div></div>
-      <div class="kpi"><div class="kv">${(s.total_readings_30d || 0).toLocaleString()}</div><div class="kl">Sensor Readings</div></div>
-      <div class="kpi"><div class="kv">${s.alerts_30d || '—'}</div><div class="kl">Alerts (30d)</div></div>
-      <div class="kpi"><div class="kv">${s.open_tasks || '—'}</div><div class="kl">Open Tasks</div></div>
+      // ── Enterprise Full Report ──
+      el('exportFullPDF').addEventListener('click', async () => {
+        toast('⏳ Building enterprise report…');
+        let perfData = window._perfData;
+        if (!perfData) {
+          const r = await fetch('/api/reports/performance');
+          perfData = await r.json();
+          window._perfData = perfData;
+        }
+        let sensorData = { rows: [] };
+        try { const r = await fetch('/api/sensor-readings?limit=200'); sensorData = await r.json(); } catch (_) { }
+
+        const s = perfData.summary;
+        const machines = perfData.machines || [];
+        const trend = perfData.daily_trend || [];
+        const sensors = sensorData.rows || [];
+        const now = new Date();
+        const nowStr = now.toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'short' });
+        const reportId = 'IMCS-' + now.getFullYear() + ('0' + (now.getMonth() + 1)).slice(-2) + ('0' + now.getDate()).slice(-2) + '-' + Math.floor(Math.random() * 9000 + 1000);
+
+        // RAG status
+        const eff = s.avg_efficiency || 0;
+        const ragColor = eff >= 80 ? '#107e3e' : eff >= 60 ? '#e9730c' : '#bb0000';
+        const ragLabel = eff >= 80 ? 'GREEN — Performing Well' : eff >= 60 ? 'AMBER — Needs Attention' : 'RED — Critical';
+        const uptimePct = s.uptime_pct || 0;
+        const uptimeColor = uptimePct >= 80 ? '#107e3e' : uptimePct >= 60 ? '#e9730c' : '#bb0000';
+
+        // Status counts from machines
+        const statusCount = {};
+        machines.forEach(m => { statusCount[m.status] = (statusCount[m.status] || 0) + 1; });
+
+        // Top performers & underperformers
+        const sorted = [...machines].sort((a, b) => (b.avg_eff || 0) - (a.avg_eff || 0));
+        const top3 = sorted.slice(0, 3);
+        const bot3 = sorted.slice(-3).reverse();
+
+        function effBadge(v) {
+          const c = v >= 80 ? '#107e3e' : v >= 60 ? '#e9730c' : '#bb0000';
+          const bg = v >= 80 ? '#d4edda' : v >= 60 ? '#fff3cd' : '#f8d7da';
+          return `<span style="background:${bg};color:${c};padding:2px 8px;font-weight:700;font-size:11px;border:1px solid ${c};">${v}%</span>`;
+        }
+        function statusBadge(st) {
+          const map = { running: '#107e3e', idle: '#0c5460', maintenance: '#856404', offline: '#bb0000', down: '#bb0000' };
+          const bg = { running: '#d4edda', idle: '#d1ecf1', maintenance: '#fff3cd', offline: '#f8d7da', down: '#f8d7da' };
+          const s2 = (st || 'unknown').toLowerCase();
+          return `<span style="background:${bg[s2] || '#eee'};color:${map[s2] || '#333'};padding:2px 8px;font-size:10px;font-weight:700;text-transform:uppercase;border:1px solid ${map[s2] || '#ccc'};">${s2}</span>`;
+        }
+
+        const effBar = (v) => {
+          const c = v >= 80 ? '#107e3e' : v >= 60 ? '#e9730c' : '#bb0000';
+          return `<div style="display:flex;align-items:center;gap:6px;">
+            <div style="flex:1;height:8px;background:#e0e0e0;border:1px solid #ccc;min-width:60px;">
+              <div style="width:${Math.min(v, 100)}%;height:100%;background:${c};"></div>
+            </div>
+            <span style="font-size:11px;font-weight:700;color:${c};min-width:36px;">${v}%</span>
+          </div>`;
+        };
+
+        const trendRows = trend.map((d, i) => {
+          const prev = trend[i - 1];
+          const arrow = prev ? (d.avg > prev.avg ? '▲' : d.avg < prev.avg ? '▼' : '–') : '–';
+          const arrowColor = prev ? (d.avg > prev.avg ? '#107e3e' : d.avg < prev.avg ? '#bb0000' : '#666') : '#666';
+          return `<tr style="${i % 2 === 0 ? 'background:#fafafa;' : ''}">
+            <td style="padding:5px 8px;border-bottom:1px solid #eee;">${d.date}</td>
+            <td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:center;">${effBadge(d.avg)}</td>
+            <td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:center;color:#555;">${d.min}%</td>
+            <td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:center;color:#555;">${d.max}%</td>
+            <td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:center;">${d.readings.toLocaleString()}</td>
+            <td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:center;color:${arrowColor};font-weight:700;">${arrow}</td>
+          </tr>`;
+        }).join('');
+
+        const machineRows = machines.map((m, i) => `<tr style="${i % 2 === 0 ? 'background:#fafafa;' : ''}">
+          <td style="padding:5px 8px;border-bottom:1px solid #eee;font-weight:600;">${m.name}</td>
+          <td style="padding:5px 8px;border-bottom:1px solid #eee;color:#555;">${m.type || '—'}</td>
+          <td style="padding:5px 8px;border-bottom:1px solid #eee;color:#555;">${m.location || '—'}</td>
+          <td style="padding:5px 8px;border-bottom:1px solid #eee;">${statusBadge(m.status)}</td>
+          <td style="padding:5px 8px;border-bottom:1px solid #eee;">${effBar(m.avg_eff || 0)}</td>
+          <td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:center;color:#555;">${m.min_eff !== null ? m.min_eff + '%' : '—'}</td>
+          <td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:center;color:#555;">${m.max_eff !== null ? m.max_eff + '%' : '—'}</td>
+          <td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:center;">${(m.readings || 0).toLocaleString()}</td>
+          <td style="padding:5px 8px;border-bottom:1px solid #eee;color:#888;font-size:10px;">${m.last_reading ? m.last_reading.slice(0, 16) : '—'}</td>
+        </tr>`).join('');
+
+        const sensorRows = sensors.slice(0, 50).map((r, i) => `<tr style="${i % 2 === 0 ? 'background:#fafafa;' : ''}">
+          <td style="padding:4px 8px;border-bottom:1px solid #eee;color:#888;font-size:10px;">${r.id}</td>
+          <td style="padding:4px 8px;border-bottom:1px solid #eee;">${r.machine_name || '—'}</td>
+          <td style="padding:4px 8px;border-bottom:1px solid #eee;">${r.sensor_name || '—'}</td>
+          <td style="padding:4px 8px;border-bottom:1px solid #eee;font-weight:600;">${parseFloat(r.value || 0).toFixed(2)}</td>
+          <td style="padding:4px 8px;border-bottom:1px solid #eee;color:#555;">${r.unit || '—'}</td>
+          <td style="padding:4px 8px;border-bottom:1px solid #eee;color:#888;font-size:10px;">${(r.timestamp || '').slice(0, 16)}</td>
+        </tr>`).join('');
+
+        const html = `<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>IMCS Enterprise Report — ${ts()}</title>
+<style>
+  @page { size: A4; margin: 18mm 15mm 18mm 15mm; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',Arial,sans-serif;font-size:11px;color:#1a1a2e;background:#fff;line-height:1.5;}
+  /* Cover */
+  .cover{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;
+    background:linear-gradient(135deg,#000080 0%,#003399 40%,#1084d7 100%);
+    color:#fff;padding:60px 50px;page-break-after:always;}
+  .cover-logo{font-size:13px;font-weight:700;letter-spacing:3px;opacity:.7;margin-bottom:40px;text-transform:uppercase;}
+  .cover-title{font-size:36px;font-weight:700;line-height:1.2;margin-bottom:12px;}
+  .cover-sub{font-size:16px;opacity:.85;margin-bottom:40px;}
+  .cover-meta{display:flex;gap:40px;flex-wrap:wrap;margin-top:40px;border-top:1px solid rgba(255,255,255,.3);padding-top:24px;}
+  .cover-meta-item label{font-size:9px;text-transform:uppercase;letter-spacing:1px;opacity:.6;display:block;}
+  .cover-meta-item span{font-size:13px;font-weight:600;}
+  .cover-rag{display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,.15);
+    padding:10px 20px;margin-top:24px;border-left:4px solid ${ragColor};}
+  .cover-rag .dot{width:14px;height:14px;border-radius:50%;background:${ragColor};}
+  /* Sections */
+  .section{page-break-inside:avoid;margin-bottom:28px;}
+  .section-break{page-break-before:always;}
+  .sec-title{font-size:15px;font-weight:700;color:#000080;border-bottom:2px solid #000080;
+    padding-bottom:6px;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .sec-title span{font-size:11px;font-weight:400;color:#666;margin-left:auto;}
+  /* KPI grid */
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+  .kpi-card{border:1px solid #dde3f0;padding:14px 12px;position:relative;overflow:hidden;}
+  .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#000080,#1084d7);}
+  .kpi-val{font-size:24px;font-weight:700;color:#000080;line-height:1;}
+  .kpi-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#888;margin-top:4px;}
+  .kpi-sub{font-size:10px;color:#0a6ed1;margin-top:3px;font-weight:600;}
+  /* Executive summary box */
+  .exec-box{background:#f0f4ff;border:1px solid #c0d0f0;border-left:4px solid #000080;padding:14px 16px;margin-bottom:20px;}
+  .exec-box p{margin-bottom:6px;font-size:11px;line-height:1.6;}
+  /* Tables */
+  table{width:100%;border-collapse:collapse;font-size:11px;}
+  thead tr{background:linear-gradient(90deg,#000080,#1084d7);}
+  thead th{color:#fff;padding:8px 8px;text-align:left;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.4px;}
+  /* Top/bottom performers */
+  .perf-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+  .perf-box{border:1px solid #dde3f0;padding:12px;}
+  .perf-box h4{font-size:11px;font-weight:700;color:#003366;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;}
+  .perf-item{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #f0f0f0;}
+  .perf-item:last-child{border-bottom:none;}
+  /* Status summary */
+  .status-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+  .status-card{padding:12px;text-align:center;border:1px solid #dde3f0;}
+  .status-card .sv{font-size:22px;font-weight:700;}
+  .status-card .sl{font-size:9px;text-transform:uppercase;color:#888;margin-top:3px;}
+  /* Footer */
+  .rpt-footer{position:fixed;bottom:0;left:0;right:0;height:14mm;display:flex;align-items:center;
+    justify-content:space-between;padding:0 15mm;border-top:1px solid #dde3f0;
+    font-size:9px;color:#999;background:#fff;}
+  .watermark{color:#000080;font-weight:700;font-size:9px;}
+  @media print{
+    .cover{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    thead tr{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .kpi-card::before{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  }
+</style>
+</head><body>
+
+<!-- ═══ COVER PAGE ═══ -->
+<div class="cover">
+  <div class="cover-logo">IMCS · Industrial Machine Control System</div>
+  <div class="cover-title">Enterprise Performance<br>Analytics Report</div>
+  <div class="cover-sub">Comprehensive 30-Day Operational Intelligence</div>
+  <div class="cover-rag"><div class="dot"></div><strong>Overall Status: ${ragLabel}</strong></div>
+  <div class="cover-meta">
+    <div class="cover-meta-item"><label>Report ID</label><span>${reportId}</span></div>
+    <div class="cover-meta-item"><label>Generated</label><span>${nowStr}</span></div>
+    <div class="cover-meta-item"><label>Report Period</label><span>Last 30 Days</span></div>
+    <div class="cover-meta-item"><label>Classification</label><span>Confidential</span></div>
+    <div class="cover-meta-item"><label>Total Machines</label><span>${s.total_machines || 0}</span></div>
+    <div class="cover-meta-item"><label>Avg Efficiency</label><span>${eff}%</span></div>
+  </div>
+</div>
+
+<!-- ═══ EXECUTIVE SUMMARY ═══ -->
+<div class="section">
+  <div class="sec-title">📋 Executive Summary <span>Period: Last 30 Days</span></div>
+  <div class="exec-box">
+    <p>This report provides a comprehensive analysis of the IMCS industrial plant performance for the 30-day reporting period ending <strong>${nowStr}</strong>. The plant is operating with an average efficiency of <strong>${eff}%</strong> across <strong>${s.total_machines || 0}</strong> monitored machines, with <strong>${s.running_machines || 0}</strong> currently in active operation (uptime: <strong>${uptimePct}%</strong>).</p>
+    <p>During the reporting period, <strong>${s.total_readings_30d?.toLocaleString() || 0}</strong> sensor readings were recorded. A total of <strong>${s.alerts_30d || 0}</strong> alerts were raised, of which <strong>${s.unack_alerts || 0}</strong> remain unacknowledged and require immediate attention. There are currently <strong>${s.open_tasks || 0}</strong> open maintenance tasks in the queue.</p>
+    <p><strong>Recommendation:</strong> ${eff >= 80 ? 'Plant performance is within acceptable parameters. Continue current maintenance schedule and monitor for any deviations.' : eff >= 60 ? 'Plant efficiency is below target. Review underperforming machines and prioritise maintenance tasks to restore optimal operation.' : 'Critical attention required. Multiple machines are underperforming. Escalate maintenance tasks and conduct immediate root-cause analysis.'}</p>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-val">${s.total_machines || 0}</div><div class="kpi-lbl">Total Machines</div><div class="kpi-sub">${s.running_machines || 0} running</div></div>
+    <div class="kpi-card"><div class="kpi-val" style="color:${uptimeColor};">${uptimePct}%</div><div class="kpi-lbl">Plant Uptime</div><div class="kpi-sub">Running / Total</div></div>
+    <div class="kpi-card"><div class="kpi-val" style="color:${ragColor};">${eff}%</div><div class="kpi-lbl">Avg Efficiency</div><div class="kpi-sub">30-day average</div></div>
+    <div class="kpi-card"><div class="kpi-val">${(s.total_readings_30d || 0).toLocaleString()}</div><div class="kpi-lbl">Sensor Readings</div><div class="kpi-sub">Last 30 days</div></div>
+    <div class="kpi-card"><div class="kpi-val" style="color:${s.alerts_30d > 0 ? '#e9730c' : '#107e3e'};">${s.alerts_30d || 0}</div><div class="kpi-lbl">Alerts Raised</div><div class="kpi-sub">${s.unack_alerts || 0} unresolved</div></div>
+    <div class="kpi-card"><div class="kpi-val" style="color:${s.open_tasks > 0 ? '#e9730c' : '#107e3e'};">${s.open_tasks || 0}</div><div class="kpi-lbl">Open Tasks</div><div class="kpi-sub">Maintenance queue</div></div>
+    <div class="kpi-card"><div class="kpi-val">${statusCount['running'] || 0}</div><div class="kpi-lbl">Running</div><div class="kpi-sub" style="color:#107e3e;">● Active</div></div>
+    <div class="kpi-card"><div class="kpi-val">${(statusCount['idle'] || 0) + (statusCount['maintenance'] || 0) + (statusCount['offline'] || 0) + (statusCount['down'] || 0)}</div><div class="kpi-lbl">Not Running</div><div class="kpi-sub" style="color:#e9730c;">● Idle/Maint/Offline</div></div>
+  </div>
+</div>
+
+<!-- ═══ MACHINE STATUS OVERVIEW ═══ -->
+<div class="section">
+  <div class="sec-title">🏭 Machine Status Overview</div>
+  <div class="status-grid">
+    <div class="status-card"><div class="sv" style="color:#107e3e;">${statusCount['running'] || 0}</div><div class="sl" style="color:#107e3e;">● Running</div></div>
+    <div class="status-card"><div class="sv" style="color:#0c5460;">${statusCount['idle'] || 0}</div><div class="sl" style="color:#0c5460;">● Idle</div></div>
+    <div class="status-card"><div class="sv" style="color:#856404;">${statusCount['maintenance'] || 0}</div><div class="sl" style="color:#856404;">● Maintenance</div></div>
+    <div class="status-card"><div class="sv" style="color:#bb0000;">${(statusCount['offline'] || 0) + (statusCount['down'] || 0)}</div><div class="sl" style="color:#bb0000;">● Offline/Down</div></div>
+  </div>
+
+  <!-- Top & Bottom Performers -->
+  <div class="perf-grid">
+    <div class="perf-box">
+      <h4>🏆 Top Performers</h4>
+      ${top3.map(m => `<div class="perf-item"><span style="font-weight:600;">${m.name}</span><span>${effBadge(m.avg_eff || 0)}</span></div>`).join('') || '<div class="perf-item"><span style="color:#888;">No data available</span></div>'}
     </div>
-    <h2>Machine Performance (Last 30 Days)</h2>
-    <table>
-      <thead><tr><th>Machine</th><th>Type</th><th>Location</th><th>Status</th><th>Avg Eff%</th><th>Min%</th><th>Max%</th><th>Readings</th></tr></thead>
-      <tbody>${machines.map(m => `<tr>
-        <td>${m.name || m.id}</td><td>${m.type || '—'}</td><td>${m.location || '—'}</td>
-        <td>${m.status || '—'}</td>
-        <td style="font-weight:700;">${m.avg_eff !== undefined ? m.avg_eff : (m.efficiency || 0)}%</td>
-        <td>${m.min_eff !== undefined ? (m.min_eff !== null ? m.min_eff + '%' : '—') : '—'}</td>
-        <td>${m.max_eff !== undefined ? (m.max_eff !== null ? m.max_eff + '%' : '—') : '—'}</td>
-        <td>${(m.readings || 0).toLocaleString()}</td>
-      </tr>`).join('')}</tbody>
-    </table>
-    <div class="footer">IMCS Industrial Hub &nbsp;·&nbsp; Confidential &nbsp;·&nbsp; ${now}</div>
-    </body></html>`);
+    <div class="perf-box">
+      <h4>⚠️ Needs Attention</h4>
+      ${bot3.map(m => `<div class="perf-item"><span style="font-weight:600;">${m.name}</span><span>${effBadge(m.avg_eff || 0)}</span></div>`).join('') || '<div class="perf-item"><span style="color:#888;">No data available</span></div>'}
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FULL MACHINE PERFORMANCE TABLE ═══ -->
+<div class="section section-break">
+  <div class="sec-title">📊 Machine Performance Detail <span>${machines.length} machines</span></div>
+  <table>
+    <thead><tr>
+      <th>Machine Name</th><th>Type</th><th>Location</th><th>Status</th>
+      <th>Avg Eff%</th><th>Min%</th><th>Max%</th><th>Readings</th><th>Last Reading</th>
+    </tr></thead>
+    <tbody>${machineRows || '<tr><td colspan="9" style="text-align:center;padding:20px;color:#888;">No machine data available for this period</td></tr>'}</tbody>
+  </table>
+</div>
+
+<!-- ═══ 30-DAY DAILY TREND ═══ -->
+<div class="section section-break">
+  <div class="sec-title">📈 30-Day Daily Efficiency Trend <span>${trend.length} data points</span></div>
+  ${trend.length ? `<table>
+    <thead><tr><th>Date</th><th>Avg Efficiency</th><th>Min</th><th>Max</th><th>Readings</th><th>Trend</th></tr></thead>
+    <tbody>${trendRows}</tbody>
+  </table>` : '<div style="padding:20px;text-align:center;color:#888;border:1px solid #dde3f0;">No trend data available — generate demo data to populate this section</div>'}
+</div>
+
+<!-- ═══ RECENT SENSOR READINGS ═══ -->
+<div class="section section-break">
+  <div class="sec-title">📡 Recent Sensor Readings <span>Last ${Math.min(sensors.length, 50)} readings</span></div>
+  ${sensors.length ? `<table>
+    <thead><tr><th>#</th><th>Machine</th><th>Sensor</th><th>Value</th><th>Unit</th><th>Timestamp</th></tr></thead>
+    <tbody>${sensorRows}</tbody>
+  </table>` : '<div style="padding:20px;text-align:center;color:#888;border:1px solid #dde3f0;">No sensor readings available</div>'}
+</div>
+
+<!-- ═══ REPORT FOOTER ═══ -->
+<div class="rpt-footer">
+  <span class="watermark">IMCS · Industrial Machine Control System</span>
+  <span>Report ID: ${reportId} &nbsp;|&nbsp; Generated: ${nowStr} &nbsp;|&nbsp; CONFIDENTIAL</span>
+  <span>Page <span class="pageNum"></span></span>
+</div>
+
+</body></html>`;
+
+        const printWin = window.open('', '_blank', 'width=1000,height=800');
+        printWin.document.write(html);
         printWin.document.close();
         printWin.focus();
-        setTimeout(() => printWin.print(), 600);
+        toast('✓ Enterprise report ready — use Ctrl+P to save as PDF');
+        setTimeout(() => printWin.print(), 1200);
       });
 
       // ══════════════════════════════════════════

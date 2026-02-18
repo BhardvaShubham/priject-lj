@@ -304,7 +304,7 @@
           setTimeout(() => {
             vizUpdater.refreshAllCharts();
             this.hideLoadingIndicator();
-            this.showSuccessMessage(`✓ Generated ${result.records_created} data points`);
+            this.showSuccessMessage(`(ok) Generated ${result.records_created} data points`);
           }, 500);
 
           return true;
@@ -352,7 +352,7 @@
           // Clear all visualizations
           vizUpdater.clearAllCharts();
           this.hideLoadingIndicator();
-          this.showSuccessMessage('✓ All data cleared');
+          this.showSuccessMessage('(ok) All data cleared');
 
           return true;
         } else {

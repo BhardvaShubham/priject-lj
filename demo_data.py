@@ -22,7 +22,7 @@ def generate_demo_data(company_id=1, num_machines=5, days_of_data=30):
         
         # Sensor types
         sensor_configs = [
-            {'name': 'Temperature', 'unit': '°C', 'min': 20, 'max': 100, 'normal_range': (40, 80)},
+            {'name': 'Temperature', 'unit': 'degC', 'min': 20, 'max': 100, 'normal_range': (40, 80)},
             {'name': 'Pressure', 'unit': 'PSI', 'min': 0, 'max': 200, 'normal_range': (50, 150)},
             {'name': 'Vibration', 'unit': 'mm/s', 'min': 0, 'max': 50, 'normal_range': (2, 15)},
             {'name': 'Speed', 'unit': 'RPM', 'min': 0, 'max': 3000, 'normal_range': (500, 2500)},

@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>IMCS – Analytics & Reports</title>
+  <title>IMCS - Analytics & Reports</title>
   <link rel="stylesheet" href="/static/css/sap90.css">
   <style>
     .app-shell {
@@ -420,7 +420,7 @@
         <!-- ── PERFORMANCE METRICS (LAST 30 DAYS) ── -->
         <div class="card" id="perfMetricsCard">
           <div class="sec-hdr">
-            📊 Performance Metrics — Last 30 Days
+            📊 Performance Metrics - Last 30 Days
             <div class="sec-actions">
               <button class="export-btn" style="padding:4px 10px;font-size:11px;" id="exportPerfBtn">📥 Export</button>
             </div>
@@ -429,32 +429,32 @@
             <!-- KPI row -->
             <div class="metrics-grid" id="metricsGrid">
               <div class="metric-card">
-                <div class="metric-val" id="m-machines">—</div>
+                <div class="metric-val" id="m-machines">-</div>
                 <div class="metric-lbl">Total Machines</div>
-                <div class="metric-sub" id="m-running">— running</div>
+                <div class="metric-sub" id="m-running">- running</div>
               </div>
               <div class="metric-card">
-                <div class="metric-val" id="m-uptime">—</div>
+                <div class="metric-val" id="m-uptime">-</div>
                 <div class="metric-lbl">Uptime %</div>
                 <div class="metric-sub">Running / Total</div>
               </div>
               <div class="metric-card">
-                <div class="metric-val" id="m-efficiency">—</div>
+                <div class="metric-val" id="m-efficiency">-</div>
                 <div class="metric-lbl">Avg Efficiency</div>
                 <div class="metric-sub">30-day average</div>
               </div>
               <div class="metric-card">
-                <div class="metric-val" id="m-readings">—</div>
+                <div class="metric-val" id="m-readings">-</div>
                 <div class="metric-lbl">Sensor Readings</div>
                 <div class="metric-sub">Last 30 days</div>
               </div>
               <div class="metric-card">
-                <div class="metric-val" id="m-alerts">—</div>
+                <div class="metric-val" id="m-alerts">-</div>
                 <div class="metric-lbl">Alerts Raised</div>
-                <div class="metric-sub" id="m-unack">— unresolved</div>
+                <div class="metric-sub" id="m-unack">- unresolved</div>
               </div>
               <div class="metric-card">
-                <div class="metric-val" id="m-tasks">—</div>
+                <div class="metric-val" id="m-tasks">-</div>
                 <div class="metric-lbl">Open Tasks</div>
                 <div class="metric-sub">Maintenance queue</div>
               </div>
@@ -487,7 +487,7 @@
                   </thead>
                   <tbody id="perfMachineBody">
                     <tr>
-                      <td colspan="9" style="text-align:center;padding:20px;" class="muted small">Loading…</td>
+                      <td colspan="9" style="text-align:center;padding:20px;" class="muted small">Loading...</td>
                     </tr>
                   </tbody>
                 </table>
@@ -747,21 +747,21 @@
           // Per-machine table
           const tbody = el('perfMachineBody');
           if (!data.machines.length) {
-            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;" class="muted small">No data for last 30 days — generate demo data first</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;" class="muted small">No data for last 30 days - generate demo data first</td></tr>';
             return;
           }
           tbody.innerHTML = data.machines.map(m => {
             const effStyle = `color:${effColor(m.avg_eff)};font-weight:700;`;
             return `<tr>
           <td><a href="/machine/${m.id}" style="color:#0a6ed1;text-decoration:none;">${m.name}</a></td>
-          <td>${m.type || '—'}</td>
-          <td>${m.location || '—'}</td>
+          <td>${m.type || '-'}</td>
+          <td>${m.location || '-'}</td>
           <td>${badge(m.status)}</td>
           <td style="${effStyle}">${m.avg_eff}%</td>
-          <td class="muted small">${m.min_eff !== null ? m.min_eff + '%' : '—'}</td>
-          <td class="muted small">${m.max_eff !== null ? m.max_eff + '%' : '—'}</td>
+          <td class="muted small">${m.min_eff !== null ? m.min_eff + '%' : '-'}</td>
+          <td class="muted small">${m.max_eff !== null ? m.max_eff + '%' : '-'}</td>
           <td>${m.readings.toLocaleString()}</td>
-          <td class="muted small">${m.last_reading ? m.last_reading.slice(0, 16) : '—'}</td>
+          <td class="muted small">${m.last_reading ? m.last_reading.slice(0, 16) : '-'}</td>
         </tr>`;
           }).join('');
 
@@ -770,7 +770,7 @@
 
         } catch (e) {
           console.error('[Reports] performance metrics error:', e);
-          el('perfMachineBody').innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:#bb0000;">Failed to load — check server connection</td></tr>';
+          el('perfMachineBody').innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:#bb0000;">Failed to load - check server connection</td></tr>';
         }
       }
 
@@ -783,7 +783,7 @@
 
       async function loadMachinesTable() {
         const tbody = el('machinesDataTableBody');
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;" class="muted small">Loading…</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;" class="muted small">Loading...</td></tr>';
         try {
           const res = await fetch('/api/machines');
           if (!res.ok) throw new Error('API error');
@@ -888,7 +888,7 @@
           // Update local data
           const m = machinesData.find(x => x.id == id);
           if (m) m[field] = value;
-          toast(`✓ ${field} updated`);
+          toast(`(ok) ${field} updated`);
         } catch (e) {
           toast(`✗ ${e.message}`, true);
         }
@@ -937,7 +937,7 @@
 
       async function loadSensorsTable(offset = 0) {
         const tbody = el('sensorsDataTableBody');
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;" class="muted small">Loading…</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;" class="muted small">Loading...</td></tr>';
         const machineId = el('sensorMachineFilter').value;
         const url = `/api/sensor-readings?limit=${SENSORS_LIMIT}&offset=${offset}${machineId ? '&machine_id=' + machineId : ''}`;
         try {
@@ -963,10 +963,10 @@
         }
         tbody.innerHTML = rows.map(r => `<tr data-rid="${r.id}">
       <td class="muted small">${r.id}</td>
-      <td>${r.machine_name || '—'}</td>
-      <td>${r.sensor_name || '—'}</td>
+      <td>${r.machine_name || '-'}</td>
+      <td>${r.sensor_name || '-'}</td>
       <td class="editable" data-field="value" data-rid="${r.id}">${parseFloat(r.value || 0).toFixed(2)}</td>
-      <td class="muted small">${r.unit || '—'}</td>
+      <td class="muted small">${r.unit || '-'}</td>
       <td class="muted small">${(r.timestamp || '').slice(0, 16)}</td>
     </tr>`).join('');
 
@@ -974,7 +974,7 @@
         const totalPages = Math.ceil(sensorsTotal / SENSORS_LIMIT);
         const curPage = Math.floor(sensorsOffset / SENSORS_LIMIT);
         el('sensorsPager').style.display = totalPages > 1 ? 'flex' : 'none';
-        el('sensorsPageInfo').textContent = `${sensorsOffset + 1}–${Math.min(sensorsOffset + SENSORS_LIMIT, sensorsTotal)} of ${sensorsTotal.toLocaleString()} readings`;
+        el('sensorsPageInfo').textContent = `${sensorsOffset + 1}-${Math.min(sensorsOffset + SENSORS_LIMIT, sensorsTotal)} of ${sensorsTotal.toLocaleString()} readings`;
         el('sensorsPrev').disabled = sensorsOffset === 0;
         el('sensorsNext').disabled = sensorsOffset + SENSORS_LIMIT >= sensorsTotal;
 
@@ -1015,7 +1015,7 @@
           if (!res.ok) throw new Error((await res.json()).error || 'Save failed');
           const row = sensorsRows.find(r => r.id == rid);
           if (row) row.value = numVal;
-          toast('✓ Reading updated');
+          toast('(ok) Reading updated');
         } catch (e) {
           toast(`✗ ${e.message}`, true);
         }
@@ -1074,7 +1074,7 @@
       }
 
       // ══════════════════════════════════════════
-      // EXPORTS — ENTERPRISE GRADE
+      // EXPORTS - ENTERPRISE GRADE
       // ══════════════════════════════════════════
 
       // ── CSV helper ──
@@ -1094,7 +1094,7 @@
         downloadCSV(`IMCS_Machines_${ts()}.csv`,
           ['Machine ID', 'Name', 'Type', 'Location', 'Status', 'Efficiency %', 'Rated Capacity'],
           data.map(m => [m.id, m.name, m.type, m.location, m.status, m.efficiency, m.rated_capacity || '']));
-        toast('✓ Machine data exported');
+        toast('(ok) Machine data exported');
       });
 
       el('exportMachinesTableBtn').addEventListener('click', () => {
@@ -1102,17 +1102,17 @@
         downloadCSV(`IMCS_Machines_${ts()}.csv`,
           ['Machine ID', 'Name', 'Type', 'Location', 'Status', 'Efficiency %', 'Rated Capacity'],
           machinesData.map(m => [m.id, m.name, m.type, m.location, m.status, m.efficiency, m.rated_capacity || '']));
-        toast('✓ Exported');
+        toast('(ok) Exported');
       });
 
       el('exportSensorsCSV').addEventListener('click', async () => {
-        toast('⏳ Fetching sensor data…');
+        toast('⏳ Fetching sensor data...');
         const res = await fetch('/api/sensor-readings?limit=500');
         const data = await res.json();
         downloadCSV(`IMCS_SensorReadings_${ts()}.csv`,
           ['Reading ID', 'Machine', 'Sensor Name', 'Value', 'Unit', 'Timestamp'],
           data.rows.map(r => [r.id, r.machine_name, r.sensor_name, r.value, r.unit, r.timestamp]));
-        toast('✓ Sensor readings exported');
+        toast('(ok) Sensor readings exported');
       });
 
       el('exportSensorsTableBtn').addEventListener('click', () => {
@@ -1120,7 +1120,7 @@
         downloadCSV(`IMCS_SensorReadings_${ts()}.csv`,
           ['Reading ID', 'Machine', 'Sensor Name', 'Value', 'Unit', 'Timestamp'],
           sensorsRows.map(r => [r.id, r.machine_name, r.sensor_name, r.value, r.unit, r.timestamp]));
-        toast('✓ Exported');
+        toast('(ok) Exported');
       });
 
       el('exportPerformanceCSV').addEventListener('click', async () => {
@@ -1129,7 +1129,7 @@
         const rows = [];
         // Summary block
         const s = data.summary;
-        rows.push(['=== IMCS PERFORMANCE REPORT — LAST 30 DAYS ===', '', '', '', '']);
+        rows.push(['=== IMCS PERFORMANCE REPORT - LAST 30 DAYS ===', '', '', '', '']);
         rows.push(['Generated', new Date().toLocaleString(), '', '', '']);
         rows.push(['', '', '', '', '']);
         rows.push(['SUMMARY KPIs', '', '', '', '']);
@@ -1150,7 +1150,7 @@
         rows.push(['Machine', 'Type', 'Location', 'Status', 'Avg Eff %', 'Min %', 'Max %', 'Readings', 'Last Reading']);
         data.machines.forEach(m => rows.push([m.name, m.type, m.location, m.status, m.avg_eff, m.min_eff ?? '', m.max_eff ?? '', m.readings, m.last_reading ?? '']));
         downloadCSV(`IMCS_PerformanceReport_${ts()}.csv`, ['A', 'B', 'C', 'D', 'E'], rows.map(r => { while (r.length < 5) r.push(''); return r; }));
-        toast('✓ Performance report exported');
+        toast('(ok) Performance report exported');
       });
 
       el('exportPerfBtn').addEventListener('click', () => {
@@ -1158,14 +1158,14 @@
         downloadCSV(`IMCS_Performance_${ts()}.csv`,
           ['Date', 'Avg Efficiency %', 'Min %', 'Max %', 'Readings'],
           window._perfData.daily_trend.map(d => [d.date, d.avg, d.min, d.max, d.readings]));
-        toast('✓ Exported');
+        toast('(ok) Exported');
       });
 
       el('exportPrintView').addEventListener('click', () => window.print());
 
       // ── Enterprise Full Report ──
       el('exportFullPDF').addEventListener('click', async () => {
-        toast('⏳ Building enterprise report…');
+        toast('⏳ Building enterprise report...');
         let perfData = window._perfData;
         if (!perfData) {
           const r = await fetch('/api/reports/performance');
@@ -1186,7 +1186,7 @@
         // RAG status
         const eff = s.avg_efficiency || 0;
         const ragColor = eff >= 80 ? '#107e3e' : eff >= 60 ? '#e9730c' : '#bb0000';
-        const ragLabel = eff >= 80 ? 'GREEN — Performing Well' : eff >= 60 ? 'AMBER — Needs Attention' : 'RED — Critical';
+        const ragLabel = eff >= 80 ? 'GREEN - Performing Well' : eff >= 60 ? 'AMBER - Needs Attention' : 'RED - Critical';
         const uptimePct = s.uptime_pct || 0;
         const uptimeColor = uptimePct >= 80 ? '#107e3e' : uptimePct >= 60 ? '#e9730c' : '#bb0000';
 
@@ -1223,7 +1223,7 @@
 
         const trendRows = trend.map((d, i) => {
           const prev = trend[i - 1];
-          const arrow = prev ? (d.avg > prev.avg ? '▲' : d.avg < prev.avg ? '▼' : '–') : '–';
+          const arrow = prev ? (d.avg > prev.avg ? '▲' : d.avg < prev.avg ? '▼' : '-') : '-';
           const arrowColor = prev ? (d.avg > prev.avg ? '#107e3e' : d.avg < prev.avg ? '#bb0000' : '#666') : '#666';
           return `<tr style="${i % 2 === 0 ? 'background:#fafafa;' : ''}">
             <td style="padding:5px 8px;border-bottom:1px solid #eee;">${d.date}</td>
@@ -1237,29 +1237,29 @@
 
         const machineRows = machines.map((m, i) => `<tr style="${i % 2 === 0 ? 'background:#fafafa;' : ''}">
           <td style="padding:5px 8px;border-bottom:1px solid #eee;font-weight:600;">${m.name}</td>
-          <td style="padding:5px 8px;border-bottom:1px solid #eee;color:#555;">${m.type || '—'}</td>
-          <td style="padding:5px 8px;border-bottom:1px solid #eee;color:#555;">${m.location || '—'}</td>
+          <td style="padding:5px 8px;border-bottom:1px solid #eee;color:#555;">${m.type || '-'}</td>
+          <td style="padding:5px 8px;border-bottom:1px solid #eee;color:#555;">${m.location || '-'}</td>
           <td style="padding:5px 8px;border-bottom:1px solid #eee;">${statusBadge(m.status)}</td>
           <td style="padding:5px 8px;border-bottom:1px solid #eee;">${effBar(m.avg_eff || 0)}</td>
-          <td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:center;color:#555;">${m.min_eff !== null ? m.min_eff + '%' : '—'}</td>
-          <td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:center;color:#555;">${m.max_eff !== null ? m.max_eff + '%' : '—'}</td>
+          <td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:center;color:#555;">${m.min_eff !== null ? m.min_eff + '%' : '-'}</td>
+          <td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:center;color:#555;">${m.max_eff !== null ? m.max_eff + '%' : '-'}</td>
           <td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:center;">${(m.readings || 0).toLocaleString()}</td>
-          <td style="padding:5px 8px;border-bottom:1px solid #eee;color:#888;font-size:10px;">${m.last_reading ? m.last_reading.slice(0, 16) : '—'}</td>
+          <td style="padding:5px 8px;border-bottom:1px solid #eee;color:#888;font-size:10px;">${m.last_reading ? m.last_reading.slice(0, 16) : '-'}</td>
         </tr>`).join('');
 
         const sensorRows = sensors.slice(0, 50).map((r, i) => `<tr style="${i % 2 === 0 ? 'background:#fafafa;' : ''}">
           <td style="padding:4px 8px;border-bottom:1px solid #eee;color:#888;font-size:10px;">${r.id}</td>
-          <td style="padding:4px 8px;border-bottom:1px solid #eee;">${r.machine_name || '—'}</td>
-          <td style="padding:4px 8px;border-bottom:1px solid #eee;">${r.sensor_name || '—'}</td>
+          <td style="padding:4px 8px;border-bottom:1px solid #eee;">${r.machine_name || '-'}</td>
+          <td style="padding:4px 8px;border-bottom:1px solid #eee;">${r.sensor_name || '-'}</td>
           <td style="padding:4px 8px;border-bottom:1px solid #eee;font-weight:600;">${parseFloat(r.value || 0).toFixed(2)}</td>
-          <td style="padding:4px 8px;border-bottom:1px solid #eee;color:#555;">${r.unit || '—'}</td>
+          <td style="padding:4px 8px;border-bottom:1px solid #eee;color:#555;">${r.unit || '-'}</td>
           <td style="padding:4px 8px;border-bottom:1px solid #eee;color:#888;font-size:10px;">${(r.timestamp || '').slice(0, 16)}</td>
         </tr>`).join('');
 
         const html = `<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="utf-8">
-<title>IMCS Enterprise Report — ${ts()}</title>
+<title>IMCS Enterprise Report - ${ts()}</title>
 <style>
   @page { size: A4; margin: 18mm 15mm 18mm 15mm; }
   *{box-sizing:border-box;margin:0;padding:0;}
@@ -1376,7 +1376,7 @@
       ${top3.map(m => `<div class="perf-item"><span style="font-weight:600;">${m.name}</span><span>${effBadge(m.avg_eff || 0)}</span></div>`).join('') || '<div class="perf-item"><span style="color:#888;">No data available</span></div>'}
     </div>
     <div class="perf-box">
-      <h4>⚠️ Needs Attention</h4>
+      <h4>[!]️ Needs Attention</h4>
       ${bot3.map(m => `<div class="perf-item"><span style="font-weight:600;">${m.name}</span><span>${effBadge(m.avg_eff || 0)}</span></div>`).join('') || '<div class="perf-item"><span style="color:#888;">No data available</span></div>'}
     </div>
   </div>
@@ -1400,7 +1400,7 @@
   ${trend.length ? `<table>
     <thead><tr><th>Date</th><th>Avg Efficiency</th><th>Min</th><th>Max</th><th>Readings</th><th>Trend</th></tr></thead>
     <tbody>${trendRows}</tbody>
-  </table>` : '<div style="padding:20px;text-align:center;color:#888;border:1px solid #dde3f0;">No trend data available — generate demo data to populate this section</div>'}
+  </table>` : '<div style="padding:20px;text-align:center;color:#888;border:1px solid #dde3f0;">No trend data available - generate demo data to populate this section</div>'}
 </div>
 
 <!-- ═══ RECENT SENSOR READINGS ═══ -->
@@ -1425,7 +1425,7 @@
         printWin.document.write(html);
         printWin.document.close();
         printWin.focus();
-        toast('✓ Enterprise report ready — use Ctrl+P to save as PDF');
+        toast('(ok) Enterprise report ready - use Ctrl+P to save as PDF');
         setTimeout(() => printWin.print(), 1200);
       });
 

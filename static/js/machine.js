@@ -28,7 +28,7 @@
   }
 
   function esc(s){
-    if(s==null) return '—';
+    if(s==null) return '-';
     return String(s).replace(/[&<>"']/g,c=>(
       {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
     ));
@@ -63,14 +63,14 @@
   function populate(d){
     if(!d) return;
 
-    if(nameEl) nameEl.textContent = d.name || '—';
-    if(typeEl) typeEl.textContent = `${d.type || '—'} · ${d.location || '—'}`;
+    if(nameEl) nameEl.textContent = d.name || '-';
+    if(typeEl) typeEl.textContent = `${d.type || '-'} · ${d.location || '-'}`;
     if(statusEl) {
-      statusEl.textContent = d.status || '—';
+      statusEl.textContent = d.status || '-';
       // Add status badge class
       statusEl.className = 'large status-badge ' + (d.status || '').toLowerCase();
     }
-    if(lastEl) lastEl.textContent = d.last_seen || '—';
+    if(lastEl) lastEl.textContent = d.last_seen || '-';
 
     /* ================= MACHINE CHART ================= */
     const machineChartImg = document.getElementById('machineChart');
@@ -115,9 +115,9 @@
       perfTable.innerHTML = d.performance.slice(0, 10).map(p => `
         <tr>
           <td>${esc(p.date)}</td>
-          <td>${p.efficiency ?? '—'}%</td>
-          <td>${p.min ?? '—'}%</td>
-          <td>${p.max ?? '—'}%</td>
+          <td>${p.efficiency ?? '-'}%</td>
+          <td>${p.min ?? '-'}%</td>
+          <td>${p.max ?? '-'}%</td>
           <td>${p.readings ?? 0}</td>
         </tr>
       `).join('');
@@ -126,7 +126,7 @@
       perfList.innerHTML = d.recent_performance.map(p => `
         <div class="perf-row">
           <strong>${esc(p.metric_date)}</strong>
-          — Efficiency: ${p.efficiency ?? '—'}%
+          - Efficiency: ${p.efficiency ?? '-'}%
           ${p.uptime ? `· Uptime: ${p.uptime}%` : ''}
         </div>
       `).join('');

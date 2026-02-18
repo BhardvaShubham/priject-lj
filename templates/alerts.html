@@ -282,19 +282,19 @@
         <!-- Stats -->
         <div class="stats-row">
           <div class="stat-card">
-            <div id="stat_total" class="stat-val">—</div>
+            <div id="stat_total" class="stat-val">-</div>
             <div class="stat-lbl">Total Active</div>
           </div>
           <div class="stat-card critical">
-            <div id="stat_critical" class="stat-val">—</div>
+            <div id="stat_critical" class="stat-val">-</div>
             <div class="stat-lbl">Critical</div>
           </div>
           <div class="stat-card warning">
-            <div id="stat_warning" class="stat-val">—</div>
+            <div id="stat_warning" class="stat-val">-</div>
             <div class="stat-lbl">Warning</div>
           </div>
           <div class="stat-card info">
-            <div id="stat_info" class="stat-val">—</div>
+            <div id="stat_info" class="stat-val">-</div>
             <div class="stat-lbl">Info</div>
           </div>
         </div>
@@ -315,7 +315,7 @@
               <option value="1">Acknowledged</option>
               <option value="">All</option>
             </select>
-            <input type="text" id="alertSearch" class="input" placeholder="Search alerts…"
+            <input type="text" id="alertSearch" class="input" placeholder="Search alerts..."
               style="flex:1;min-width:140px;">
           </div>
           <div style="overflow-x:auto;">
@@ -333,7 +333,7 @@
               </thead>
               <tbody>
                 <tr>
-                  <td colspan="7" class="muted small" style="text-align:center;padding:20px;">Loading…</td>
+                  <td colspan="7" class="muted small" style="text-align:center;padding:20px;">Loading...</td>
                 </tr>
               </tbody>
             </table>
@@ -350,7 +350,7 @@
     <div class="modal-content">
       <div class="modal-header">
         Acknowledge Alert
-        <button class="modal-close" onclick="document.getElementById('ackModal').classList.add('hidden')">✕</button>
+        <button class="modal-close" onclick="document.getElementById('ackModal').classList.add('hidden')">X</button>
       </div>
       <div class="modal-body">
         <div id="ackAlertDetails"
@@ -358,7 +358,7 @@
         </div>
         <div class="form-row">
           <label>Comment (optional)</label>
-          <textarea id="ackComment" rows="3" placeholder="Add a comment…"></textarea>
+          <textarea id="ackComment" rows="3" placeholder="Add a comment..."></textarea>
         </div>
       </div>
       <div class="modal-footer">
@@ -392,14 +392,14 @@
           return;
         }
         tbody.innerHTML = list.map(a => {
-          const ackd = a.acknowledged ? '<span style="color:#107e3e;font-weight:700;">✓ Acked</span>' : '<span style="color:#bb0000;">Open</span>';
-          const ts = a.raised_at ? new Date(a.raised_at).toLocaleString() : '—';
+          const ackd = a.acknowledged ? '<span style="color:#107e3e;font-weight:700;">(ok) Acked</span>' : '<span style="color:#bb0000;">Open</span>';
+          const ts = a.raised_at ? new Date(a.raised_at).toLocaleString() : '-';
           const ackBtn = a.acknowledged ? '' : `<button class="btn" style="padding:2px 8px;font-size:11px;" onclick="openAck(${a.id},'${esc(a.machine || '')}','${esc(a.message || '')}','${esc(a.severity || '')}')">Ack</button>`;
           return `<tr>
         <td>${a.id}</td>
-        <td><a href="/machine/${a.machine_id || ''}">${esc(a.machine || '—')}</a></td>
+        <td><a href="/machine/${a.machine_id || ''}">${esc(a.machine || '-')}</a></td>
         <td>${severityBadge(a.severity)}</td>
-        <td style="max-width:300px;word-break:break-word;">${esc(a.message || '—')}</td>
+        <td style="max-width:300px;word-break:break-word;">${esc(a.message || '-')}</td>
         <td style="white-space:nowrap;">${ts}</td>
         <td>${ackd}</td>
         <td>${ackBtn}</td>

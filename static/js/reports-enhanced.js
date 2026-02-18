@@ -321,15 +321,15 @@
     tbody.innerHTML = machines.map(m => `
       <tr data-id="${m.id}">
         <td>${m.id}</td>
-        <td class="editable-cell" data-field="name">${escapeHtml(m.name || '—')}</td>
-        <td class="editable-cell" data-field="type">${escapeHtml(m.type || '—')}</td>
-        <td class="editable-cell" data-field="location">${escapeHtml(m.location || '—')}</td>
-        <td class="editable-cell" data-field="status">${escapeHtml(m.status || '—')}</td>
+        <td class="editable-cell" data-field="name">${escapeHtml(m.name || '-')}</td>
+        <td class="editable-cell" data-field="type">${escapeHtml(m.type || '-')}</td>
+        <td class="editable-cell" data-field="location">${escapeHtml(m.location || '-')}</td>
+        <td class="editable-cell" data-field="status">${escapeHtml(m.status || '-')}</td>
         <td>${m.efficiency || 0}%</td>
-        <td>${m.last_updated || '—'}</td>
+        <td>${m.last_updated || '-'}</td>
         <td>
           <div class="table-actions">
-            <button class="btn-icon btn-edit" title="Edit">✎</button>
+            <button class="btn-icon btn-edit" title="Edit">Edit</button>
             <span class="save-status"></span>
           </div>
         </td>
@@ -438,14 +438,14 @@
     tbody.innerHTML = sensors.map(s => `
       <tr data-id="${s.id}">
         <td>${s.id}</td>
-        <td>${escapeHtml(s.sensor_name || '—')}</td>
-        <td>${escapeHtml(s.machine_name || '—')}</td>
+        <td>${escapeHtml(s.sensor_name || '-')}</td>
+        <td>${escapeHtml(s.machine_name || '-')}</td>
         <td class="editable-cell" data-field="value">${parseFloat(s.value) || 0}</td>
-        <td>${escapeHtml(s.unit || '—')}</td>
-        <td class="editable-cell" data-field="timestamp">${escapeHtml(s.timestamp || '—')}</td>
+        <td>${escapeHtml(s.unit || '-')}</td>
+        <td class="editable-cell" data-field="timestamp">${escapeHtml(s.timestamp || '-')}</td>
         <td>
           <div class="table-actions">
-            <button class="btn-icon btn-edit" title="Edit">✎</button>
+            <button class="btn-icon btn-edit" title="Edit">Edit</button>
             <button class="btn-icon btn-delete" title="Delete">🗑</button>
             <span class="save-status"></span>
           </div>
@@ -482,7 +482,7 @@
         }).join('')}
         <td>
           <div class="table-actions">
-            <button class="btn-icon btn-edit" title="Edit">✎</button>
+            <button class="btn-icon btn-edit" title="Edit">Edit</button>
             <span class="save-status"></span>
           </div>
         </td>
@@ -561,7 +561,7 @@
   }
 
   function escapeHtml(text) {
-    if (text == null) return '—';
+    if (text == null) return '-';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;

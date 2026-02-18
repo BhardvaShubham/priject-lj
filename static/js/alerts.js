@@ -26,10 +26,10 @@
       list.forEach(a=>{
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${a.id}</td>
-                        <td>${escapeHtml(a.machine||'—')}</td>
-                        <td>${escapeHtml(a.severity||'—')}</td>
-                        <td>${escapeHtml(a.message||'—')}</td>
-                        <td>${escapeHtml(a.raised_at||'—')}</td>
+                        <td>${escapeHtml(a.machine||'-')}</td>
+                        <td>${escapeHtml(a.severity||'-')}</td>
+                        <td>${escapeHtml(a.message||'-')}</td>
+                        <td>${escapeHtml(a.raised_at||'-')}</td>
                         <td><button class="btn ack-btn" data-id="${a.id}">Ack</button></td>`;
         frag.appendChild(tr);
       });
@@ -56,7 +56,7 @@
       list.slice(0,10).forEach(a=>{
         const d = document.createElement('div');
         d.className = 'alert-row';
-        d.innerHTML = `<strong>${escapeHtml(a.machine||'—')}</strong> — ${escapeHtml(a.message||'—')} <div class="muted small">${escapeHtml(a.raised_at||'')}</div>`;
+        d.innerHTML = `<strong>${escapeHtml(a.machine||'-')}</strong> - ${escapeHtml(a.message||'-')} <div class="muted small">${escapeHtml(a.raised_at||'')}</div>`;
         LIST_DIV.appendChild(d);
       });
     }

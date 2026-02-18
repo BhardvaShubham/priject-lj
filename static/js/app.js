@@ -1,4 +1,4 @@
-/* app.js — Global: sidebar collapse, nav-section collapse, nav search, theme cycle
+/* app.js - Global: sidebar collapse, nav-section collapse, nav search, theme cycle
    Works on ALL pages. Sidebar state persisted in localStorage.
 */
 (function () {
@@ -121,7 +121,7 @@
       });
     }
 
-    // sidebar — apply saved state first, then wire button
+    // sidebar - apply saved state first, then wire button
     const collapsed = isSidebarCollapsed();
     applySidebar(collapsed);
 

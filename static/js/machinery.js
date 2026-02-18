@@ -28,8 +28,8 @@
         tr.innerHTML = `<td><a href="/machine/${m.id}">${escapeHtml(m.name)}</a></td>
                         <td>${escapeHtml(m.type)}</td>
                         <td>${escapeHtml(m.location)}</td>
-                        <td>${escapeHtml(m.status||'—')}</td>
-                        <td>${(m.efficiency!=null)?m.efficiency:'—'}</td>`;
+                        <td>${escapeHtml(m.status||'-')}</td>
+                        <td>${(m.efficiency!=null)?m.efficiency:'-'}</td>`;
         frag.appendChild(tr);
       });
       TABLE_BODY.appendChild(frag);

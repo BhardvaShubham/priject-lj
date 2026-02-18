@@ -1,4 +1,4 @@
-/* dashboard.js — Enhanced dashboard logic for Belize UI
+/* dashboard.js - Enhanced dashboard logic for Belize UI
    - Populates new enterprise sections: system health, plant summaries,
      status distribution, underperforming machines, maintenance forecast,
      event timeline, AI insights
@@ -108,17 +108,17 @@
     }
   
     function showSummaryOffline() {
-      if (targets.k_total) targets.k_total.textContent = '—';
-      if (targets.k_eff) targets.k_eff.textContent = '—%';
-      if (targets.k_alerts) targets.k_alerts.textContent = '—';
+      if (targets.k_total) targets.k_total.textContent = '-';
+      if (targets.k_eff) targets.k_eff.textContent = '-%';
+      if (targets.k_alerts) targets.k_alerts.textContent = '-';
       if (targets.sys_health) targets.sys_health.textContent = 'Offline';
     }
   
     function populateSummary(data) {
       try {
-        if (targets.k_total) targets.k_total.textContent = (data.total_machines !== undefined) ? data.total_machines : '—';
-        if (targets.k_eff) targets.k_eff.textContent = (data.avg_efficiency !== undefined) ? (data.avg_efficiency + '%') : '—%';
-        if (targets.k_alerts) targets.k_alerts.textContent = (data.active_alerts !== undefined) ? data.active_alerts : '—';
+        if (targets.k_total) targets.k_total.textContent = (data.total_machines !== undefined) ? data.total_machines : '-';
+        if (targets.k_eff) targets.k_eff.textContent = (data.avg_efficiency !== undefined) ? (data.avg_efficiency + '%') : '-%';
+        if (targets.k_alerts) targets.k_alerts.textContent = (data.active_alerts !== undefined) ? data.active_alerts : '-';
         if (targets.summaryImg) targets.summaryImg.src = '/chart/summary.png?ts=' + Date.now();
   
         // Enhanced widgets - load from dashboard widgets API
@@ -185,7 +185,7 @@
               <td><a href="/machine/${m.id}">${escapeHtml(m.name)}</a></td>
               <td>${escapeHtml(m.type)}</td>
               <td>${escapeHtml(m.location)}</td>
-              <td>${statusIconHtml(m.status)} ${escapeHtml(m.status||'—')}</td>
+              <td>${statusIconHtml(m.status)} ${escapeHtml(m.status||'-')}</td>
               <td>${(m.efficiency !== undefined && m.efficiency !== null) ? m.efficiency : 0}</td>
             `;
             targets.machinesTableBody.appendChild(tr);
@@ -215,7 +215,7 @@
     function populateLowEffList(list) {
       try {
         if (!targets.lowEffList) return;
-        if (!list || list.length === 0) { targets.lowEffList.innerHTML = '<div class="muted small">—</div>'; return; }
+        if (!list || list.length === 0) { targets.lowEffList.innerHTML = '<div class="muted small">-</div>'; return; }
         // sort by efficiency asc; keep machines with non-null efficiency
         const arr = list.filter(m => typeof m.efficiency === 'number').sort((a,b) => a.efficiency - b.efficiency).slice(0,6);
         if (arr.length === 0) { targets.lowEffList.innerHTML = '<div class="muted small">No efficiency data</div>'; return; }
@@ -239,14 +239,14 @@
           groups[loc] = groups[loc] || { sum:0, count:0 };
           if (typeof m.efficiency === 'number') { groups[loc].sum += m.efficiency; groups[loc].count += 1; }
         });
-        // simple mapping: pick Plant A/B/C if present, else fill with '—'
+        // simple mapping: pick Plant A/B/C if present, else fill with '-'
         const getPlant = (name) => {
-          if (!groups[name] || groups[name].count === 0) return '—';
+          if (!groups[name] || groups[name].count === 0) return '-';
           return Math.round((groups[name].sum / groups[name].count) * 10) / 10;
         };
-        if (targets.pa_eff) targets.pa_eff.textContent = (getPlant('Plant A') === '—') ? '—%' : (getPlant('Plant A') + '%');
-        if (targets.pb_eff) targets.pb_eff.textContent = (getPlant('Plant B') === '—') ? '—%' : (getPlant('Plant B') + '%');
-        if (targets.pc_eff) targets.pc_eff.textContent = (getPlant('Plant C') === '—') ? '—%' : (getPlant('Plant C') + '%');
+        if (targets.pa_eff) targets.pa_eff.textContent = (getPlant('Plant A') === '-') ? '-%' : (getPlant('Plant A') + '%');
+        if (targets.pb_eff) targets.pb_eff.textContent = (getPlant('Plant B') === '-') ? '-%' : (getPlant('Plant B') + '%');
+        if (targets.pc_eff) targets.pc_eff.textContent = (getPlant('Plant C') === '-') ? '-%' : (getPlant('Plant C') + '%');
   
         // status pie: request a server-side generated pie endpoint (or fallback to cached)
         if (targets.statusPie) {
@@ -282,7 +282,7 @@
         list.slice(0,10).forEach(a => {
           const node = document.createElement('div');
           node.className = 'alert-row';
-          node.innerHTML = `<div class="alert-left"><strong>${escapeHtml(a.machine||'—')}</strong> <span class="muted tiny">[${escapeHtml(a.severity||'')}]</span></div>
+          node.innerHTML = `<div class="alert-left"><strong>${escapeHtml(a.machine||'-')}</strong> <span class="muted tiny">[${escapeHtml(a.severity||'')}]</span></div>
                             <div class="alert-right">${escapeHtml(a.message)}</div>
                             <div class="muted tiny">${escapeHtml(a.raised_at||'')}</div>`;
           targets.alertsList.appendChild(node);
@@ -327,7 +327,7 @@
             if (sched < now && t.status !== 'done') overdue++;
             if (sched >= now && sched <= in7) upcoming++;
           }
-          lines.push(`<div class="task-row"><strong>${escapeHtml(t.machine||'—')}</strong> — ${escapeHtml(t.description||'')} <div class="muted tiny">(${escapeHtml(t.priority||'')}) ${escapeHtml(t.scheduled_date||'—')}</div></div>`);
+          lines.push(`<div class="task-row"><strong>${escapeHtml(t.machine||'-')}</strong> - ${escapeHtml(t.description||'')} <div class="muted tiny">(${escapeHtml(t.priority||'')}) ${escapeHtml(t.scheduled_date||'-')}</div></div>`);
         });
   
         targets.maintForecast.innerHTML = `<div class="muted small">Upcoming: ${upcoming} · Overdue: ${overdue}</div>` + lines.slice(0,6).join('');
@@ -340,21 +340,21 @@
     function seedEventTimelineFromAlerts(alerts) {
       try {
         if (!alerts || !Array.isArray(alerts)) return;
-        const items = alerts.slice(0, 8).map(a => ({ t: a.raised_at || nowTs(), text: `${a.severity || 'Alert'}: ${a.machine || '—'} — ${a.message || ''}` }));
+        const items = alerts.slice(0, 8).map(a => ({ t: a.raised_at || nowTs(), text: `${a.severity || 'Alert'}: ${a.machine || '-'} - ${a.message || ''}` }));
         addToTimeline(items);
       } catch (e) { console.error(e); }
     }
     function seedEventTimelineFromMaintenance(tasks) {
       try {
         if (!tasks || !Array.isArray(tasks)) return;
-        const items = tasks.slice(0,8).map(t => ({ t: t.created_at || nowTs(), text: `Task: ${t.machine || '—'} — ${t.description || ''}` }));
+        const items = tasks.slice(0,8).map(t => ({ t: t.created_at || nowTs(), text: `Task: ${t.machine || '-'} - ${t.description || ''}` }));
         addToTimeline(items);
       } catch (e) { console.error(e); }
     }
     function seedEventTimelineFromMachines(machines) {
       try {
         if (!machines || !Array.isArray(machines)) return;
-        const items = machines.slice(0,6).map(m => ({ t: m.last_seen || nowTs(), text: `Seen: ${m.name} — ${m.status || '—'}` }));
+        const items = machines.slice(0,6).map(m => ({ t: m.last_seen || nowTs(), text: `Seen: ${m.name} - ${m.status || '-'}` }));
         addToTimeline(items);
       } catch (e) { console.error(e); }
     }
@@ -394,14 +394,14 @@
       try {
         // if many alerts -> "Investigate cluster"
         const alertCount = (alerts && alerts.length) ? alerts.length : 0;
-        if (alertCount > 5) insights.push(`High alert volume (${alertCount}) — investigate common root causes.`);
+        if (alertCount > 5) insights.push(`High alert volume (${alertCount}) - investigate common root causes.`);
         // find machines with low efficiency
         const mm = (machines || []).filter(m => typeof m.efficiency === 'number');
         mm.sort((a,b) => a.efficiency - b.efficiency);
-        if (mm.length && mm[0].efficiency < 60) insights.push(`Machine ${mm[0].name} low efficiency (${mm[0].efficiency}%) — schedule inspection.`);
+        if (mm.length && mm[0].efficiency < 60) insights.push(`Machine ${mm[0].name} low efficiency (${mm[0].efficiency}%) - schedule inspection.`);
         // if average efficiency low
         if (summary && summary.avg_efficiency && summary.avg_efficiency < 75) insights.push(`Average efficiency ${summary.avg_efficiency}% below target. Consider preventive maintenance.`);
-        if (insights.length === 0) insights.push('No critical insights — operations stable.');
+        if (insights.length === 0) insights.push('No critical insights - operations stable.');
       } catch (e) { insights.push('AI insights unavailable.'); }
       return insights;
     }
@@ -410,7 +410,7 @@
       try {
         if (!targets.aiInsights) return;
         if (!list || list.length === 0) { targets.aiInsights.innerHTML = '<div class="muted small">No insights</div>'; return; }
-        targets.aiInsights.innerHTML = list.map(i => `<div class="ai-item">• ${escapeHtml(i)}</div>`).join('');
+        targets.aiInsights.innerHTML = list.map(i => `<div class="ai-item">* ${escapeHtml(i)}</div>`).join('');
       } catch (e) { console.error('renderAiInsights', e); }
     }
   

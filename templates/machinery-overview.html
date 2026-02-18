@@ -270,23 +270,23 @@
         <!-- Stats -->
         <div class="stats-row">
           <div class="stat-card">
-            <div id="stat_total" class="stat-val">—</div>
+            <div id="stat_total" class="stat-val">-</div>
             <div class="stat-lbl">Total Machines</div>
           </div>
           <div class="stat-card">
-            <div id="stat_running" class="stat-val" style="color:#107e3e;">—</div>
+            <div id="stat_running" class="stat-val" style="color:#107e3e;">-</div>
             <div class="stat-lbl">Running</div>
           </div>
           <div class="stat-card">
-            <div id="stat_idle" class="stat-val" style="color:#0c5460;">—</div>
+            <div id="stat_idle" class="stat-val" style="color:#0c5460;">-</div>
             <div class="stat-lbl">Idle</div>
           </div>
           <div class="stat-card">
-            <div id="stat_maint" class="stat-val" style="color:#856404;">—</div>
+            <div id="stat_maint" class="stat-val" style="color:#856404;">-</div>
             <div class="stat-lbl">Maintenance</div>
           </div>
           <div class="stat-card">
-            <div id="stat_offline" class="stat-val" style="color:#bb0000;">—</div>
+            <div id="stat_offline" class="stat-val" style="color:#bb0000;">-</div>
             <div class="stat-lbl">Offline</div>
           </div>
         </div>
@@ -294,7 +294,7 @@
         <!-- Machine table -->
         <div class="card">
           <div class="card-title">Registered Machines</div>
-          <input id="searchInput" placeholder="Search by name, type, location or status…">
+          <input id="searchInput" placeholder="Search by name, type, location or status...">
           <div style="overflow-x:auto;">
             <table class="table" id="machinesTable">
               <thead>
@@ -309,7 +309,7 @@
               </thead>
               <tbody>
                 <tr>
-                  <td colspan="6" class="muted small" style="text-align:center;padding:20px;">Loading…</td>
+                  <td colspan="6" class="muted small" style="text-align:center;padding:20px;">Loading...</td>
                 </tr>
               </tbody>
             </table>
@@ -327,7 +327,7 @@
       <div class="modal-header">
         Add New Machine
         <button class="modal-close"
-          onclick="document.getElementById('addMachineModal').classList.add('hidden')">✕</button>
+          onclick="document.getElementById('addMachineModal').classList.add('hidden')">X</button>
       </div>
       <div class="modal-body">
         <div class="form-row"><label>Machine Name *</label><input id="m_name" placeholder="e.g. CNC-01"></div>
@@ -375,11 +375,11 @@
           return;
         }
         tbody.innerHTML = list.map(m => {
-          const eff = m.efficiency != null ? m.efficiency + '%' : '—';
+          const eff = m.efficiency != null ? m.efficiency + '%' : '-';
           return `<tr style="cursor:pointer;" onclick="location.href='/machine/${m.id}'">
         <td><strong>${esc(m.name)}</strong></td>
-        <td>${esc(m.type || '—')}</td>
-        <td>${esc(m.location || '—')}</td>
+        <td>${esc(m.type || '-')}</td>
+        <td>${esc(m.location || '-')}</td>
         <td>${statusBadge(m.status)}</td>
         <td>${eff}</td>
         <td onclick="event.stopPropagation()">

@@ -1,5 +1,5 @@
 // static/sw.js
-// IMCS Service Worker — industrial-safe offline strategy
+// IMCS Service Worker - industrial-safe offline strategy
 
 const CACHE_NAME = 'imcs-static-v1';
 const API_CACHE = 'imcs-api-v1';

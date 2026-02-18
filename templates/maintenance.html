@@ -298,19 +298,19 @@
         <!-- Stats -->
         <div class="stats-row">
           <div class="stat-card">
-            <div id="stat_total" class="stat-val">—</div>
+            <div id="stat_total" class="stat-val">-</div>
             <div class="stat-lbl">Total Tasks</div>
           </div>
           <div class="stat-card">
-            <div id="stat_open" class="stat-val" style="color:#0c5460;">—</div>
+            <div id="stat_open" class="stat-val" style="color:#0c5460;">-</div>
             <div class="stat-lbl">Open</div>
           </div>
           <div class="stat-card">
-            <div id="stat_inprog" class="stat-val" style="color:#856404;">—</div>
+            <div id="stat_inprog" class="stat-val" style="color:#856404;">-</div>
             <div class="stat-lbl">In Progress</div>
           </div>
           <div class="stat-card">
-            <div id="stat_done" class="stat-val" style="color:#107e3e;">—</div>
+            <div id="stat_done" class="stat-val" style="color:#107e3e;">-</div>
             <div class="stat-lbl">Completed</div>
           </div>
         </div>
@@ -333,7 +333,7 @@
               <option value="medium">Medium</option>
               <option value="low">Low</option>
             </select>
-            <input type="text" id="taskSearch" class="input" placeholder="Search tasks…"
+            <input type="text" id="taskSearch" class="input" placeholder="Search tasks..."
               style="flex:1;min-width:140px;">
           </div>
           <div style="overflow-x:auto;">
@@ -352,7 +352,7 @@
               </thead>
               <tbody>
                 <tr>
-                  <td colspan="8" class="muted small" style="text-align:center;padding:20px;">Loading…</td>
+                  <td colspan="8" class="muted small" style="text-align:center;padding:20px;">Loading...</td>
                 </tr>
               </tbody>
             </table>
@@ -369,13 +369,13 @@
     <div class="modal-content">
       <div class="modal-header">
         Create Maintenance Task
-        <button class="modal-close" onclick="document.getElementById('createModal').classList.add('hidden')">✕</button>
+        <button class="modal-close" onclick="document.getElementById('createModal').classList.add('hidden')">X</button>
       </div>
       <div class="modal-body">
         <div class="form-row">
           <label>Machine *</label>
           <select id="m_machine_id">
-            <option value="">Select a machine…</option>
+            <option value="">Select a machine...</option>
           </select>
         </div>
         <div class="form-row">
@@ -411,7 +411,7 @@
     <div class="modal-content">
       <div class="modal-header">
         Update Task Status
-        <button class="modal-close" onclick="document.getElementById('updateModal').classList.add('hidden')">✕</button>
+        <button class="modal-close" onclick="document.getElementById('updateModal').classList.add('hidden')">X</button>
       </div>
       <div class="modal-body">
         <div id="updateTaskInfo"
@@ -465,15 +465,15 @@
           return;
         }
         tbody.innerHTML = list.map(t => {
-          const sched = t.scheduled_date || '—';
+          const sched = t.scheduled_date || '-';
           const mach = t.machine || `Machine #${t.machine_id || '?'}`;
           return `<tr>
         <td>${t.id}</td>
         <td><a href="/machine/${t.machine_id || ''}">${esc(mach)}</a></td>
-        <td style="max-width:240px;word-break:break-word;">${esc(t.description || '—')}</td>
+        <td style="max-width:240px;word-break:break-word;">${esc(t.description || '-')}</td>
         <td>${priBadge(t.priority)}</td>
         <td>${stBadge(t.status)}</td>
-        <td>${esc(t.technician || '—')}</td>
+        <td>${esc(t.technician || '-')}</td>
         <td>${esc(sched)}</td>
         <td><button class="btn" style="padding:2px 8px;font-size:11px;" onclick="openUpdate(${t.id},'${esc(mach)}','${esc(t.status || 'open')}','${esc(t.technician || '')}')">Update</button></td>
       </tr>`;
@@ -508,11 +508,11 @@
           const machines = await res.json();
           const sel = el('m_machine_id');
           if (!sel) return;
-          sel.innerHTML = '<option value="">Select a machine…</option>';
+          sel.innerHTML = '<option value="">Select a machine...</option>';
           (machines || []).forEach(m => {
             const opt = document.createElement('option');
             opt.value = m.id;
-            opt.textContent = `${m.name} (${m.type || '?'}) — ${m.location || '?'}`;
+            opt.textContent = `${m.name} (${m.type || '?'}) - ${m.location || '?'}`;
             sel.appendChild(opt);
           });
         } catch (e) { console.error('[MAINT] machines load error', e); }

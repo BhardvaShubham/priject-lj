@@ -878,7 +878,7 @@
         <div class="sap-badge">IMCS</div>
         <div>
           <div class="hdr-title" id="m_name">Machine</div>
-          <div class="muted small" id="m_type">Loading…</div>
+          <div class="muted small" id="m_type">Loading...</div>
         </div>
       </div>
       <div class="btn-group">
@@ -911,14 +911,14 @@
         <!-- STATUS & HEALTH SCORE -->
         <div class="card flex-1">
           <div class="card-title">Status & Health</div>
-          <div id="m_status" class="large">—</div>
+          <div id="m_status" class="large">-</div>
           <div id="health_score_container" style="margin-top: 12px;">
             <div class="health-score" id="health_score">
               <span>Health: </span>
-              <span id="health_value">—</span>
+              <span id="health_value">-</span>
             </div>
           </div>
-          <div class="muted small" style="margin-top: 8px;">Updated: <span id="m_last">—</span></div>
+          <div class="muted small" style="margin-top: 8px;">Updated: <span id="m_last">-</span></div>
         </div>
 
       </div>
@@ -942,19 +942,19 @@
           <div id="machineAnalytics" class="analytics-grid">
             <div class="analytics-item">
               <div class="analytics-label">Total Readings</div>
-              <div id="analytics_readings" class="analytics-value">—</div>
+              <div id="analytics_readings" class="analytics-value">-</div>
             </div>
             <div class="analytics-item">
               <div class="analytics-label">Failure Rate</div>
-              <div id="analytics_failure" class="analytics-value">—%</div>
+              <div id="analytics_failure" class="analytics-value">-%</div>
             </div>
             <div class="analytics-item">
               <div class="analytics-label">Peak Hour</div>
-              <div id="analytics_peak" class="analytics-value">—</div>
+              <div id="analytics_peak" class="analytics-value">-</div>
             </div>
             <div class="analytics-item">
               <div class="analytics-label">Maintenance Count</div>
-              <div id="analytics_maint" class="analytics-value">—</div>
+              <div id="analytics_maint" class="analytics-value">-</div>
             </div>
           </div>
         </div>
@@ -985,19 +985,19 @@
           <div class="analytics-grid">
             <div class="analytics-item">
               <div class="analytics-label">Predicted Efficiency (7d)</div>
-              <div id="predicted_efficiency" class="analytics-value">—%</div>
+              <div id="predicted_efficiency" class="analytics-value">-%</div>
             </div>
             <div class="analytics-item">
               <div class="analytics-label">Trend Direction</div>
-              <div id="trend_direction" class="analytics-value">—</div>
+              <div id="trend_direction" class="analytics-value">-</div>
             </div>
             <div class="analytics-item">
               <div class="analytics-label">Risk Level</div>
-              <div id="risk_level" class="analytics-value">—</div>
+              <div id="risk_level" class="analytics-value">-</div>
             </div>
             <div class="analytics-item">
               <div class="analytics-label">Maintenance Due</div>
-              <div id="maint_due" class="analytics-value">—</div>
+              <div id="maint_due" class="analytics-value">-</div>
             </div>
           </div>
         </div>
@@ -1026,7 +1026,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr><td colspan="5">Loading…</td></tr>
+              <tr><td colspan="5">Loading...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1055,7 +1055,7 @@
 <!-- Chart Fullscreen Modal -->
 <div id="chartModal" class="chart-modal">
   <div class="chart-modal-content">
-    <button class="chart-modal-close" onclick="closeChartModal()">×</button>
+    <button class="chart-modal-close" onclick="closeChartModal()">x</button>
     <canvas id="modalChart"></canvas>
   </div>
 </div>
@@ -1317,7 +1317,7 @@
 
             if (readingsEl) readingsEl.textContent = analytics.total_readings || 0;
             if (failureEl) failureEl.textContent = (analytics.failure_rate || 0).toFixed(2) + '%';
-            if (peakEl) peakEl.textContent = analytics.peak_hour ? analytics.peak_hour + ':00' : '—';
+            if (peakEl) peakEl.textContent = analytics.peak_hour ? analytics.peak_hour + ':00' : '-';
             if (maintEl) maintEl.textContent = analytics.maintenance_frequency || 0;
           }
         }
@@ -1390,18 +1390,18 @@
             const riskEl = document.getElementById('risk_level');
             const maintEl = document.getElementById('maint_due');
 
-            if (predEl) predEl.textContent = (predictive.predicted || '—') + '%';
+            if (predEl) predEl.textContent = (predictive.predicted || '-') + '%';
             if (trendEl) {
-              trendEl.textContent = predictive.trend || '—';
+              trendEl.textContent = predictive.trend || '-';
               trendEl.style.color = predictive.trend === 'increasing' ? '#28a745' : 
                                     predictive.trend === 'decreasing' ? '#bb0000' : '#666';
             }
             if (riskEl) {
-              riskEl.textContent = predictive.risk || '—';
+              riskEl.textContent = predictive.risk || '-';
               riskEl.style.color = predictive.risk === 'high' ? '#bb0000' : 
                                   predictive.risk === 'medium' ? '#e9730c' : '#28a745';
             }
-            if (maintEl) maintEl.textContent = predictive.maintenanceDue || '—';
+            if (maintEl) maintEl.textContent = predictive.maintenanceDue || '-';
 
             // Render trend forecast chart
             if (window.Chart && details.performance.length >= 7) {
@@ -1680,8 +1680,8 @@
                       <tr>
                         <td>${escapeHtml(dateStr)}</td>
                         <td>${parseFloat(p.efficiency) || 0}%</td>
-                        <td>${p.min !== undefined && p.min !== null ? parseFloat(p.min).toFixed(1) + '%' : '—'}</td>
-                        <td>${p.max !== undefined && p.max !== null ? parseFloat(p.max).toFixed(1) + '%' : '—'}</td>
+                        <td>${p.min !== undefined && p.min !== null ? parseFloat(p.min).toFixed(1) + '%' : '-'}</td>
+                        <td>${p.max !== undefined && p.max !== null ? parseFloat(p.max).toFixed(1) + '%' : '-'}</td>
                         <td>${parseInt(p.readings) || 0}</td>
                       </tr>
                     `;
@@ -1705,8 +1705,8 @@
             } else {
               alertsDiv.innerHTML = details.alerts.slice(0, 5).map(a => {
                 const severity = escapeHtml(a.severity || 'Info');
-                const message = escapeHtml(a.message || '—');
-                const raisedAt = escapeHtml(a.raised_at || '—');
+                const message = escapeHtml(a.message || '-');
+                const raisedAt = escapeHtml(a.raised_at || '-');
                 return `
                   <div class="alert-item ${(a.severity || '').toLowerCase()}">
                     <strong>${severity}</strong><br>
@@ -1729,10 +1729,10 @@
               maintDiv.innerHTML = '<div class="muted small">No maintenance history</div>';
             } else {
               maintDiv.innerHTML = details.maintenance.slice(0, 5).map(m => {
-                const desc = escapeHtml(m.description || '—');
-                const status = escapeHtml(m.status || '—');
-                const priority = escapeHtml(m.priority || '—');
-                const createdAt = escapeHtml(m.created_at || '—');
+                const desc = escapeHtml(m.description || '-');
+                const status = escapeHtml(m.status || '-');
+                const priority = escapeHtml(m.priority || '-');
+                const createdAt = escapeHtml(m.created_at || '-');
                 return `
                   <div class="maintenance-item">
                     <strong>${desc}</strong><br>

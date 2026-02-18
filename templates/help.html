@@ -1,0 +1,1187 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>IMCS – Help Centre</title>
+    <link rel="stylesheet" href="/static/css/sap90.css">
+    <style>
+        .app-shell {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background: #DFDFDF;
+        }
+
+        /* scroll progress */
+        #scrollProg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            width: 0;
+            background: linear-gradient(90deg, #0a6ed1, #00ccff);
+            z-index: 9999;
+            transition: width .1s;
+        }
+
+        /* back-to-top */
+        #btt {
+            position: fixed;
+            bottom: 22px;
+            right: 22px;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #000080, #1084d7);
+            color: #fff;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, .35);
+            z-index: 999;
+        }
+
+        #btt.show {
+            display: flex;
+        }
+
+        /* hero */
+        .hero {
+            background: linear-gradient(135deg, #000080 0%, #1084d7 55%, #00aaff 100%);
+            color: #fff;
+            padding: 36px 28px 28px;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 240px;
+            height: 240px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .06);
+        }
+
+        .hero-title {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            text-shadow: 1px 2px 4px rgba(0, 0, 0, .4);
+        }
+
+        .hero-sub {
+            font-size: 13px;
+            opacity: .88;
+            line-height: 1.7;
+            max-width: 580px;
+        }
+
+        .hero-tag {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 3px 14px;
+            background: rgba(255, 255, 255, .18);
+            border: 1px solid rgba(255, 255, 255, .35);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            animation: tagPulse 2.5s ease-in-out infinite;
+        }
+
+        @keyframes tagPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, .3);
+            }
+
+            50% {
+                box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
+            }
+        }
+
+        /* quick-nav pills */
+        .qnav {
+            background: #E6EEF8;
+            border-bottom: 2px solid #B0C4D8;
+            padding: 10px 18px;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .qpill {
+            padding: 5px 13px;
+            background: #fff;
+            border: 2px solid;
+            border-color: #fff #7A8BA8 #7A8BA8 #fff;
+            font-size: 12px;
+            font-weight: 600;
+            color: #003366;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all .15s;
+            white-space: nowrap;
+        }
+
+        .qpill:hover {
+            background: #D0E4FF;
+        }
+
+        /* sections */
+        .hsec {
+            margin-bottom: 28px;
+            opacity: 0;
+            transform: translateY(22px);
+            transition: opacity .5s ease, transform .5s ease;
+        }
+
+        .hsec.vis {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .sec-hdr {
+            background: linear-gradient(90deg, #000080, #1084d7);
+            color: #fff;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            text-shadow: 1px 1px 0 rgba(0, 0, 0, .4);
+        }
+
+        .sec-icon {
+            font-size: 20px;
+        }
+
+        .sec-body {
+            background: #F7F7F7;
+            border: 2px solid;
+            border-color: #DFDFDF #808080 #808080 #DFDFDF;
+            border-top: none;
+            padding: 20px 22px;
+        }
+
+        /* tip box */
+        .tip {
+            background: #E8F4FF;
+            border-left: 4px solid #0a6ed1;
+            padding: 10px 14px;
+            font-size: 12px;
+            color: #003366;
+            margin-top: 8px;
+            line-height: 1.6;
+        }
+
+        .warn {
+            background: #FFF8E1;
+            border-left: 4px solid #e9730c;
+            padding: 10px 14px;
+            font-size: 12px;
+            color: #5a3a00;
+            margin-top: 8px;
+            line-height: 1.6;
+        }
+
+        /* steps */
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .step {
+            display: flex;
+            gap: 14px;
+            padding: 12px 14px;
+            background: #fff;
+            border: 1px solid #D5D5D5;
+            border-left: 4px solid #0a6ed1;
+            transition: box-shadow .2s, transform .2s;
+        }
+
+        .step:hover {
+            box-shadow: 0 3px 12px rgba(0, 102, 204, .14);
+            transform: translateX(3px);
+        }
+
+        .snum {
+            min-width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #000080, #1084d7);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .stitle {
+            font-weight: 700;
+            font-size: 13px;
+            color: #003366;
+            margin-bottom: 3px;
+        }
+
+        .sdesc {
+            font-size: 12px;
+            color: #444;
+            line-height: 1.65;
+        }
+
+        /* feature cards */
+        .fcgrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        .fc {
+            background: #fff;
+            border: 2px solid;
+            border-color: #fff #808080 #808080 #fff;
+            padding: 14px 16px;
+            transition: all .2s;
+        }
+
+        .fc:hover {
+            background: #EEF5FF;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 102, 204, .12);
+        }
+
+        .fc-ico {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .fc-t {
+            font-weight: 700;
+            font-size: 13px;
+            color: #003366;
+            margin-bottom: 4px;
+        }
+
+        .fc-d {
+            font-size: 12px;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        /* status legend */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .leg {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: #fff;
+            border: 1px solid #D5D5D5;
+            font-size: 12px;
+        }
+
+        .dot {
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* FAQ */
+        .faq {
+            margin-top: 6px;
+        }
+
+        .fq {
+            background: #E8EEF8;
+            border: 2px solid;
+            border-color: #fff #7A8BA8 #7A8BA8 #fff;
+            padding: 10px 14px;
+            font-weight: 700;
+            font-size: 13px;
+            color: #003366;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            transition: background .15s;
+            margin-bottom: 2px;
+        }
+
+        .fq:hover {
+            background: #D0DCF0;
+        }
+
+        .fq .arr {
+            transition: transform .3s;
+            font-size: 11px;
+        }
+
+        .fa {
+            display: none;
+            padding: 12px 16px;
+            background: #fff;
+            border: 2px solid;
+            border-color: #DFDFDF #808080 #808080 #DFDFDF;
+            border-top: none;
+            font-size: 13px;
+            color: #333;
+            line-height: 1.75;
+            margin-bottom: 8px;
+        }
+
+        .faq-item.open .fa {
+            display: block;
+        }
+
+        .faq-item.open .arr {
+            transform: rotate(180deg);
+        }
+
+        /* do/don't table */
+        .dos {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .do-col {
+            background: #f0fff4;
+            border: 1px solid #c3e6cb;
+            padding: 12px 14px;
+        }
+
+        .dont-col {
+            background: #fff5f5;
+            border: 1px solid #f5c6cb;
+            padding: 12px 14px;
+        }
+
+        .do-col h4 {
+            color: #107e3e;
+            font-size: 12px;
+            margin: 0 0 8px;
+            text-transform: uppercase;
+        }
+
+        .dont-col h4 {
+            color: #bb0000;
+            font-size: 12px;
+            margin: 0 0 8px;
+            text-transform: uppercase;
+        }
+
+        .do-col li,
+        .dont-col li {
+            font-size: 12px;
+            color: #333;
+            margin-bottom: 5px;
+            line-height: 1.5;
+        }
+
+        p.intro {
+            font-size: 13px;
+            color: #333;
+            line-height: 1.75;
+            margin-bottom: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="scrollProg"></div>
+    <div class="app-shell">
+
+        <!-- SIDEBAR -->
+        <aside class="app-sidebar">
+            <button class="sidebar-toggle" title="Collapse sidebar">◀</button>
+            <div class="brand">
+                <img src="/static/icons/logo-imcs.svg" class="logo-img" alt="IMCS" />
+                <div class="title">Industrial Hub</div>
+                <div class="muted small">Help Centre</div>
+            </div>
+            <nav class="nav">
+                <div class="nav-search-container">
+                    <input type="text" id="navSearch" class="nav-search" placeholder="Search..."
+                        title="Search navigation">
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-header" data-section="dashboard"><span
+                            class="nav-section-chevron">▼</span><span class="nav-section-title">Dashboard</span></div>
+                    <div class="nav-section-items">
+                        <a href="/dashboard" class="nav-item" data-label="Overview"
+                            data-search="overview dashboard home"><img src="/static/icons/home.svg" width="16"
+                                height="16" alt=""> <span>Overview</span></a>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-header" data-section="operations"><span
+                            class="nav-section-chevron">▼</span><span class="nav-section-title">Operations</span></div>
+                    <div class="nav-section-items">
+                        <a href="/machinery" class="nav-item" data-label="Machinery"
+                            data-search="machinery equipment machines"><img src="/static/icons/machine.svg" width="16"
+                                height="16" alt=""> <span>Machinery</span></a>
+                        <a href="/maintenance" class="nav-item" data-label="Maintenance"
+                            data-search="maintenance service repair"><img src="/static/icons/wrench.svg" width="16"
+                                height="16" alt=""> <span>Maintenance</span>
+                            <span class="nav-badge nav-badge-warning" id="badge-maintenance"
+                                style="display:none;">0</span></a>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-header" data-section="monitoring"><span
+                            class="nav-section-chevron">▼</span><span class="nav-section-title">Monitoring</span></div>
+                    <div class="nav-section-items">
+                        <a href="/alerts" class="nav-item" data-label="Alerts"
+                            data-search="alerts warnings notifications"><img src="/static/icons/alert.svg" width="16"
+                                height="16" alt=""> <span>Alerts</span>
+                            <span class="nav-badge nav-badge-danger" id="badge-alerts"
+                                style="display:none;">0</span></a>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-header" data-section="reporting"><span
+                            class="nav-section-chevron">▼</span><span class="nav-section-title">Reporting</span></div>
+                    <div class="nav-section-items">
+                        <a href="/reports" class="nav-item" data-label="Reports"
+                            data-search="reports analytics data insights"><img src="/static/icons/chart.svg" width="16"
+                                height="16" alt=""> <span>Reports</span></a>
+                    </div>
+                </div>
+            </nav>
+            <div class="nav-footer">
+                <a href="/help" class="nav-footer-btn"
+                    style="background:linear-gradient(135deg,#D0E4FF,#C0D4F0);border-color:#D0E4FF #5B6A80 #5B6A80 #D0E4FF;"
+                    title="Help Centre">❓ Help</a>
+                <a href="/logout" class="nav-footer-btn" title="Sign out">🚪 Sign Out</a>
+            </div>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="app-main">
+            <header class="app-header">
+                <div class="brand">
+                    <div class="sap-badge">IMCS</div>
+                    <div>
+                        <div class="hdr-title">Help Centre</div>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <a href="/dashboard" class="btn">🏠 Go to Dashboard</a>
+                    <a href="/logout" class="btn">🚪 Logout</a>
+                </div>
+            </header>
+
+            <div class="container" id="scroller">
+
+                <!-- Hero -->
+                <div class="hero">
+                    <div class="hero-title">👋 Welcome to IMCS Help Centre</div>
+                    <div class="hero-sub">This guide will walk you through everything you need to know to use IMCS
+                        confidently — from logging in for the first time to monitoring your machines and resolving
+                        alerts. No technical knowledge required.</div>
+                    <div class="hero-tag">USER GUIDE · PLAIN ENGLISH</div>
+                </div>
+
+                <!-- Quick nav -->
+                <div class="qnav">
+                    <a class="qpill" href="#s1">🔑 Logging In</a>
+                    <a class="qpill" href="#s2">🏠 Your Dashboard</a>
+                    <a class="qpill" href="#s3">🏭 Your Machines</a>
+                    <a class="qpill" href="#s4">🔧 Maintenance Tasks</a>
+                    <a class="qpill" href="#s5">⚠️ Alerts</a>
+                    <a class="qpill" href="#s6">📊 Charts & Reports</a>
+                    <a class="qpill" href="#s7">🗂️ Getting Around</a>
+                    <a class="qpill" href="#s8">🚦 What Do the Colours Mean?</a>
+                    <a class="qpill" href="#s9">❓ Common Questions</a>
+                </div>
+
+                <div style="padding:18px;">
+
+                    <!-- ── SECTION 1: LOGGING IN ── -->
+                    <div class="hsec card" id="s1">
+                        <div class="sec-hdr"><span class="sec-icon">🔑</span> Logging In &amp; Getting Started</div>
+                        <div class="sec-body">
+                            <p class="intro">When you open IMCS for the first time, you'll land on the login screen.
+                                Here's exactly what to do.</p>
+                            <div class="steps">
+                                <div class="step">
+                                    <div class="snum">1</div>
+                                    <div>
+                                        <div class="stitle">Enter your Company Name</div>
+                                        <div class="sdesc">Type the name of your organisation exactly as it was
+                                            registered. This is how IMCS keeps your data separate from other companies.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">2</div>
+                                    <div>
+                                        <div class="stitle">Enter your Login ID and Password</div>
+                                        <div class="sdesc">Your Login ID was given to you by your administrator (or you
+                                            chose it when registering). Type your password — it is case-sensitive.</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">3</div>
+                                    <div>
+                                        <div class="stitle">Click "Login"</div>
+                                        <div class="sdesc">You'll be taken straight to your Dashboard. If you see an
+                                            error, double-check your Company Name and Login ID — they must match
+                                            exactly.</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">4</div>
+                                    <div>
+                                        <div class="stitle">First time? Click "Register"</div>
+                                        <div class="sdesc">If you're setting up IMCS for the first time, click
+                                            <strong>Register</strong> on the login page. Enter a Company Name (this
+                                            creates your company's workspace), choose a Login ID, your name, and a
+                                            password of at least 6 characters.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tip">💡 <strong>Tip:</strong> Once you're logged in, IMCS remembers your
+                                session. You won't need to log in again unless you click Sign Out or close the browser.
+                            </div>
+                            <div class="warn">⚠️ <strong>No data yet?</strong> After your first login, your dashboard
+                                will be empty. Click the <strong>Demo Data</strong> button in the dashboard header, then
+                                <strong>Generate Demo Data</strong> to instantly fill the system with sample machines
+                                and readings so you can explore.</div>
+                        </div>
+                    </div>
+
+                    <!-- ── SECTION 2: DASHBOARD ── -->
+                    <div class="hsec card" id="s2">
+                        <div class="sec-hdr"><span class="sec-icon">🏠</span> Your Dashboard — The Big Picture</div>
+                        <div class="sec-body">
+                            <p class="intro">The Dashboard is the first thing you see after logging in. Think of it as
+                                your control room — it shows you everything that's happening across all your machines at
+                                a glance.</p>
+                            <div class="fcgrid">
+                                <div class="fc">
+                                    <div class="fc-ico">📦</div>
+                                    <div class="fc-t">Total Machines</div>
+                                    <div class="fc-d">How many machines are registered in your system right now.</div>
+                                </div>
+                                <div class="fc">
+                                    <div class="fc-ico">⚡</div>
+                                    <div class="fc-t">Average Efficiency</div>
+                                    <div class="fc-d">The average performance percentage across all your machines.
+                                        Higher is better — aim for above 80%.</div>
+                                </div>
+                                <div class="fc">
+                                    <div class="fc-ico">⚠️</div>
+                                    <div class="fc-t">Active Alerts</div>
+                                    <div class="fc-d">Problems that need your attention. This number should ideally be
+                                        zero.</div>
+                                </div>
+                                <div class="fc">
+                                    <div class="fc-ico">💚</div>
+                                    <div class="fc-t">System Health</div>
+                                    <div class="fc-d">An overall score for how well your operation is running. Excellent
+                                        means everything is fine.</div>
+                                </div>
+                            </div>
+                            <div class="steps" style="margin-top:16px;">
+                                <div class="step">
+                                    <div class="snum">▶</div>
+                                    <div>
+                                        <div class="stitle">The charts update automatically every 60 seconds</div>
+                                        <div class="sdesc">You don't need to refresh the page. The live green dot next
+                                            to "Auto-refresh every 60s" in the header confirms this is working. You can
+                                            also click <strong>Refresh</strong> any time for an immediate update.</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">▶</div>
+                                    <div>
+                                        <div class="stitle">Performance Trend chart</div>
+                                        <div class="sdesc">Shows how your machines' efficiency has changed over the last
+                                            7 days. A rising line is good. A sudden drop may mean a machine needs
+                                            attention.</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">▶</div>
+                                    <div>
+                                        <div class="stitle">Machine Status chart (doughnut)</div>
+                                        <div class="sdesc">A quick visual of how many machines are Running, Idle, Under
+                                            Maintenance, or Offline. Hover over any slice to see the exact number and
+                                            percentage.</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">▶</div>
+                                    <div>
+                                        <div class="stitle">Alerts Trend chart</div>
+                                        <div class="sdesc">Shows how many alerts were raised each day over the last 2
+                                            weeks, split by severity. A spike here means something unusual happened on
+                                            that day.</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">▶</div>
+                                    <div>
+                                        <div class="stitle">Recent Alerts panel</div>
+                                        <div class="sdesc">Lists your most recent unresolved alerts. Click
+                                            <strong>Ack</strong> next to any alert to mark it as reviewed and resolved.
+                                            You can add a note explaining what you did.</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">▶</div>
+                                    <div>
+                                        <div class="stitle">Machine table at the bottom</div>
+                                        <div class="sdesc">A full list of all your machines with their current status
+                                            and efficiency. Use the search box to find a specific machine quickly. Click
+                                            <strong>View</strong> to see full details for any machine.</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">▶</div>
+                                    <div>
+                                        <div class="stitle">Create a Maintenance Task from here</div>
+                                        <div class="sdesc">Click the <strong>🔧 Maintenance</strong> button in the top
+                                            header. A form will appear — pick the machine, describe what needs doing,
+                                            set a priority, and optionally assign it to a technician.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── SECTION 3: MACHINERY ── -->
+                    <div class="hsec card" id="s3">
+                        <div class="sec-hdr"><span class="sec-icon">🏭</span> Managing Your Machines</div>
+                        <div class="sec-body">
+                            <p class="intro">The Machinery page is your complete list of every machine in your facility.
+                                You can add new machines, check their current status, and drill into detailed
+                                information for each one.</p>
+                            <div class="steps">
+                                <div class="step">
+                                    <div class="snum">1</div>
+                                    <div>
+                                        <div class="stitle">Go to Machinery</div>
+                                        <div class="sdesc">Click <strong>Operations → Machinery</strong> in the left
+                                            sidebar. You'll see a summary row at the top showing how many machines are
+                                            Running, Idle, Under Maintenance, and Offline.</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">2</div>
+                                    <div>
+                                        <div class="stitle">Find a machine quickly</div>
+                                        <div class="sdesc">Type anything into the search box — the machine's name, type,
+                                            location, or status. The list filters instantly as you type.</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">3</div>
+                                    <div>
+                                        <div class="stitle">Add a new machine</div>
+                                        <div class="sdesc">Click <strong>+ Add Machine</strong> in the top-right. Fill
+                                            in:<br>
+                                            • <strong>Machine Name</strong> — e.g. "Lathe-01" or "Compressor A"<br>
+                                            • <strong>Type</strong> — e.g. "CNC", "Lathe", "Conveyor"<br>
+                                            • <strong>Location</strong> — e.g. "Shop Floor A", "Warehouse 2"<br>
+                                            • <strong>Status</strong> — what state it's currently in<br>
+                                            Then click <strong>Add Machine</strong> to save it.</div>
+                                        <div class="tip">💡 All three fields (Name, Type, Location) are required. You
+                                            can always update the status later from the machine details page.</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">4</div>
+                                    <div>
+                                        <div class="stitle">View a machine's full details</div>
+                                        <div class="sdesc">Click anywhere on a machine's row (or the
+                                            <strong>Details</strong> button). You'll see its sensor readings, efficiency
+                                            history over time, and all past maintenance work done on it.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── SECTION 4: MAINTENANCE ── -->
+                    <div class="hsec card" id="s4">
+                        <div class="sec-hdr"><span class="sec-icon">🔧</span> Scheduling &amp; Tracking Maintenance
+                        </div>
+                        <div class="sec-body">
+                            <p class="intro">Maintenance tasks help you keep track of servicing, repairs, and
+                                inspections. Every task moves through three stages: <strong>Open → In Progress →
+                                    Completed</strong>.</p>
+                            <div class="steps">
+                                <div class="step">
+                                    <div class="snum">1</div>
+                                    <div>
+                                        <div class="stitle">Open the Maintenance page</div>
+                                        <div class="sdesc">Click <strong>Operations → Maintenance</strong> in the
+                                            sidebar. The orange number badge on this link tells you how many tasks are
+                                            currently open and waiting.</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">2</div>
+                                    <div>
+                                        <div class="stitle">Create a new task</div>
+                                        <div class="sdesc">Click <strong>+ New Task</strong>. A form appears:<br>
+                                            • <strong>Machine</strong> — pick from the dropdown (all your registered
+                                            machines appear here)<br>
+                                            • <strong>Description</strong> — describe what needs to be done, e.g.
+                                            "Replace drive belt"<br>
+                                            • <strong>Priority</strong> — High (urgent), Medium (this week), or Low
+                                            (routine)<br>
+                                            • <strong>Scheduled Date</strong> — when you plan to do it<br>
+                                            • <strong>Technician</strong> — who will do the work (optional)<br>
+                                            Click <strong>Create Task</strong> when done.</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">3</div>
+                                    <div>
+                                        <div class="stitle">Update a task as work progresses</div>
+                                        <div class="sdesc">Find the task in the list and click <strong>Update</strong>.
+                                            Change the status from <em>Open</em> to <em>In Progress</em> when work
+                                            begins, then to <em>Completed</em> when it's done. You can also reassign the
+                                            technician here.</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">4</div>
+                                    <div>
+                                        <div class="stitle">Filter the task list</div>
+                                        <div class="sdesc">Use the filter bar to show only tasks with a certain status
+                                            (e.g. just "Open" tasks) or priority (e.g. just "High" priority). You can
+                                            also search by machine name or description.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="dos">
+                                <div class="do-col">
+                                    <h4>✅ Good practice</h4>
+                                    <ul>
+                                        <li>Set a scheduled date so nothing gets forgotten</li>
+                                        <li>Mark tasks "In Progress" when work starts</li>
+                                        <li>Always mark tasks "Completed" when done</li>
+                                        <li>Assign a technician so responsibility is clear</li>
+                                    </ul>
+                                </div>
+                                <div class="dont-col">
+                                    <h4>❌ Avoid</h4>
+                                    <ul>
+                                        <li>Leaving tasks as "Open" indefinitely</li>
+                                        <li>Creating duplicate tasks for the same job</li>
+                                        <li>Using "High" priority for everything</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── SECTION 5: ALERTS ── -->
+                    <div class="hsec card" id="s5">
+                        <div class="sec-hdr"><span class="sec-icon">⚠️</span> Dealing with Alerts</div>
+                        <div class="sec-body">
+                            <p class="intro">Alerts are the system's way of telling you something needs your attention.
+                                The red number badge on the Alerts link in the sidebar shows how many unresolved alerts
+                                you have right now.</p>
+                            <div class="steps">
+                                <div class="step">
+                                    <div class="snum">1</div>
+                                    <div>
+                                        <div class="stitle">Open the Alerts page</div>
+                                        <div class="sdesc">Click <strong>Monitoring → Alerts</strong> in the sidebar. By
+                                            default you'll see only unresolved alerts — the ones that still need action.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">2</div>
+                                    <div>
+                                        <div class="stitle">Understand the severity</div>
+                                        <div class="sdesc">
+                                            🔴 <strong>Critical</strong> — Something is seriously wrong. Act
+                                            immediately.<br>
+                                            🟠 <strong>Warning</strong> — A problem is developing. Check it soon.<br>
+                                            🔵 <strong>Info</strong> — Just a notification. No urgent action needed.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">3</div>
+                                    <div>
+                                        <div class="stitle">Acknowledge (resolve) an alert</div>
+                                        <div class="sdesc">Click the <strong>Acknowledge</strong> button next to an
+                                            alert. A small window appears showing the alert details. You can type a note
+                                            about what you did (e.g. "Checked sensor, recalibrated"). Click
+                                            <strong>Acknowledge &amp; Resolve</strong> to close it. The alert disappears
+                                            from your list and the badge count goes down.</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">4</div>
+                                    <div>
+                                        <div class="stitle">See all alerts (including resolved ones)</div>
+                                        <div class="sdesc">Use the filter bar at the top of the Alerts page. Change the
+                                            Status filter from "Unacknowledged" to "All" to see every alert ever raised,
+                                            including ones already resolved.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tip">💡 <strong>Good habit:</strong> Check your alerts every morning. Resolving
+                                Critical alerts the same day they appear keeps your operation running smoothly.</div>
+                        </div>
+                    </div>
+
+                    <!-- ── SECTION 6: CHARTS & REPORTS ── -->
+                    <div class="hsec card" id="s6">
+                        <div class="sec-hdr"><span class="sec-icon">📊</span> Charts &amp; Reports</div>
+                        <div class="sec-body">
+                            <p class="intro">IMCS gives you several ways to visualise and export your data.</p>
+                            <div class="steps">
+                                <div class="step">
+                                    <div class="snum">▶</div>
+                                    <div>
+                                        <div class="stitle">Save any chart as an image</div>
+                                        <div class="sdesc">Every chart on the Dashboard has a small <strong>📥</strong>
+                                            button in its title bar. Click it to download the chart as a PNG image you
+                                            can paste into reports or emails.</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">▶</div>
+                                    <div>
+                                        <div class="stitle">Upload your own data (CSV)</div>
+                                        <div class="sdesc">Scroll to the bottom of the Dashboard. You'll see a
+                                            <strong>CSV Data Visualization</strong> area. Drag any spreadsheet file
+                                            saved as CSV onto it (or click to browse). IMCS will automatically draw a
+                                            chart from your data — great for visualising production logs or external
+                                            sensor exports.</div>
+                                        <div class="tip">💡 Your CSV must have column headers in the first row. The
+                                            first column becomes the X-axis. Any columns with numbers are plotted as
+                                            lines.</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">▶</div>
+                                    <div>
+                                        <div class="stitle">Reports page</div>
+                                        <div class="sdesc">Click <strong>Reporting → Reports</strong> in the sidebar for
+                                            downloadable summaries and analytics about your machines and operations over
+                                            time.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── SECTION 7: NAVIGATION ── -->
+                    <div class="hsec card" id="s7">
+                        <div class="sec-hdr"><span class="sec-icon">🗂️</span> Getting Around the Application</div>
+                        <div class="sec-body">
+                            <p class="intro">The sidebar on the left is how you move between different parts of IMCS.
+                                Here's how to get the most out of it.</p>
+                            <div class="steps">
+                                <div class="step">
+                                    <div class="snum">▶</div>
+                                    <div>
+                                        <div class="stitle">Collapse the sidebar for more space</div>
+                                        <div class="sdesc">Click the <strong>◀</strong> button at the top of the sidebar
+                                            to shrink it to just icons. Click <strong>▶</strong> to bring it back. IMCS
+                                            remembers your preference — it stays collapsed even after you navigate to a
+                                            different page.</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">▶</div>
+                                    <div>
+                                        <div class="stitle">Collapse individual menu groups</div>
+                                        <div class="sdesc">Click on any section heading (like "Operations" or
+                                            "Monitoring") to hide or show the links underneath. Useful if you only use
+                                            certain parts of the system.</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">▶</div>
+                                    <div>
+                                        <div class="stitle">Search the navigation</div>
+                                        <div class="sdesc">Type in the search box at the top of the sidebar to instantly
+                                            filter the navigation links. For example, type "alert" to jump straight to
+                                            the Alerts link.</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">▶</div>
+                                    <div>
+                                        <div class="stitle">Live notification badges</div>
+                                        <div class="sdesc">The <strong>red badge</strong> on Alerts shows unresolved
+                                            alerts. The <strong>orange badge</strong> on Maintenance shows open tasks.
+                                            These update every time you load a page so you always know what needs
+                                            attention.</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="snum">▶</div>
+                                    <div>
+                                        <div class="stitle">Sign out safely</div>
+                                        <div class="sdesc">Click <strong>Sign Out</strong> at the very bottom of the
+                                            sidebar when you're done. This clears your session so nobody else can access
+                                            your data on a shared computer.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── SECTION 8: COLOUR GUIDE ── -->
+                    <div class="hsec card" id="s8">
+                        <div class="sec-hdr"><span class="sec-icon">🚦</span> What Do the Colours Mean?</div>
+                        <div class="sec-body">
+                            <p style="font-weight:700;font-size:13px;color:#003366;margin-bottom:8px;">Machine Status
+                                Colours</p>
+                            <div class="legend">
+                                <div class="leg">
+                                    <div class="dot" style="background:#107e3e;"></div><strong
+                                        style="color:#107e3e;">Green — Running</strong>&nbsp;· Machine is working
+                                    normally
+                                </div>
+                                <div class="leg">
+                                    <div class="dot" style="background:#0c5460;"></div><strong
+                                        style="color:#0c5460;">Teal — Idle</strong>&nbsp;· Machine is on but not
+                                    producing
+                                </div>
+                                <div class="leg">
+                                    <div class="dot" style="background:#856404;"></div><strong
+                                        style="color:#856404;">Amber — Maintenance</strong>&nbsp;· Machine is being
+                                    serviced
+                                </div>
+                                <div class="leg">
+                                    <div class="dot" style="background:#bb0000;"></div><strong
+                                        style="color:#bb0000;">Red — Offline</strong>&nbsp;· Machine is off or
+                                    unreachable
+                                </div>
+                            </div>
+                            <p style="font-weight:700;font-size:13px;color:#003366;margin:16px 0 8px;">Alert Severity
+                                Colours</p>
+                            <div class="legend">
+                                <div class="leg">
+                                    <div class="dot" style="background:#bb0000;"></div><strong
+                                        style="color:#bb0000;">Red — Critical</strong>&nbsp;· Act immediately
+                                </div>
+                                <div class="leg">
+                                    <div class="dot" style="background:#e9730c;"></div><strong
+                                        style="color:#e9730c;">Orange — Warning</strong>&nbsp;· Check soon
+                                </div>
+                                <div class="leg">
+                                    <div class="dot" style="background:#0a6ed1;"></div><strong
+                                        style="color:#0a6ed1;">Blue — Info</strong>&nbsp;· No urgent action needed
+                                </div>
+                            </div>
+                            <p style="font-weight:700;font-size:13px;color:#003366;margin:16px 0 8px;">Maintenance
+                                Priority Colours</p>
+                            <div class="legend">
+                                <div class="leg">
+                                    <div class="dot" style="background:#bb0000;"></div><strong
+                                        style="color:#bb0000;">Red — High</strong>&nbsp;· Do it today
+                                </div>
+                                <div class="leg">
+                                    <div class="dot" style="background:#e9730c;"></div><strong
+                                        style="color:#e9730c;">Orange — Medium</strong>&nbsp;· Do it this week
+                                </div>
+                                <div class="leg">
+                                    <div class="dot" style="background:#107e3e;"></div><strong
+                                        style="color:#107e3e;">Green — Low</strong>&nbsp;· Schedule at your convenience
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── SECTION 9: FAQ ── -->
+                    <div class="hsec card" id="s9">
+                        <div class="sec-hdr"><span class="sec-icon">❓</span> Common Questions</div>
+                        <div class="sec-body">
+                            <div class="faq">
+
+                                <div class="faq-item">
+                                    <div class="fq">I just logged in and the dashboard is empty. What do I do? <span
+                                            class="arr">▼</span></div>
+                                    <div class="fa">That's normal for a brand-new account! Click the
+                                        <strong>Datasets</strong> button in the dashboard header, then click
+                                        <strong>Generate Demo Data</strong>. Enter how many machines you want (try 5)
+                                        and how many days of history (try 30), then click OK. Your dashboard will fill
+                                        up with sample data within seconds so you can explore all the features.</div>
+                                </div>
+
+                                <div class="faq-item">
+                                    <div class="fq">The machine dropdown in the Maintenance form is empty. <span
+                                            class="arr">▼</span></div>
+                                    <div class="fa">You need to add at least one machine first. Go to <strong>Machinery
+                                            → Add Machine</strong> and register your first machine. Once saved, it will
+                                        appear in the dropdown when you create a maintenance task. Alternatively,
+                                        generate demo data (see above) which creates machines automatically.</div>
+                                </div>
+
+                                <div class="faq-item">
+                                    <div class="fq">How do I know if a machine needs attention? <span
+                                            class="arr">▼</span></div>
+                                    <div class="fa">Watch for two things: (1) A <strong>red alert badge</strong> on the
+                                        Alerts link in the sidebar — click it to see what's wrong. (2) A machine showing
+                                        <strong>Offline</strong> or <strong>Maintenance</strong> status in red or amber
+                                        on the Dashboard or Machinery page. Low efficiency (below 60%) on the charts is
+                                        also a warning sign.</div>
+                                </div>
+
+                                <div class="faq-item">
+                                    <div class="fq">I acknowledged an alert by mistake. Can I undo it? <span
+                                            class="arr">▼</span></div>
+                                    <div class="fa">Once an alert is acknowledged it is marked as resolved in the
+                                        system. To see it again, go to the Alerts page and change the Status filter to
+                                        <strong>"All"</strong> — you'll see all alerts including resolved ones. You
+                                        cannot un-acknowledge an alert, but you can create a new alert manually via the
+                                        API if needed.</div>
+                                </div>
+
+                                <div class="faq-item">
+                                    <div class="fq">Can my colleagues use the same account? <span class="arr">▼</span>
+                                    </div>
+                                    <div class="fa">Each person should have their own Login ID. When registering, use
+                                        the <strong>same Company Name</strong> as your organisation — this puts everyone
+                                        in the same workspace so you all see the same machines, alerts, and tasks. Ask
+                                        your administrator to register accounts for each team member.</div>
+                                </div>
+
+                                <div class="faq-item">
+                                    <div class="fq">The charts look empty or show "0" everywhere. <span
+                                            class="arr">▼</span></div>
+                                    <div class="fa">Charts need data to display. If you've just registered, generate
+                                        demo data first. If you have real machines but no sensor readings, the charts
+                                        will show zeros until sensor data is recorded. Try clicking
+                                        <strong>Refresh</strong> on the dashboard. If the problem persists, check your
+                                        internet connection — Chart.js loads from a CDN.</div>
+                                </div>
+
+                                <div class="faq-item">
+                                    <div class="fq">How do I remove demo data when I'm ready to use real data? <span
+                                            class="arr">▼</span></div>
+                                    <div class="fa">On the Dashboard, click <strong>Datasets</strong> in the header,
+                                        then click <strong>Clear Demo Data</strong>. Confirm the prompt. All demo
+                                        machines, sensors, alerts, and readings will be deleted. <strong>This cannot be
+                                            undone</strong>, so only do this when you're ready to start entering your
+                                        real machines.</div>
+                                </div>
+
+                                <div class="faq-item">
+                                    <div class="fq">I forgot my password. How do I reset it? <span class="arr">▼</span>
+                                    </div>
+                                    <div class="fa">Currently, password reset must be done by your system administrator
+                                        who has access to the server. Contact your IT team or the person who set up IMCS
+                                        for your organisation. They can update your password directly in the system.
+                                    </div>
+                                </div>
+
+                                <div class="faq-item">
+                                    <div class="fq">The sidebar collapse button doesn't seem to work. <span
+                                            class="arr">▼</span></div>
+                                    <div class="fa">Make sure you're clicking the small <strong>◀</strong> arrow button
+                                        at the top-right corner of the sidebar (not the section headers). If it still
+                                        doesn't respond, try refreshing the page. The sidebar state is saved in your
+                                        browser — clearing your browser's local storage will reset it to expanded.</div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="text-align:center;padding:16px 0 6px;color:#888;font-size:12px;">
+                        Still stuck? Contact your system administrator · IMCS Industrial Hub
+                    </div>
+
+                </div><!-- /padding -->
+            </div><!-- /container -->
+            <footer class="footer">IMCS · Help Centre</footer>
+        </main>
+    </div>
+
+    <button id="btt" title="Back to top"
+        onclick="document.getElementById('scroller').scrollTo({top:0,behavior:'smooth'})">▲</button>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        (function () {
+            'use strict';
+            const prog = document.getElementById('scrollProg');
+            const btt = document.getElementById('btt');
+            const sc = document.getElementById('scroller');
+
+            // scroll progress + back-to-top
+            sc.addEventListener('scroll', () => {
+                const pct = sc.scrollTop / (sc.scrollHeight - sc.clientHeight) * 100;
+                if (prog) prog.style.width = Math.min(pct, 100) + '%';
+                if (btt) btt.classList.toggle('show', sc.scrollTop > 180);
+            });
+
+            // animate sections into view
+            const io = new IntersectionObserver(entries => {
+                entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+            }, { threshold: 0.07, root: sc });
+            document.querySelectorAll('.hsec').forEach(s => io.observe(s));
+
+            // FAQ accordion
+            document.querySelectorAll('.fq').forEach(q => {
+                q.addEventListener('click', () => {
+                    const item = q.closest('.faq-item');
+                    const open = item.classList.contains('open');
+                    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+                    if (!open) item.classList.add('open');
+                });
+            });
+
+            // quick-nav smooth scroll
+            document.querySelectorAll('.qpill').forEach(p => {
+                p.addEventListener('click', e => {
+                    e.preventDefault();
+                    const t = document.querySelector(p.getAttribute('href'));
+                    if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+            });
+
+            // sidebar badges
+            async function badges() {
+                try { const r = await fetch('/api/alerts?ack=0'); if (r.ok) { const d = await r.json(); const b = document.getElementById('badge-alerts'); if (b) { b.textContent = d.length; b.style.display = d.length > 0 ? '' : 'none'; } } } catch (_) { }
+                try { const r = await fetch('/api/maintenance?status=open'); if (r.ok) { const d = await r.json(); const b = document.getElementById('badge-maintenance'); if (b) { b.textContent = d.length; b.style.display = d.length > 0 ? '' : 'none'; } } } catch (_) { }
+            }
+            document.addEventListener('DOMContentLoaded', badges);
+        })();
+    </script>
+</body>
+
+</html>

@@ -149,7 +149,6 @@
       line-height: 1.6;
     }
 
-    /* ── CSV drop zone ── */
     .csv-drop-zone {
       border: 2px dashed #A0A0A0;
       padding: 28px;
@@ -161,14 +160,141 @@
 
     .csv-drop-zone:hover,
     .csv-drop-zone.drag-over {
-      border-color: #0a6ed1;
-      background: #E6F2FF;
+      border-color: #0a6ed1 !important;
+      background: #E6F2FF !important;
     }
 
     .drop-zone-text {
       color: #003366;
       font-size: 14px;
       margin-top: 8px;
+    }
+
+    /* ── CSV chart type buttons ── */
+    .csv-type-btn {
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #E8EEF8;
+      border: 2px solid;
+      border-color: #fff #7A8BA8 #7A8BA8 #fff;
+      cursor: pointer;
+      color: #003366;
+      transition: all .15s;
+    }
+
+    .csv-type-btn:hover {
+      background: #D8E4F8;
+    }
+
+    .csv-type-btn.active {
+      background: linear-gradient(135deg, #000080, #1084d7);
+      color: #fff;
+      border-color: #000080 #00004a #00004a #000080;
+    }
+
+    /* ── CSV column stat pills ── */
+    .csv-col-stat {
+      background: #fff;
+      border: 1px solid #C0CCE0;
+      padding: 5px 10px;
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .csv-col-stat strong {
+      color: #003366;
+      font-size: 11px;
+      display: block;
+    }
+
+    .csv-col-stat span {
+      color: #666;
+    }
+
+    /* ── Dashboard chart-type toggle buttons ── */
+    .dash-type-group {
+      display: flex;
+      gap: 2px;
+    }
+
+    .dash-type-btn {
+      padding: 3px 9px;
+      font-size: 10px;
+      font-weight: 700;
+      background: #E0E8F8;
+      border: 1px solid #8A9BBD;
+      cursor: pointer;
+      color: #003366;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+
+    .dash-type-btn:hover {
+      background: #C8D8F0;
+    }
+
+    .dash-type-btn.active {
+      background: linear-gradient(135deg, #000080, #1084d7);
+      color: #fff;
+      border-color: #000060;
+    }
+
+    /* ── Editable CSV table cells ── */
+    #csvEditTable th {
+      background: linear-gradient(135deg, #000080, #1084d7);
+      color: #fff;
+      padding: 5px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    #csvEditTable td {
+      padding: 0;
+      border: 1px solid #D0D8E8;
+    }
+
+    #csvEditTable td input {
+      width: 100%;
+      border: none;
+      padding: 4px 6px;
+      font-size: 11px;
+      font-family: Tahoma, Arial, sans-serif;
+      background: transparent;
+      box-sizing: border-box;
+      outline: none;
+    }
+
+    #csvEditTable td input:focus {
+      background: #EEF4FF;
+      outline: 2px solid #0a6ed1;
+      outline-offset: -2px;
+    }
+
+    #csvEditTable tr:nth-child(even) td {
+      background: #F5F8FF;
+    }
+
+    #csvEditTable tr:hover td {
+      background: #E8F0FF !important;
+    }
+
+    #csvEditTable .del-row-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #bb0000;
+      font-size: 13px;
+      padding: 2px 6px;
+      line-height: 1;
+    }
+
+    #csvEditTable .del-row-btn:hover {
+      background: #FFE8E8;
     }
 
     /* ── alerts list ── */
@@ -499,10 +625,22 @@
 
         <!-- ── CHARTS ROW 1: Performance Trend + Status Distribution ── -->
         <div class="charts-grid">
+
+          <!-- Performance Trend with type switcher -->
           <div class="card chart-card">
-            <div class="card-title">
-              Performance Trend — Last 7 Days
-              <button class="chart-export-btn" onclick="exportChart('performanceChart')" title="Export">📥</button>
+            <div class="card-title"
+              style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+              <span>📈 Performance Trend — Last 7 Days</span>
+              <div style="display:flex;align-items:center;gap:4px;">
+                <div class="dash-type-group" id="perfChartTypeBtns">
+                  <button class="dash-type-btn active" data-chart="perf" data-type="line" title="Line">Line</button>
+                  <button class="dash-type-btn" data-chart="perf" data-type="bar" title="Bar">Bar</button>
+                  <button class="dash-type-btn" data-chart="perf" data-type="area" title="Area">Area</button>
+                  <button class="dash-type-btn" data-chart="perf" data-type="scatter" title="Scatter">Scatter</button>
+                </div>
+                <button class="chart-export-btn" onclick="exportChart('performanceChart')"
+                  title="Export PNG">📥</button>
+              </div>
             </div>
             <div class="chart-container">
               <canvas id="performanceChart"></canvas>
@@ -510,10 +648,22 @@
                 style="display:none;">
             </div>
           </div>
+
+          <!-- Status Distribution with type switcher -->
           <div class="card chart-card">
-            <div class="card-title">
-              Machine Status Distribution
-              <button class="chart-export-btn" onclick="exportChart('statusChart')" title="Export">📥</button>
+            <div class="card-title"
+              style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+              <span>🟢 Machine Status Distribution</span>
+              <div style="display:flex;align-items:center;gap:4px;">
+                <div class="dash-type-group" id="statusChartTypeBtns">
+                  <button class="dash-type-btn active" data-chart="status" data-type="doughnut"
+                    title="Doughnut">Donut</button>
+                  <button class="dash-type-btn" data-chart="status" data-type="pie" title="Pie">Pie</button>
+                  <button class="dash-type-btn" data-chart="status" data-type="bar" title="Bar">Bar</button>
+                  <button class="dash-type-btn" data-chart="status" data-type="polarArea" title="Polar">Polar</button>
+                </div>
+                <button class="chart-export-btn" onclick="exportChart('statusChart')" title="Export PNG">📥</button>
+              </div>
             </div>
             <div class="chart-container">
               <canvas id="statusChart"></canvas>
@@ -521,6 +671,7 @@
                 style="display:none;">
             </div>
           </div>
+
         </div>
 
         <!-- ── ALERTS TREND ── -->
@@ -607,21 +758,147 @@
           </div>
         </div>
 
-        <!-- ── CSV UPLOAD ── -->
-        <div class="card" style="margin-bottom:16px;">
-          <div class="card-title">CSV Data Visualization</div>
-          <div id="csvDropZone" class="csv-drop-zone">
-            <img src="/static/icons/chart.svg" width="40" height="40" style="opacity:0.4;" alt="">
-            <div class="drop-zone-text">
-              <strong>Drop CSV file here</strong><br>
-              <span class="muted small">or click to browse</span>
+        <!-- ── CSV DATA VISUALIZATION (ENTERPRISE) ── -->
+        <div class="card" id="csvVizCard" style="margin-bottom:16px;">
+          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+            <span>📊 CSV Data Visualization</span>
+            <div style="display:flex;gap:6px;">
+              <button class="btn" id="csvExportChartBtn" style="display:none;padding:4px 10px;font-size:11px;">📥 Export
+                Chart</button>
+              <button class="btn" id="csvExportDataBtn" style="display:none;padding:4px 10px;font-size:11px;">📄 Export
+                CSV</button>
+              <button class="btn" id="csvClearBtn" style="display:none;padding:4px 10px;font-size:11px;">✕
+                Clear</button>
             </div>
+          </div>
+
+          <!-- Drop Zone -->
+          <div id="csvDropZone" class="csv-drop-zone"
+            style="margin:12px;border:2px dashed #A0A8C0;background:#F0F4FF;padding:28px;text-align:center;cursor:pointer;transition:all .2s;">
+            <div style="font-size:36px;margin-bottom:8px;">📂</div>
+            <div style="font-weight:700;font-size:13px;color:#003366;">Drop CSV file here or click to browse</div>
+            <div style="font-size:11px;color:#888;margin-top:4px;">Supports any CSV with headers · Up to 10,000 rows ·
+              Multiple numeric columns</div>
             <input type="file" id="csvFileInput" accept=".csv" style="display:none;">
           </div>
-          <div id="csvVisualization" class="chart-container" style="display:none;margin-top:12px;height:220px;">
+
+          <!-- File Stats Bar (hidden until file loaded) -->
+          <div id="csvStatsBar"
+            style="display:none;margin:0 12px 10px;padding:10px 14px;background:#E8EEF8;border:1px solid #C0CCE0;border-left:4px solid #000080;font-size:11px;">
+            <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:center;">
+              <span>📁 <strong id="csvFileName">—</strong></span>
+              <span>📋 <strong id="csvRowCount">—</strong> rows</span>
+              <span>📐 <strong id="csvColCount">—</strong> columns</span>
+              <span>🔢 <strong id="csvNumericCount">—</strong> numeric</span>
+              <span>🔤 <strong id="csvTextCount">—</strong> text</span>
+            </div>
+          </div>
+
+          <!-- Controls Panel (hidden until file loaded) -->
+          <div id="csvControls"
+            style="display:none;margin:0 12px 10px;padding:12px;background:#F7F7F7;border:1px solid #D0D0D0;">
+            <div
+              style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;align-items:end;">
+
+              <!-- Chart Type -->
+              <div>
+                <label
+                  style="font-size:10px;font-weight:700;text-transform:uppercase;color:#555;display:block;margin-bottom:4px;">Chart
+                  Type</label>
+                <div style="display:flex;gap:4px;flex-wrap:wrap;" id="csvChartTypeBtns">
+                  <button class="csv-type-btn active" data-type="line" title="Line">📈 Line</button>
+                  <button class="csv-type-btn" data-type="bar" title="Bar">📊 Bar</button>
+                  <button class="csv-type-btn" data-type="scatter" title="Scatter">⚬ Scatter</button>
+                  <button class="csv-type-btn" data-type="pie" title="Pie">🥧 Pie</button>
+                  <button class="csv-type-btn" data-type="radar" title="Radar">🕸️ Radar</button>
+                </div>
+              </div>
+
+              <!-- X Axis -->
+              <div>
+                <label
+                  style="font-size:10px;font-weight:700;text-transform:uppercase;color:#555;display:block;margin-bottom:4px;">X
+                  Axis / Labels</label>
+                <select id="csvXCol"
+                  style="width:100%;padding:5px 6px;font-size:12px;border:2px solid #A0A8C0;background:#fff;"></select>
+              </div>
+
+              <!-- Y Axis (multi) -->
+              <div style="grid-column:span 2;">
+                <label
+                  style="font-size:10px;font-weight:700;text-transform:uppercase;color:#555;display:block;margin-bottom:4px;">Y
+                  Axis — Data Series <span style="font-weight:400;color:#888;">(hold Ctrl to select
+                    multiple)</span></label>
+                <select id="csvYCols" multiple
+                  style="width:100%;height:72px;padding:4px 6px;font-size:12px;border:2px solid #A0A8C0;background:#fff;"></select>
+              </div>
+
+              <!-- Row limit -->
+              <div>
+                <label
+                  style="font-size:10px;font-weight:700;text-transform:uppercase;color:#555;display:block;margin-bottom:4px;">Max
+                  Rows to Plot</label>
+                <select id="csvRowLimit"
+                  style="width:100%;padding:5px 6px;font-size:12px;border:2px solid #A0A8C0;background:#fff;">
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                  <option value="200" selected>200</option>
+                  <option value="500">500</option>
+                  <option value="1000">1000</option>
+                </select>
+              </div>
+
+              <!-- Apply -->
+              <div style="display:flex;align-items:flex-end;">
+                <button class="btn" id="csvApplyBtn" style="width:100%;padding:6px 12px;font-weight:700;">▶
+                  Apply</button>
+              </div>
+            </div>
+
+            <!-- Column Stats -->
+            <div id="csvColStats" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;"></div>
+          </div>
+
+          <!-- Chart -->
+          <div id="csvVisualization"
+            style="display:none;margin:0 12px 10px;position:relative;height:300px;background:#F9F9F9;border:1px solid #D5D5D5;">
             <canvas id="csvChart"></canvas>
           </div>
-          <div id="csvInfo" class="muted small" style="margin-top:6px;padding:0 4px;"></div>
+
+          <!-- Data Preview Table -->
+          <div id="csvPreviewWrap" style="display:none;margin:0 12px 12px;">
+            <div
+              style="font-size:11px;font-weight:700;color:#003366;margin-bottom:6px;display:flex;justify-content:space-between;">
+              <span>📋 Data Preview <span id="csvPreviewLabel" style="font-weight:400;color:#888;"></span></span>
+              <span id="csvSummaryStats" style="font-weight:400;color:#555;"></span>
+            </div>
+            <div style="overflow-x:auto;max-height:200px;overflow-y:auto;border:1px solid #D0D0D0;">
+              <table class="table" id="csvPreviewTable" style="font-size:11px;min-width:100%;"></table>
+            </div>
+          </div>
+
+          <div id="csvInfo" class="muted small" style="padding:0 12px 8px;"></div>
+
+          <!-- ── EDITABLE DATA TABLE ── -->
+          <div id="csvEditTableWrap" style="display:none;margin:0 12px 14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:11px;font-weight:700;color:#003366;">✏️ Editable Data Table
+                <span id="csvEditTableInfo" style="font-weight:400;color:#888;"></span>
+              </span>
+              <div style="display:flex;gap:6px;">
+                <button class="btn" id="csvAddRowBtn" style="padding:3px 10px;font-size:11px;">+ Add Row</button>
+                <button class="btn" id="csvSaveEditBtn"
+                  style="padding:3px 10px;font-size:11px;background:linear-gradient(135deg,#000080,#1084d7);color:#fff;">💾
+                  Save &amp; Replot</button>
+                <button class="btn" id="csvDownloadEditBtn" style="padding:3px 10px;font-size:11px;">📄
+                  Download</button>
+              </div>
+            </div>
+            <div style="overflow-x:auto;max-height:260px;overflow-y:auto;border:2px solid #A0A8C0;">
+              <table id="csvEditTable" style="font-size:11px;min-width:100%;border-collapse:collapse;"></table>
+            </div>
+          </div>
+
         </div>
 
         <!-- ── MACHINES TABLE ── -->

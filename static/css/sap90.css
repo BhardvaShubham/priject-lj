@@ -19,46 +19,52 @@ body {
 
 /* ----------- Sidebar (SAP tree with 90s bevels) ----------- */
 .app-sidebar {
-    width: 260px;
+    width: 240px;
+    min-width: 240px;
     background: linear-gradient(90deg, #ECECEC 0%, #E3E3E3 100%);
     border-right: 2px solid;
     border-color: #FFFFFF #808080 #808080 #FFFFFF;
     display: flex;
     flex-direction: column;
-    padding: 8px;
+    padding: 8px 6px 6px 6px;
     flex-shrink: 0;
-    box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.8), 0 0 0 rgba(0, 0, 0, 0.2);
-    transition: width 0.3s ease, padding 0.3s ease;
+    box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.8);
+    transition: width 0.25s ease, min-width 0.25s ease, padding 0.25s ease;
     position: relative;
-    overflow: hidden;
+    /* NO overflow:hidden here — needed for tooltips */
+    overflow: visible;
 }
 
+/* ── Collapsed state ── */
 .app-sidebar.collapsed {
-    width: 56px;
-    padding: 8px 4px;
-    overflow-x: hidden;
+    width: 52px;
+    min-width: 52px;
+    padding: 8px 4px 6px 4px;
+    overflow: visible;
 }
 
+/* ── Toggle button — sits at the bottom of the sidebar, always visible ── */
 .sidebar-toggle {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: linear-gradient(135deg, #DFECF9 0%, #D7DFEF 100%);
-    border: 2px solid;
-    border-color: #DFEFFF #7A8BA8 #7A8BA8 #DFEFFF;
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 2px;
-    box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.8), inset -1px -1px 0 rgba(0, 0, 0, 0.3);
-    transition: all 0.15s ease;
-    font-size: 12px;
+    width: 100%;
+    height: 28px;
+    margin-top: 8px;
+    background: linear-gradient(135deg, #DFECF9 0%, #D7DFEF 100%);
+    border: 2px solid;
+    border-color: #DFEFFF #7A8BA8 #7A8BA8 #DFEFFF;
+    cursor: pointer;
+    font-size: 13px;
     font-weight: bold;
     color: #003366;
+    border-radius: 2px;
+    box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.8), inset -1px -1px 0 rgba(0, 0, 0, 0.2);
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    letter-spacing: 0.3px;
 }
 
 .sidebar-toggle:hover {
@@ -72,13 +78,19 @@ body {
     transform: translateY(1px);
 }
 
-.brand {
+/* When collapsed, show only the arrow icon */
+.app-sidebar.collapsed .sidebar-toggle {
+    font-size: 14px;
+}
 
-    margin-bottom: 14px;
+/* ── Brand / Logo ── */
+.brand {
+    margin-bottom: 10px;
     display: flex;
     flex-direction: column;
     gap: 4px;
-    transition: all 0.3s ease;
+    overflow: hidden;
+    transition: all 0.25s ease;
 }
 
 .app-sidebar.collapsed .brand {
@@ -89,12 +101,12 @@ body {
     width: 100%;
     height: auto;
     display: block;
-    margin-bottom: 8px;
-    transition: all 0.3s ease;
+    margin-bottom: 6px;
+    transition: all 0.25s ease;
 }
 
 .app-sidebar.collapsed .brand img.logo-img {
-    width: 40px;
+    width: 36px;
     height: auto;
     margin-bottom: 4px;
 }
@@ -103,13 +115,15 @@ body {
     font-weight: bold;
     font-size: 24px;
     color: #004080;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.25s ease;
 }
 
 .app-sidebar.collapsed .logo {
     font-size: 12px;
     opacity: 0;
     visibility: hidden;
+    height: 0;
+    overflow: hidden;
 }
 
 .title {
@@ -117,116 +131,52 @@ body {
     font-weight: bold;
     color: #003366;
     line-height: 1.4;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.25s ease;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
-.app-sidebar.collapsed .title {
+.app-sidebar.collapsed .title,
+.app-sidebar.collapsed .brand .muted {
     opacity: 0;
     visibility: hidden;
-    font-size: 10px;
+    height: 0;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
 }
 
 .brand .muted {
     font-size: 11px;
     color: #666;
     margin-top: 2px;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.25s ease;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
-.app-sidebar.collapsed .brand .muted {
-    opacity: 0;
-    visibility: hidden;
-}
-
-/* Sidebar navigation with icons */
+/* ── Nav container ── */
 .nav {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    transition: all 0.3s ease;
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
-.nav a {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    color: #003399;
-    text-decoration: none;
-    border: 1px solid transparent;
-    font-size: 14px;
-    border-radius: 3px;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-    position: relative;
-}
-
-.nav a img {
-    width: 16px;
-    height: 16px;
-    flex-shrink: 0;
-    transition: all 0.3s ease;
-}
-
-.nav a span {
-    transition: opacity 0.3s ease;
-    display: inline;
-}
-
-.app-sidebar.collapsed .nav a {
-    padding: 8px 6px;
-    justify-content: center;
-    gap: 0;
-}
-
-.app-sidebar.collapsed .nav a span {
-    opacity: 0;
-    visibility: hidden;
-    width: 0;
-    display: none;
-}
-
-.app-sidebar.collapsed .nav a:hover {
-    position: relative;
-}
-
-.app-sidebar.collapsed .nav a:hover::after {
-    content: attr(data-label);
-    position: absolute;
-    left: 100%;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(0, 51, 102, 0.95);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 2px;
-    font-size: 12px;
-    white-space: nowrap;
-    margin-left: 8px;
-    pointer-events: none;
-    z-index: 100;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.nav a.active {
-    background: #D0D8E8;
-    border: 1px solid #8BA2C0;
-    font-weight: 600;
-    box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.8), inset -1px -1px 0 rgba(0, 0, 0, 0.2);
-}
-
-/* ===== ENHANCED SIDEBAR NAVIGATION ===== */
+/* ── Nav search ── */
 .nav-search-container {
-    padding: 8px 0;
-    margin-bottom: 12px;
+    padding: 6px 0;
+    margin-bottom: 8px;
+    transition: all 0.25s ease;
+    overflow: hidden;
 }
 
 .nav-search {
     width: 100%;
-    padding: 8px 10px;
+    box-sizing: border-box;
+    padding: 7px 10px;
     font-size: 13px;
     border: 2px solid;
     border-color: #FFFFFF #7A8BA8 #7A8BA8 #FFFFFF;
@@ -249,42 +199,49 @@ body {
 }
 
 .app-sidebar.collapsed .nav-search-container {
-    display: none;
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
 }
 
-/* Navigation sections */
+/* ── Nav sections ── */
 .nav-section {
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .nav-section-header {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 10px;
+    padding: 6px 8px;
     cursor: pointer;
     color: #003366;
     font-weight: 600;
-    font-size: 12px;
+    font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     user-select: none;
-    background: linear-gradient(90deg, rgba(208, 216, 232, 0.3) 0%, rgba(200, 208, 224, 0.2) 100%);
+    background: linear-gradient(90deg, rgba(208, 216, 232, 0.35) 0%, rgba(200, 208, 224, 0.2) 100%);
     border: 1px solid transparent;
     border-radius: 3px;
     transition: all 0.2s ease;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .nav-section-header:hover {
-    background: linear-gradient(90deg, rgba(208, 216, 232, 0.5) 0%, rgba(200, 208, 224, 0.4) 100%);
-    border: 1px solid rgba(139, 162, 192, 0.3);
+    background: linear-gradient(90deg, rgba(208, 216, 232, 0.55) 0%, rgba(200, 208, 224, 0.45) 100%);
+    border-color: rgba(139, 162, 192, 0.3);
 }
 
 .nav-section-chevron {
     display: inline-flex;
-    font-size: 11px;
-    transition: transform 0.3s ease;
+    font-size: 10px;
+    transition: transform 0.25s ease;
     color: #666;
+    flex-shrink: 0;
 }
 
 .nav-section.collapsed .nav-section-chevron {
@@ -293,21 +250,23 @@ body {
 
 .nav-section-title {
     flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: opacity 0.25s ease;
 }
 
+/* When sidebar is collapsed: hide section headers entirely, show only items */
 .app-sidebar.collapsed .nav-section-header {
-    padding: 8px 4px;
-    justify-content: center;
-}
-
-.app-sidebar.collapsed .nav-section-title {
-    opacity: 0;
-    visibility: hidden;
     display: none;
 }
 
-.app-sidebar.collapsed .nav-section-chevron {
-    display: none;
+/* When sidebar is collapsed: always show items (ignore section collapsed state) */
+.app-sidebar.collapsed .nav-section-items {
+    max-height: 500px !important;
+    opacity: 1 !important;
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
 }
 
 .nav-section-items {
@@ -315,9 +274,9 @@ body {
     flex-direction: column;
     gap: 2px;
     margin-left: 4px;
-    border-left: 2px solid transparent;
-    padding-left: 8px;
-    transition: all 0.3s ease;
+    border-left: 2px solid rgba(139, 162, 192, 0.2);
+    padding-left: 6px;
+    transition: max-height 0.25s ease, opacity 0.25s ease, padding 0.25s ease;
     max-height: 500px;
     overflow: hidden;
 }
@@ -325,15 +284,16 @@ body {
 .nav-section.collapsed .nav-section-items {
     max-height: 0;
     opacity: 0;
-    margin-bottom: 0;
     padding-left: 0;
+    pointer-events: none;
 }
 
+/* ── Nav items ── */
 .nav-item {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 10px;
+    padding: 7px 10px;
     color: #003399;
     text-decoration: none;
     border: 1px solid transparent;
@@ -342,11 +302,13 @@ body {
     transition: all 0.2s ease;
     white-space: nowrap;
     position: relative;
+    overflow: visible;
+    /* needed for tooltip */
 }
 
 .nav-item:hover {
     background: rgba(208, 216, 232, 0.5);
-    border: 1px solid rgba(139, 162, 192, 0.3);
+    border-color: rgba(139, 162, 192, 0.3);
     color: #004080;
     transform: translateX(2px);
 }
@@ -364,8 +326,8 @@ body {
     width: 16px;
     height: 16px;
     flex-shrink: 0;
-    transition: all 0.3s ease;
     filter: brightness(0.9);
+    transition: filter 0.2s ease;
 }
 
 .nav-item:hover img {
@@ -377,84 +339,108 @@ body {
 }
 
 .nav-item span {
-    transition: opacity 0.3s ease;
     flex: 1;
+    transition: opacity 0.25s ease, width 0.25s ease;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* Badges for notifications */
-.nav-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 20px;
-    height: 20px;
-    padding: 2px 6px;
-    border-radius: 10px;
-    font-size: 11px;
-    font-weight: bold;
-    color: white;
-    margin-left: auto;
-    flex-shrink: 0;
-    animation: pulse 2s infinite;
-}
-
-.nav-badge-danger {
-    background: #CC0000;
-    box-shadow: 0 0 8px rgba(204, 0, 0, 0.3);
-}
-
-.nav-badge-warning {
-    background: #FF9900;
-    box-shadow: 0 0 8px rgba(255, 153, 0, 0.3);
-}
-
-.nav-badge-info {
-    background: #0066CC;
-    box-shadow: 0 0 8px rgba(0, 102, 204, 0.3);
-}
-
-@keyframes pulse {
-
-    0%,
-    100% {
-        box-shadow: 0 0 8px rgba(204, 0, 0, 0.3);
-    }
-
-    50% {
-        box-shadow: 0 0 12px rgba(204, 0, 0, 0.5);
-    }
-}
-
+/* ── Collapsed nav items: icon-only + tooltip ── */
 .app-sidebar.collapsed .nav-item {
-    padding: 8px 6px;
+    padding: 8px 0;
     justify-content: center;
     gap: 0;
+    transform: none !important;
+    /* no translateX in collapsed mode */
 }
 
-.app-sidebar.collapsed .nav-item span {
-    opacity: 0;
-    visibility: hidden;
-    width: 0;
-    display: none;
+.app-sidebar.collapsed .nav-item:hover {
+    transform: none !important;
 }
 
+.app-sidebar.collapsed .nav-item span,
 .app-sidebar.collapsed .nav-badge {
     display: none;
 }
 
-/* Sidebar footer */
+/* Tooltip on hover in collapsed mode */
+.app-sidebar.collapsed .nav-item::after {
+    content: attr(data-label);
+    position: fixed;
+    /* fixed so it escapes overflow clipping */
+    left: 58px;
+    top: auto;
+    background: #003366;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    z-index: 9999;
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.app-sidebar.collapsed .nav-item:hover::after {
+    opacity: 1;
+}
+
+/* ── Badges ── */
+.nav-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 2px 5px;
+    border-radius: 9px;
+    font-size: 10px;
+    font-weight: bold;
+    color: white;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.nav-badge-danger {
+    background: #CC0000;
+}
+
+.nav-badge-warning {
+    background: #FF9900;
+}
+
+.nav-badge-info {
+    background: #0066CC;
+}
+
+/* ── Sidebar footer ── */
 .nav-footer {
-    margin-top: auto;
-    padding-top: 12px;
+    margin-top: 6px;
+    padding-top: 10px;
     border-top: 2px solid;
     border-color: #FFFFFF #7A8BA8 #7A8BA8 #FFFFFF;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
+    transition: all 0.25s ease;
+    overflow: hidden;
+}
+
+.app-sidebar.collapsed .nav-footer {
+    max-height: 0;
+    opacity: 0;
+    padding: 0;
+    margin: 0;
+    border: none;
+    pointer-events: none;
 }
 
 .nav-footer-btn {
-    padding: 8px 10px;
+    padding: 7px 10px;
     background: linear-gradient(135deg, #D0D8E8 0%, #C8D0E0 100%);
     border: 2px solid;
     border-color: #DFEFFF #7A8BA8 #7A8BA8 #DFEFFF;
@@ -481,10 +467,6 @@ body {
 .nav-footer-btn:active {
     border-color: #7A8BA8 #DFEFFF #DFEFFF #7A8BA8;
     box-shadow: inset -1px -1px 0 rgba(255, 255, 255, 0.8), inset 1px 1px 0 rgba(0, 0, 0, 0.3);
-}
-
-.app-sidebar.collapsed .nav-footer {
-    display: none;
 }
 
 /* ----------- Top Header (90s gradient bar) ----------- */

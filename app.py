@@ -1371,6 +1371,15 @@ def maintenance():
             )
             c.commit()
             task_id = cursor.lastrowid
+            
+            # Phase 2: Update machine status to maintenance
+            if data.get("status", "open") == "open":
+                c.execute(
+                    "UPDATE machines SET status='maintenance' WHERE id=?",
+                    (data["machine_id"],)
+                )
+                c.commit()
+
             log(session.get('username', 'system'), "create", "maintenance", task_id)
             return jsonify({"success": True, "id": task_id, "ok": True}), 201
     
@@ -1438,9 +1447,23 @@ def update_maintenance(task_id):
             return jsonify({"error": "Task not found"}), 404
         
         c.execute(
-            f"UPDATE maintenance_tasks SET {', '.join(updates)} WHERE id = ? AND company_id = ?",
+            "UPDATE maintenance_tasks SET " + ", ".join(updates) + " WHERE id = ? AND company_id = ?",
             params
         )
+        
+        # Phase 2: Update machine status if task completed
+        if data.get("status") == "completed":
+            # Get machine_id from the task
+            m_row = c.execute(
+                "SELECT machine_id FROM maintenance_tasks WHERE id=?", 
+                (task_id,)
+            ).fetchone()
+            if m_row:
+                c.execute(
+                    "UPDATE machines SET status='idle' WHERE id=?", 
+                    (m_row[0],)
+                )
+        
         c.commit()
         log(session.get('username', 'system'), "update", "maintenance", task_id)
     

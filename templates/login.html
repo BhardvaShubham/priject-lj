@@ -3,63 +3,271 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>IMCS - Login</title>
+  <title>IMCS — Industrial Hub Machine Control System</title>
   <link rel="stylesheet" href="/static/css/sap90.css">
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:        #003366;
+      --navy-mid:    #004080;
+      --navy-light:  #0050A0;
+      --gray-bg:     #E8E8E8;
+      --gray-mid:    #DFDFDF;
+      --gray-light:  #F5F5F5;
+      --white:       #FFFFFF;
+      --border:      #A0A0A0;
+      --border-light:#D0D0D0;
+      --text:        #1A1A1A;
+      --text-muted:  #555555;
+    }
+
+    html { scroll-behavior: smooth; }
+
     body {
+      background: linear-gradient(135deg, var(--gray-bg) 0%, var(--gray-mid) 100%);
+      color: var(--text);
+      font-family: Tahoma, Arial, sans-serif;
+      font-size: 13px;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
       display: flex;
       align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #E8E8E8 0%, #DFDFDF 100%);
-      margin: 0;
+      justify-content: space-between;
+      padding: 0 48px;
+      height: 52px;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+      border-bottom: 2px solid #002244;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
 
-    .login-container {
-      background: linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 100%);
-      border: 2px solid #A0A0A0;
-      border-radius: 4px;
-      padding: 30px;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    .login-header {
-      text-align: center;
-      margin-bottom: 24px;
+    .nav-logo-box {
+      width: 28px; height: 28px;
+      border: 2px solid rgba(255,255,255,0.35);
+      display: grid;
+      place-items: center;
+    }
+    .nav-logo-box::before {
+      content: '';
+      width: 9px; height: 9px;
+      background: white;
+      clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
     }
 
-    .login-header img {
-      width: 100%;
-      height: auto;
-      margin-bottom: 12px;
-    }
-
-    .login-header h1 {
-      font-size: 20px;
+    .nav-brand {
+      font-size: 14px;
       font-weight: 700;
-      color: #003366;
-      margin: 0;
-      letter-spacing: 0.5px;
+      color: white;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
     }
 
-    .login-header p {
-      font-size: 12px;
-      color: #666;
+    .nav-links { display: flex; align-items: center; gap: 28px; }
+
+    .nav-link {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-link:hover { color: white; }
+
+    .nav-cta {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 6px 18px;
+      color: white !important;
+      border-radius: 2px;
+      transition: background 0.2s !important;
+    }
+    .nav-cta:hover { background: rgba(255,255,255,0.2) !important; }
+
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      padding: 80px 0 60px;
+    }
+
+    .hero-content {
+      padding: 48px 40px 48px 72px;
+      animation: fadeUp 0.7s ease both;
+    }
+
+    .hero-eyebrow {
+      display: inline-block;
+      background: var(--navy);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      margin-bottom: 20px;
+    }
+
+    .hero-title {
+      font-size: clamp(26px, 3vw, 42px);
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.1;
+      letter-spacing: 0.5px;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+    .hero-title .accent { display: block; color: var(--navy-light); }
+
+    .hero-divider {
+      width: 44px; height: 3px;
+      background: var(--navy);
+      margin-bottom: 18px;
+    }
+
+    .hero-desc {
+      font-size: 13px;
+      line-height: 1.75;
+      color: var(--text-muted);
+      max-width: 440px;
+      margin-bottom: 30px;
+    }
+
+    .hero-stats {
+      display: flex;
+      border: 1px solid var(--border-light);
+      background: var(--white);
+      margin-bottom: 32px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+
+    .stat {
+      flex: 1;
+      padding: 14px 18px;
+      border-right: 1px solid var(--border-light);
+    }
+    .stat:last-child { border-right: none; }
+
+    .stat-num {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
       margin-top: 4px;
     }
 
-    .form-group {
-      margin-bottom: 16px;
+    .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .btn-primary {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 10px 28px;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+      color: white;
+      border: 1px solid #002244;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.2s;
+      font-family: Tahoma, Arial, sans-serif;
     }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--navy-mid) 0%, var(--navy-light) 100%);
+      box-shadow: 0 2px 8px rgba(0,51,102,0.3);
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 9px 28px;
+      background: transparent;
+      color: var(--navy);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.2s;
+    }
+    .btn-ghost:hover { background: white; border-color: var(--navy); }
+
+    /* ─── LOGIN CARD ─── */
+    .hero-login {
+      padding: 48px 72px 48px 40px;
+      animation: fadeUp 0.7s 0.15s ease both;
+    }
+
+    .login-card {
+      background: linear-gradient(135deg, var(--white) 0%, var(--gray-light) 100%);
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      padding: 32px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+      position: relative;
+    }
+
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--navy), var(--navy-light));
+      border-radius: 2px 2px 0 0;
+    }
+
+    .login-card-header {
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .login-card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .login-card-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .form-group { margin-bottom: 16px; }
 
     .form-group label {
       display: block;
-      font-size: 12px;
-      font-weight: 600;
+      font-size: 11px;
+      font-weight: 700;
       color: #002244;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -67,42 +275,39 @@
     .form-group input {
       width: 100%;
       padding: 8px 10px;
-      border: 1px solid #A0A0A0;
-      background: #FFFFFF;
-      font-size: 14px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      font-size: 13px;
       font-family: Tahoma, Arial, sans-serif;
-      box-sizing: border-box;
-      transition: border-color 0.2s ease;
-    }
-
-    .form-group input:focus {
       outline: none;
-      border-color: #003366;
-      box-shadow: 0 0 0 2px rgba(0, 51, 102, 0.1);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-group input:focus {
+      border-color: var(--navy);
+      box-shadow: 0 0 0 2px rgba(0,51,102,0.1);
     }
 
     .btn-login {
       width: 100%;
       padding: 10px;
-      background: linear-gradient(135deg, #003366 0%, #004080 100%);
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
       color: white;
       border: 1px solid #002244;
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
       cursor: pointer;
-      transition: all 0.2s ease;
-      margin-top: 8px;
+      margin-top: 6px;
+      font-family: Tahoma, Arial, sans-serif;
+      transition: all 0.2s;
     }
-
     .btn-login:hover {
-      background: linear-gradient(135deg, #004080 0%, #0050A0 100%);
-      box-shadow: 0 2px 6px rgba(0, 51, 102, 0.3);
+      background: linear-gradient(135deg, var(--navy-mid) 0%, var(--navy-light) 100%);
+      box-shadow: 0 2px 8px rgba(0,51,102,0.3);
       transform: translateY(-1px);
     }
-
-    .btn-login:active {
-      transform: translateY(0);
-    }
+    .btn-login:active { transform: translateY(0); }
 
     .error-message {
       background: #FFF5F5;
@@ -118,92 +323,588 @@
     .register-link {
       text-align: center;
       margin-top: 16px;
-      font-size: 12px;
+      font-size: 11px;
       color: #666;
     }
-
-    .register-link a {
-      color: #003366;
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .register-link a:hover {
-      text-decoration: underline;
-    }
+    .register-link a { color: var(--navy); text-decoration: none; font-weight: 700; }
+    .register-link a:hover { text-decoration: underline; }
 
     .loading {
       display: none;
       text-align: center;
       padding: 10px;
-      color: #003366;
+      color: var(--navy);
+      font-size: 11px;
+      letter-spacing: 1px;
+    }
+
+    /* ─── SECTION HELPERS ─── */
+    .section-eyebrow {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--navy);
+      background: rgba(0,51,102,0.07);
+      border: 1px solid rgba(0,51,102,0.16);
+      padding: 4px 10px;
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      font-size: clamp(18px, 2vw, 28px);
+      font-weight: 700;
+      color: var(--navy);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .section-desc {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text-muted);
+      max-width: 520px;
+    }
+
+    /* ─── TICKER ─── */
+    .ticker-wrap {
+      overflow: hidden;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+      border-top: 1px solid #002244;
+      border-bottom: 1px solid #002244;
+      padding: 10px 0;
+    }
+
+    .ticker-track {
+      display: flex;
+      width: max-content;
+      animation: ticker 32s linear infinite;
+    }
+
+    .ticker-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 36px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+      white-space: nowrap;
+    }
+    .ticker-item .dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.35);
+    }
+
+    @keyframes ticker {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* ─── FEATURES ─── */
+    .features {
+      padding: 80px 72px;
+      background: var(--white);
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .features-header { margin-bottom: 36px; }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .feature-card {
+      background: linear-gradient(135deg, var(--white) 0%, var(--gray-light) 100%);
+      border: 1px solid var(--border-light);
+      border-top: 3px solid var(--navy);
+      padding: 22px 20px;
+      border-radius: 3px;
+      transition: box-shadow 0.25s, transform 0.2s;
+    }
+    .feature-card:hover {
+      box-shadow: 0 4px 14px rgba(0,51,102,0.12);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon { font-size: 22px; margin-bottom: 12px; }
+
+    .feature-title {
       font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+
+    .feature-desc {
+      font-size: 12px;
+      line-height: 1.65;
+      color: var(--text-muted);
+    }
+
+    /* ─── HOW IT WORKS ─── */
+    .how-it-works {
+      padding: 80px 72px;
+      background: linear-gradient(135deg, var(--gray-bg) 0%, var(--gray-mid) 100%);
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 36px;
+      position: relative;
+    }
+
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 24px;
+      left: 12.5%;
+      right: 12.5%;
+      height: 1px;
+      background: repeating-linear-gradient(90deg, var(--border) 0, var(--border) 6px, transparent 6px, transparent 12px);
+    }
+
+    .step {
+      background: linear-gradient(135deg, var(--white) 0%, var(--gray-light) 100%);
+      border: 1px solid var(--border-light);
+      border-top: 3px solid var(--navy);
+      padding: 24px 18px;
+      border-radius: 3px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+
+    .step-num {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      border-radius: 2px;
+    }
+
+    .step-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+
+    .step-desc {
+      font-size: 12px;
+      line-height: 1.65;
+      color: var(--text-muted);
+    }
+
+    /* ─── INDUSTRIES ─── */
+    .industries {
+      padding: 80px 72px;
+      background: var(--white);
+      border-top: 1px solid var(--border-light);
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .industries-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 28px;
+    }
+
+    .industry-tag {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 7px 16px;
+      background: linear-gradient(135deg, var(--white) 0%, var(--gray-light) 100%);
+      border: 1px solid var(--border);
+      color: var(--navy);
+      border-radius: 2px;
+      cursor: default;
+      transition: all 0.2s;
+    }
+    .industry-tag:hover {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+      color: white;
+      border-color: var(--navy);
+    }
+
+    /* ─── FOOTER CTA ─── */
+    .footer-cta {
+      padding: 80px 72px;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+      text-align: center;
+      border-top: 2px solid #002244;
+    }
+
+    .footer-cta .section-eyebrow {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.22);
+      color: white;
+    }
+
+    .footer-cta .section-title { color: white; margin-bottom: 12px; }
+
+    .footer-cta .section-desc {
+      color: rgba(255,255,255,0.6);
+      margin: 0 auto 32px;
+      text-align: center;
+    }
+
+    .footer-cta-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+    .btn-white {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 10px 28px;
+      background: white;
+      color: var(--navy);
+      border: 1px solid white;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      font-family: Tahoma, Arial, sans-serif;
+      transition: all 0.2s;
+    }
+    .btn-white:hover {
+      background: var(--gray-light);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline-white {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 9px 28px;
+      background: transparent;
+      color: white;
+      border: 1px solid rgba(255,255,255,0.45);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.2s;
+    }
+    .btn-outline-white:hover {
+      border-color: white;
+      background: rgba(255,255,255,0.08);
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: #002244;
+      padding: 18px 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: rgba(255,255,255,0.45);
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    footer a { color: rgba(255,255,255,0.45); text-decoration: none; transition: color 0.2s; }
+    footer a:hover { color: rgba(255,255,255,0.85); }
+    .footer-links { display: flex; gap: 24px; }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 900px) {
+      nav { padding: 0 24px; }
+      .hero { grid-template-columns: 1fr; padding-top: 70px; }
+      .hero-content { padding: 48px 32px 24px; }
+      .hero-login { padding: 0 32px 56px; }
+      .features, .industries { padding: 60px 32px; }
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      .how-it-works { padding: 60px 32px; }
+      .steps { grid-template-columns: 1fr 1fr; }
+      .steps::before { display: none; }
+      .footer-cta { padding: 60px 32px; }
+      footer { padding: 16px 32px; flex-direction: column; gap: 10px; text-align: center; }
+      .footer-links { justify-content: center; }
+    }
+
+    @media (max-width: 580px) {
+      .hero-content, .hero-login { padding-left: 20px; padding-right: 20px; }
+      .features, .how-it-works, .industries, .footer-cta { padding: 48px 20px; }
+      .features-grid, .steps { grid-template-columns: 1fr; }
+      .hero-stats { flex-direction: column; }
+      .hero-stats .stat { border-right: none; border-bottom: 1px solid var(--border-light); }
+      .nav-links .nav-link:not(.nav-cta) { display: none; }
     }
   </style>
 </head>
 <body>
-  <div class="login-container">
-    <div class="login-header">
-      <img src="/static/icons/logo-imcs.svg" alt="IMCS Logo">
-      <h1>Industrial Hub</h1>
-      <p>Machine Control System</p>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">
+      <div class="nav-logo-box"></div>
+      <span class="nav-brand">Industrial Hub · IMCS</span>
+    </div>
+    <div class="nav-links">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#how-it-works" class="nav-link">How It Works</a>
+      <a href="#industries" class="nav-link">Industries</a>
+      <a href="#login" class="nav-link nav-cta">Sign In</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="login">
+
+    <div class="hero-content">
+      <div class="hero-eyebrow">Industrial Control Platform</div>
+      <h1 class="hero-title">
+        Machine Control
+        <span class="accent">Redefined</span>
+        for Industry
+      </h1>
+      <div class="hero-divider"></div>
+      <p class="hero-desc">
+        IMCS delivers real-time visibility, precision control, and unified management
+        across your entire industrial fleet — from a single dashboard.
+      </p>
+      <div class="hero-stats">
+        <div class="stat">
+          <div class="stat-num">99.97%</div>
+          <div class="stat-label">Uptime SLA</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">&lt;10ms</div>
+          <div class="stat-label">Response Time</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">500+</div>
+          <div class="stat-label">Machine Types</div>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <a href="/register" class="btn-primary">Request Demo</a>
+        <a href="#features" class="btn-ghost">Explore Features</a>
+      </div>
     </div>
 
-    <div id="errorMessage" class="error-message" style="display:none;"></div>
-    <div id="loadingMessage" class="loading">Logging in...</div>
+    <!-- LOGIN -->
+    <div class="hero-login">
+      <div class="login-card">
+        <div class="login-card-header">
+          <div class="login-card-title">Operator Access</div>
+          <div class="login-card-sub">Sign in to your control portal</div>
+        </div>
 
-    <form id="loginForm">
-      <div class="form-group">
-        <label for="companyName">Company Name</label>
-        <input type="text" id="companyName" name="company_name" required autocomplete="organization">
+        <div id="errorMessage" class="error-message" style="display:none;"></div>
+        <div id="loadingMessage" class="loading">Logging in...</div>
+
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="companyName">Company Name</label>
+            <input type="text" id="companyName" name="company_name" required autocomplete="organization">
+          </div>
+          <div class="form-group">
+            <label for="loginId">Login ID</label>
+            <input type="text" id="loginId" name="login_id" required autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required autocomplete="current-password">
+          </div>
+          <button type="submit" class="btn-login">Login</button>
+        </form>
+
+        <div class="register-link">
+          Don't have an account? <a href="/register">Register</a>
+        </div>
       </div>
+    </div>
 
-      <div class="form-group">
-        <label for="loginId">Login ID</label>
-        <input type="text" id="loginId" name="login_id" required autocomplete="username">
-      </div>
+  </section>
 
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required autocomplete="current-password">
-      </div>
-
-      <button type="submit" class="btn-login">Login</button>
-    </form>
-
-    <div class="register-link">
-      Don't have an account? <a href="/register">Register</a>
+  <!-- TICKER -->
+  <div class="ticker-wrap" aria-hidden="true">
+    <div class="ticker-track">
+      <div class="ticker-item"><span class="dot"></span>Real-Time Monitoring</div>
+      <div class="ticker-item"><span class="dot"></span>Predictive Maintenance</div>
+      <div class="ticker-item"><span class="dot"></span>Remote Machine Control</div>
+      <div class="ticker-item"><span class="dot"></span>Fleet Management</div>
+      <div class="ticker-item"><span class="dot"></span>Automated Alerts</div>
+      <div class="ticker-item"><span class="dot"></span>OEE Analytics</div>
+      <div class="ticker-item"><span class="dot"></span>SCADA Integration</div>
+      <div class="ticker-item"><span class="dot"></span>Secure Multi-Tenant Access</div>
+      <div class="ticker-item"><span class="dot"></span>Real-Time Monitoring</div>
+      <div class="ticker-item"><span class="dot"></span>Predictive Maintenance</div>
+      <div class="ticker-item"><span class="dot"></span>Remote Machine Control</div>
+      <div class="ticker-item"><span class="dot"></span>Fleet Management</div>
+      <div class="ticker-item"><span class="dot"></span>Automated Alerts</div>
+      <div class="ticker-item"><span class="dot"></span>OEE Analytics</div>
+      <div class="ticker-item"><span class="dot"></span>SCADA Integration</div>
+      <div class="ticker-item"><span class="dot"></span>Secure Multi-Tenant Access</div>
     </div>
   </div>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <div class="features-header">
+      <div class="section-eyebrow">Platform Capabilities</div>
+      <h2 class="section-title">Everything Your Operations Demand</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚙️</div>
+        <div class="feature-title">Remote Machine Control</div>
+        <p class="feature-desc">Execute commands, adjust parameters, and override processes on any connected machine from anywhere — with sub-10ms latency.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📡</div>
+        <div class="feature-title">Real-Time Telemetry</div>
+        <p class="feature-desc">Continuous data streams from sensors, PLCs, and IoT endpoints. Monitor temperature, vibration, throughput, and 200+ KPIs simultaneously.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔮</div>
+        <div class="feature-title">Predictive Maintenance</div>
+        <p class="feature-desc">AI-driven failure prediction trained on your fleet's behavior. Prevent downtime before it occurs with intelligent early-warning systems.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🏭</div>
+        <div class="feature-title">Fleet Management</div>
+        <p class="feature-desc">Unified oversight of all machines across multiple sites. Group by line, zone, or facility — manage thousands of assets from one interface.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔔</div>
+        <div class="feature-title">Smart Alerting</div>
+        <p class="feature-desc">Context-aware notifications routed to the right person at the right time. Configurable thresholds, escalation chains, and shift-based routing.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <div class="feature-title">Enterprise Security</div>
+        <p class="feature-desc">Role-based access control, end-to-end encryption, full audit trails, and multi-tenant isolation. SOC 2 Type II compliant by design.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="section-eyebrow">Process</div>
+    <h2 class="section-title">Up and Running in Four Steps</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Register &amp; Onboard</div>
+        <p class="step-desc">Create your company workspace, configure your organizational hierarchy, and invite your team with granular role assignments.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">Connect Machines</div>
+        <p class="step-desc">Deploy IMCS edge agents or integrate existing PLCs, SCADA systems, and OPC-UA endpoints using our open device SDK.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Configure Policies</div>
+        <p class="step-desc">Set alert thresholds, define maintenance schedules, build automation rules, and customize dashboard views by role.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-title">Monitor &amp; Control</div>
+        <p class="step-desc">Operators gain full real-time visibility and remote control. Managers get the insights to drive continuous improvement.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- INDUSTRIES -->
+  <section class="industries" id="industries">
+    <div class="section-eyebrow">Verticals</div>
+    <h2 class="section-title">Built for Every Industrial Sector</h2>
+    <p class="section-desc">
+      IMCS is protocol-agnostic and hardware-independent, deployable across the broadest
+      range of industrial environments — from legacy facilities to greenfield smart factories.
+    </p>
+    <div class="industries-list">
+      <div class="industry-tag">Automotive</div>
+      <div class="industry-tag">Pharmaceuticals</div>
+      <div class="industry-tag">Food &amp; Beverage</div>
+      <div class="industry-tag">Oil &amp; Gas</div>
+      <div class="industry-tag">Semiconductors</div>
+      <div class="industry-tag">Mining</div>
+      <div class="industry-tag">Heavy Manufacturing</div>
+      <div class="industry-tag">Textiles</div>
+      <div class="industry-tag">Chemical Processing</div>
+      <div class="industry-tag">Power &amp; Utilities</div>
+      <div class="industry-tag">Logistics &amp; Warehousing</div>
+      <div class="industry-tag">Aerospace</div>
+    </div>
+  </section>
+
+  <!-- FOOTER CTA -->
+  <section class="footer-cta">
+    <div class="section-eyebrow">Get Started</div>
+    <h2 class="section-title">Ready to Take Control of Your Operations?</h2>
+    <p class="section-desc">Join hundreds of industrial companies already using IMCS to reduce downtime, cut costs, and modernize their operations.</p>
+    <div class="footer-cta-actions">
+      <a href="/register" class="btn-white">Start Free Trial</a>
+      <a href="#login" class="btn-outline-white">Sign In Now</a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>© 2026 Industrial Hub · IMCS Platform. All rights reserved.</span>
+    <div class="footer-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+      <a href="#">Support</a>
+      <a href="#">Documentation</a>
+    </div>
+  </footer>
 
   <script>
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-      
       const errorDiv = document.getElementById('errorMessage');
       const loadingDiv = document.getElementById('loadingMessage');
       errorDiv.style.display = 'none';
       loadingDiv.style.display = 'block';
-      
+
       const formData = {
         company_name: document.getElementById('companyName').value.trim(),
         login_id: document.getElementById('loginId').value.trim(),
         password: document.getElementById('password').value
       };
-      
+
       try {
         const response = await fetch('/api/auth/login', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
         });
-        
         const data = await response.json();
-        
         if (response.ok && data.success) {
-          // Redirect to dashboard
           window.location.href = '/dashboard';
         } else {
           errorDiv.textContent = data.error || 'Login failed. Please check your credentials.';
@@ -216,6 +917,16 @@
         loadingDiv.style.display = 'none';
       }
     });
+
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
   </script>
 </body>
-</html>
+</html>  

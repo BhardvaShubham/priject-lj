@@ -245,6 +245,11 @@ def reports_page():
 def help_page():
     return render_template("help.html")
 
+@app.route("/factory-layout")
+@login_required
+def factory_layout_page():
+    return render_template("factory-layout.html")
+
 # ===================== APIs =====================
 
 @app.route("/api/summary")
@@ -1846,6 +1851,137 @@ def upload_dataset():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# ===================== FACTORY LAYOUT =====================
+
+def ensure_factory_layouts_table():
+    """Create factory_layouts table if it doesn't exist."""
+    with db() as c:
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS factory_layouts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                layout_data TEXT NOT NULL,
+                company_id INTEGER NOT NULL,
+                created_by TEXT,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(company_id) REFERENCES companies(id)
+            )
+        """)
+        c.execute("CREATE INDEX IF NOT EXISTS idx_factory_layouts_company ON factory_layouts(company_id)")
+        c.commit()
+
+# Run migration on import
+ensure_factory_layouts_table()
+
+@app.route("/api/factory-layouts", methods=["GET"])
+@login_required
+def list_factory_layouts():
+    """List all saved layouts for the current company."""
+    company_id = get_current_company_id()
+    with db() as c:
+        rows = c.execute(
+            "SELECT id, name, created_by, created_at, updated_at FROM factory_layouts WHERE company_id = ? ORDER BY updated_at DESC",
+            (company_id,)
+        ).fetchall()
+    return jsonify([dict(r) for r in rows])
+
+@app.route("/api/factory-layouts", methods=["POST"])
+@login_required
+def save_factory_layout():
+    """Save a new factory layout."""
+    company_id = get_current_company_id()
+    data = request.json
+    if not data or not data.get("name") or not data.get("layout_data"):
+        return jsonify({"error": "Name and layout_data are required"}), 400
+
+    with db() as c:
+        cursor = c.execute(
+            "INSERT INTO factory_layouts (name, layout_data, company_id, created_by) VALUES (?, ?, ?, ?)",
+            (data["name"], json.dumps(data["layout_data"]), company_id, session.get("username", "system"))
+        )
+        c.commit()
+        layout_id = cursor.lastrowid
+        log(session.get("username", "system"), "create", "factory_layout", layout_id)
+
+    return jsonify({"success": True, "id": layout_id}), 201
+
+@app.route("/api/factory-layouts/<int:lid>", methods=["GET"])
+@login_required
+def get_factory_layout(lid):
+    """Get a single factory layout."""
+    company_id = get_current_company_id()
+    with db() as c:
+        row = c.execute(
+            "SELECT * FROM factory_layouts WHERE id = ? AND company_id = ?",
+            (lid, company_id)
+        ).fetchone()
+    if not row:
+        return jsonify({"error": "Layout not found"}), 404
+    result = dict(row)
+    try:
+        result["layout_data"] = json.loads(result["layout_data"])
+    except:
+        pass
+    return jsonify(result)
+
+@app.route("/api/factory-layouts/<int:lid>", methods=["PUT"])
+@login_required
+def update_factory_layout(lid):
+    """Update an existing factory layout."""
+    company_id = get_current_company_id()
+    data = request.json
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    with db() as c:
+        existing = c.execute(
+            "SELECT id FROM factory_layouts WHERE id = ? AND company_id = ?",
+            (lid, company_id)
+        ).fetchone()
+        if not existing:
+            return jsonify({"error": "Layout not found"}), 404
+
+        updates = []
+        params = []
+        if "name" in data:
+            updates.append("name = ?")
+            params.append(data["name"])
+        if "layout_data" in data:
+            updates.append("layout_data = ?")
+            params.append(json.dumps(data["layout_data"]))
+        updates.append("updated_at = CURRENT_TIMESTAMP")
+        params.append(lid)
+        params.append(company_id)
+
+        c.execute(
+            f"UPDATE factory_layouts SET {', '.join(updates)} WHERE id = ? AND company_id = ?",
+            params
+        )
+        c.commit()
+        log(session.get("username", "system"), "update", "factory_layout", lid)
+
+    return jsonify({"success": True})
+
+@app.route("/api/factory-layouts/<int:lid>", methods=["DELETE"])
+@login_required
+def delete_factory_layout(lid):
+    """Delete a factory layout."""
+    company_id = get_current_company_id()
+    with db() as c:
+        existing = c.execute(
+            "SELECT id FROM factory_layouts WHERE id = ? AND company_id = ?",
+            (lid, company_id)
+        ).fetchone()
+        if not existing:
+            return jsonify({"error": "Layout not found"}), 404
+
+        c.execute("DELETE FROM factory_layouts WHERE id = ? AND company_id = ?", (lid, company_id))
+        c.commit()
+        log(session.get("username", "system"), "delete", "factory_layout", lid)
+
+    return jsonify({"success": True})
 
 # ===================== HEALTH =====================
 @app.route("/health")

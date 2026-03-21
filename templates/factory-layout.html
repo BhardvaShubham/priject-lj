@@ -1,0 +1,947 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IMCS - Factory Layout Designer</title>
+  <link rel="stylesheet" href="/static/css/sap90.css">
+  <style>
+    .app-shell {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      background: #DFDFDF;
+    }
+
+    /* ── Toolbar ── */
+    .layout-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 10px;
+      background: #D4D0C8;
+      border-bottom: 2px solid;
+      border-color: #FFFFFF #808080 #808080 #FFFFFF;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-sep {
+      width: 2px;
+      height: 24px;
+      background: #808080;
+      margin: 0 4px;
+      border-right: 1px solid #fff;
+    }
+
+    .toolbar-btn {
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      background: #D4D0C8;
+      border: 2px solid;
+      border-color: #FFFFFF #808080 #808080 #FFFFFF;
+      cursor: pointer;
+      color: #000;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      font-family: Tahoma, Arial, sans-serif;
+    }
+
+    .toolbar-btn:hover {
+      background: #E8E4DC;
+    }
+
+    .toolbar-btn:active {
+      border-color: #808080 #FFFFFF #FFFFFF #808080;
+      background: #C0BCB4;
+    }
+
+    .toolbar-btn.active {
+      border-color: #808080 #FFFFFF #FFFFFF #808080;
+      background: #B8C8E0;
+      color: #000080;
+    }
+
+    .toolbar-btn.danger {
+      color: #bb0000;
+    }
+
+    .toolbar-search {
+      padding: 3px 6px;
+      border: 2px solid;
+      border-color: #808080 #FFFFFF #FFFFFF #808080;
+      font-size: 11px;
+      font-family: Tahoma, Arial, sans-serif;
+      width: 160px;
+      background: #fff;
+      box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.15);
+    }
+
+    .zoom-display {
+      font-size: 11px;
+      font-weight: 700;
+      color: #003366;
+      min-width: 40px;
+      text-align: center;
+      font-family: Tahoma, Arial, sans-serif;
+    }
+
+    /* ── Main Layout ── */
+    .layout-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Left Panel ── */
+    .layout-left-panel {
+      width: 220px;
+      min-width: 220px;
+      background: #D4D0C8;
+      border-right: 2px solid;
+      border-color: #FFFFFF #808080 #808080 #FFFFFF;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .panel-section {
+      border-bottom: 1px solid #A0A0A0;
+    }
+
+    .panel-section-title {
+      background: linear-gradient(90deg, #000080 0%, #1084d7 100%);
+      color: #fff;
+      padding: 5px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .panel-section-body {
+      padding: 8px;
+    }
+
+    /* Machine palette */
+    .palette-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      margin-bottom: 4px;
+      background: #ECECEC;
+      border: 2px solid;
+      border-color: #FFFFFF #808080 #808080 #FFFFFF;
+      cursor: grab;
+      font-size: 11px;
+      font-family: Tahoma, Arial, sans-serif;
+      user-select: none;
+      transition: background 0.15s;
+    }
+
+    .palette-item:hover {
+      background: #D8E4F8;
+    }
+
+    .palette-item:active {
+      cursor: grabbing;
+      border-color: #808080 #FFFFFF #FFFFFF #808080;
+    }
+
+    .palette-icon {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      background: #fff;
+      border: 1px solid #A0A0A0;
+      flex-shrink: 0;
+    }
+
+    .palette-label {
+      font-weight: 600;
+      color: #003366;
+    }
+
+    .palette-label small {
+      display: block;
+      font-weight: 400;
+      color: #666;
+      font-size: 9px;
+    }
+
+    /* Saved layouts list */
+    .saved-layout-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 8px;
+      margin-bottom: 3px;
+      background: #F5F5F5;
+      border: 1px solid #C0C0C0;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .saved-layout-item:hover {
+      background: #D8E4F8;
+    }
+
+    .saved-layout-item .name {
+      font-weight: 600;
+      color: #003366;
+    }
+
+    .saved-layout-item .meta {
+      font-size: 9px;
+      color: #888;
+    }
+
+    .saved-layout-item .del-btn {
+      background: none;
+      border: none;
+      color: #bb0000;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 2px;
+    }
+
+    /* ── Canvas Area ── */
+    .canvas-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: #E8E8E8;
+      cursor: default;
+    }
+
+    #factoryCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .canvas-container.view-3d #factoryCanvas {
+      transform-origin: left top;
+      transform: perspective(1400px) rotateX(52deg) rotateZ(-32deg) scale(1.15);
+      filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.28));
+    }
+
+    /* ── Mini-map ── */
+    .minimap-container {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      width: 180px;
+      height: 120px;
+      background: #fff;
+      border: 2px solid;
+      border-color: #FFFFFF #808080 #808080 #FFFFFF;
+      box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+      z-index: 10;
+      overflow: hidden;
+    }
+
+    #minimapCanvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ── Right Panel (Properties) ── */
+    .layout-right-panel {
+      width: 240px;
+      min-width: 240px;
+      background: #D4D0C8;
+      border-left: 2px solid;
+      border-color: #FFFFFF #808080 #808080 #FFFFFF;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .prop-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .prop-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #003366;
+      text-transform: uppercase;
+      width: 60px;
+      flex-shrink: 0;
+    }
+
+    .prop-value {
+      font-size: 11px;
+      color: #333;
+      flex: 1;
+    }
+
+    .prop-input {
+      width: 100%;
+      padding: 3px 5px;
+      border: 2px solid;
+      border-color: #808080 #FFFFFF #FFFFFF #808080;
+      font-size: 11px;
+      font-family: Tahoma, Arial, sans-serif;
+      background: #fff;
+      box-sizing: border-box;
+    }
+
+    .prop-input:focus {
+      outline: 1px solid #0a6ed1;
+    }
+
+    .prop-color {
+      width: 30px;
+      height: 22px;
+      border: 2px solid;
+      border-color: #808080 #FFFFFF #FFFFFF #808080;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    #propertiesContent .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .kpi-mini {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      margin-top: 6px;
+    }
+
+    .kpi-mini-item {
+      background: #F5F5F5;
+      border: 1px solid #D0D0D0;
+      padding: 4px 6px;
+      text-align: center;
+    }
+
+    .kpi-mini-item .val {
+      font-size: 14px;
+      font-weight: 700;
+      color: #003366;
+    }
+
+    .kpi-mini-item .lbl {
+      font-size: 9px;
+      color: #666;
+      text-transform: uppercase;
+    }
+
+    /* ── Status bar ── */
+    .layout-statusbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 4px 10px;
+      background: #D4D0C8;
+      border-top: 2px solid;
+      border-color: #FFFFFF #808080 #808080 #FFFFFF;
+      font-size: 10px;
+      font-family: Tahoma, Arial, sans-serif;
+      color: #333;
+    }
+
+    .statusbar-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .statusbar-item strong {
+      color: #003366;
+    }
+
+    /* ── Modals ── */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.45);
+    }
+
+    .modal:not(.hidden) {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.hidden {
+      display: none !important;
+    }
+
+    .modal-content {
+      background: #DFDFDF;
+      border: 2px solid;
+      border-color: #FFFFFF #808080 #808080 #FFFFFF;
+      box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
+      width: 90%;
+      max-width: 420px;
+      padding: 6px;
+    }
+
+    .modal-header {
+      background: linear-gradient(90deg, #000080 0%, #1084d7 100%);
+      color: #fff;
+      padding: 5px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: -6px -6px 12px -6px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .modal-close {
+      background: #D4D0C8;
+      border: 1px solid;
+      border-color: #FFFFFF #808080 #808080 #FFFFFF;
+      color: #000;
+      cursor: pointer;
+      width: 18px;
+      height: 18px;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .modal-body {
+      padding: 4px 8px 8px;
+    }
+
+    .modal-body .form-row {
+      margin-bottom: 10px;
+    }
+
+    .modal-body .form-row label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #002244;
+      margin-bottom: 4px;
+      letter-spacing: 0.4px;
+    }
+
+    .modal-body .form-row input,
+    .modal-body .form-row select,
+    .modal-body .form-row textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 5px 7px;
+      border: 2px solid;
+      border-color: #808080 #FFFFFF #FFFFFF #808080;
+      background: #FFFFFF;
+      font-size: 13px;
+      font-family: Tahoma, Arial, sans-serif;
+      box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      padding: 8px 8px 4px;
+      border-top: 1px solid #A0A0A0;
+      margin-top: 8px;
+    }
+
+    /* ── Context menu ── */
+    .context-menu {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      background: #D4D0C8;
+      border: 2px solid;
+      border-color: #FFFFFF #808080 #808080 #FFFFFF;
+      padding: 2px;
+      min-width: 140px;
+      box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-content.modal-3d {
+      width: 95%;
+      max-width: 1200px;
+      height: 80vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #factory3DViewport {
+      flex: 1;
+      border: 1px solid #A0A0A0;
+      background: #0f1724;
+      min-height: 420px;
+      position: relative;
+    }
+
+    .context-menu-item {
+      padding: 4px 20px;
+      font-size: 11px;
+      font-family: Tahoma, Arial, sans-serif;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .context-menu-item:hover {
+      background: #000080;
+      color: #fff;
+    }
+
+    .context-menu-sep {
+      height: 1px;
+      background: #808080;
+      margin: 2px 0;
+      border-bottom: 1px solid #fff;
+    }
+
+    /* Legend */
+    .status-legend {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 6px 8px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-family: Tahoma, Arial, sans-serif;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-shell">
+
+    <!-- ═══════════ SIDEBAR ═══════════ -->
+    <aside class="app-sidebar">
+      <button class="sidebar-toggle" title="Collapse sidebar">◀</button>
+      <div class="brand">
+        <img src="/static/icons/logo-imcs.svg" alt="IMCS" class="logo-img" />
+        <div class="title">Industrial Hub</div>
+        <div class="muted small">Factory Layout</div>
+      </div>
+
+      <nav class="nav">
+        <div class="nav-search-container">
+          <input type="text" id="navSearch" class="nav-search" placeholder="Search..." title="Search navigation">
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-header" data-section="dashboard">
+            <span class="nav-section-chevron">▼</span>
+            <span class="nav-section-title">Dashboard</span>
+          </div>
+          <div class="nav-section-items">
+            <a href="/dashboard" class="nav-item" data-label="Overview" data-search="overview dashboard home">
+              <img src="/static/icons/home.svg" width="16" height="16" alt=""> <span>Overview</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-header" data-section="operations">
+            <span class="nav-section-chevron">▼</span>
+            <span class="nav-section-title">Operations</span>
+          </div>
+          <div class="nav-section-items">
+            <a href="/machinery" class="nav-item" data-label="Machinery" data-search="machinery equipment machines">
+              <img src="/static/icons/machine.svg" width="16" height="16" alt=""> <span>Machinery</span>
+            </a>
+            <a href="/maintenance" class="nav-item" data-label="Maintenance"
+              data-search="maintenance service repair">
+              <img src="/static/icons/wrench.svg" width="16" height="16" alt="">
+              <span>Maintenance</span>
+              <span class="nav-badge nav-badge-warning" id="badge-maintenance" style="display:none;">0</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-header" data-section="monitoring">
+            <span class="nav-section-chevron">▼</span>
+            <span class="nav-section-title">Monitoring</span>
+          </div>
+          <div class="nav-section-items">
+            <a href="/alerts" class="nav-item" data-label="Alerts" data-search="alerts warnings notifications">
+              <img src="/static/icons/alert.svg" width="16" height="16" alt="">
+              <span>Alerts</span>
+              <span class="nav-badge nav-badge-danger" id="badge-alerts" style="display:none;">0</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-header" data-section="planning">
+            <span class="nav-section-chevron">▼</span>
+            <span class="nav-section-title">Planning</span>
+          </div>
+          <div class="nav-section-items">
+            <a href="/factory-layout" class="nav-item active" data-label="Factory Layout"
+              data-search="factory layout floor plan design">
+              <img src="/static/icons/factory-layout.svg" width="16" height="16" alt="">
+              <span>Factory Layout</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-header" data-section="reporting">
+            <span class="nav-section-chevron">▼</span>
+            <span class="nav-section-title">Reporting</span>
+          </div>
+          <div class="nav-section-items">
+            <a href="/reports" class="nav-item" data-label="Reports"
+              data-search="reports analytics data insights">
+              <img src="/static/icons/chart.svg" width="16" height="16" alt=""> <span>Reports</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="nav-footer">
+        <a href="/help" class="nav-footer-btn" title="Help & User Guide">❓ Help</a>
+        <a href="/logout" class="nav-footer-btn" title="Sign out">
+          <img src="/static/icons/alert.svg" width="14" height="14" alt=""> Sign Out
+        </a>
+      </div>
+    </aside>
+
+    <!-- ═══════════ MAIN ═══════════ -->
+    <main class="app-main" style="display:flex;flex-direction:column;overflow:hidden;">
+
+      <header class="app-header">
+        <div class="brand">
+          <div class="sap-badge">IMCS</div>
+          <div>
+            <div class="hdr-title">Factory Layout Designer</div>
+            <div class="muted small" style="font-size:10px;">
+              Interactive Floor Plan · Drag & Drop
+            </div>
+          </div>
+        </div>
+        <div class="btn-group" id="headerBtnGroup">
+          <a href="/dashboard" class="btn">
+            <img src="/static/icons/home.svg" width="16" height="16" alt=""> Dashboard
+          </a>
+          <a href="/logout" class="btn">
+            <img src="/static/icons/alert.svg" width="16" height="16" alt=""> Logout
+          </a>
+        </div>
+      </header>
+
+      <!-- ── TOOLBAR ── -->
+      <div class="layout-toolbar" id="layoutToolbar">
+        <button class="toolbar-btn" id="btnSelect" title="Select / Move (V)">🖱️ Select</button>
+        <button class="toolbar-btn" id="btnAddZone" title="Draw Zone (Z)">📐 Zone</button>
+        <button class="toolbar-btn" id="btnConnect" title="Connect Machines (C)">🔗 Connect</button>
+        <div class="toolbar-sep"></div>
+        <button class="toolbar-btn" id="btnToggleGrid" title="Toggle Grid (G)">▦ Grid</button>
+        <button class="toolbar-btn" id="btnSnapGrid" title="Toggle Snap to Grid (S)">🧲 Snap</button>
+        <div class="toolbar-sep"></div>
+        <button class="toolbar-btn" id="btnZoomIn" title="Zoom In (+)">🔍+</button>
+        <span class="zoom-display" id="zoomDisplay">100%</span>
+        <button class="toolbar-btn" id="btnZoomOut" title="Zoom Out (-)">🔍−</button>
+        <button class="toolbar-btn" id="btnFitAll" title="Fit All (F)">⊞ Fit</button>
+        <div class="toolbar-sep"></div>
+        <button class="toolbar-btn active" id="btnAnimate" title="Toggle Animation (A)">✨ Animate</button>
+        <button class="toolbar-btn" id="btnSyncNow" title="Sync With System Now">🔄 Sync</button>
+        <button class="toolbar-btn" id="btnView3D" title="Open 3D Viewer (3)">🧊 3D Viewer</button>
+        <div class="toolbar-sep"></div>
+        <button class="toolbar-btn" id="btnDelete" title="Delete Selected (Del)" class="danger">🗑️ Delete</button>
+        <div class="toolbar-sep"></div>
+        <input type="text" class="toolbar-search" id="searchMachine" placeholder="🔍 Search machine...">
+        <div class="toolbar-sep"></div>
+        <button class="toolbar-btn" id="btnSave" title="Save Layout (Ctrl+S)">💾 Save</button>
+        <button class="toolbar-btn" id="btnExport" title="Export as PNG">📥 Export PNG</button>
+      </div>
+
+      <!-- ── BODY: Left Panel + Canvas + Right Panel ── -->
+      <div class="layout-body">
+
+        <!-- LEFT: Palette + Saved Layouts -->
+        <div class="layout-left-panel" id="leftPanel">
+          <div class="panel-section">
+            <div class="panel-section-title">
+              <span>🏭 Machine Palette</span>
+              <span>▼</span>
+            </div>
+            <div class="panel-section-body" id="machinePalette">
+              <div class="palette-item" draggable="true" data-type="CNC Machine" data-icon="⚙️">
+                <div class="palette-icon">⚙️</div>
+                <div class="palette-label">CNC Machine<small>Precision cutting</small></div>
+              </div>
+              <div class="palette-item" draggable="true" data-type="Lathe" data-icon="🔩">
+                <div class="palette-icon">🔩</div>
+                <div class="palette-label">Lathe<small>Turning ops</small></div>
+              </div>
+              <div class="palette-item" draggable="true" data-type="Robot Arm" data-icon="🤖">
+                <div class="palette-icon">🤖</div>
+                <div class="palette-label">Robot Arm<small>Automated assembly</small></div>
+              </div>
+              <div class="palette-item" draggable="true" data-type="Conveyor" data-icon="➡️">
+                <div class="palette-icon">➡️</div>
+                <div class="palette-label">Conveyor<small>Material transport</small></div>
+              </div>
+              <div class="palette-item" draggable="true" data-type="Press" data-icon="🔨">
+                <div class="palette-icon">🔨</div>
+                <div class="palette-label">Press<small>Stamping / forming</small></div>
+              </div>
+              <div class="palette-item" draggable="true" data-type="Welding Station" data-icon="🔥">
+                <div class="palette-icon">🔥</div>
+                <div class="palette-label">Welding Station<small>Metal joining</small></div>
+              </div>
+              <div class="palette-item" draggable="true" data-type="Inspection" data-icon="🔬">
+                <div class="palette-icon">🔬</div>
+                <div class="palette-label">Inspection<small>Quality control</small></div>
+              </div>
+              <div class="palette-item" draggable="true" data-type="Packaging" data-icon="📦">
+                <div class="palette-icon">📦</div>
+                <div class="palette-label">Packaging<small>Final packing</small></div>
+              </div>
+              <div class="palette-item" draggable="true" data-type="Storage" data-icon="🏗️">
+                <div class="palette-icon">🏗️</div>
+                <div class="palette-label">Storage<small>Warehouse</small></div>
+              </div>
+              <div class="palette-item" draggable="true" data-type="Generator" data-icon="⚡">
+                <div class="palette-icon">⚡</div>
+                <div class="palette-label">Generator<small>Power supply</small></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Linked Machines from DB -->
+          <div class="panel-section">
+            <div class="panel-section-title" id="dbMachinesTitle">
+              <span>📡 Your Machines</span>
+              <span>▼</span>
+            </div>
+            <div class="panel-section-body" id="dbMachinesList">
+              <div style="font-size:10px;color:#888;padding:4px;">Loading...</div>
+            </div>
+          </div>
+
+          <!-- Saved Layouts -->
+          <div class="panel-section">
+            <div class="panel-section-title">
+              <span>📂 Saved Layouts</span>
+              <span>▼</span>
+            </div>
+            <div class="panel-section-body" id="savedLayoutsList">
+              <div style="font-size:10px;color:#888;padding:4px;">Loading...</div>
+            </div>
+          </div>
+
+          <!-- Status Legend -->
+          <div class="panel-section">
+            <div class="panel-section-title">
+              <span>🎨 Status Legend</span>
+              <span>▼</span>
+            </div>
+            <div class="status-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:#107e3e;"></div> Running</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#0a6ed1;"></div> Idle</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#e9730c;"></div> Maintenance</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#bb0000;"></div> Down</div>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <div class="panel-section-title">
+              <span>🧱 Layers</span>
+              <span>▼</span>
+            </div>
+            <div class="panel-section-body" style="font-size:11px;">
+              <label style="display:block;margin-bottom:6px;"><input type="checkbox" id="layerMachines" checked> Machines</label>
+              <label style="display:block;margin-bottom:6px;"><input type="checkbox" id="layerConnections" checked> Connections</label>
+              <label style="display:block;"><input type="checkbox" id="layerZones" checked> Zones</label>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <div class="panel-section-title">
+              <span>🏭 Production Lines</span>
+              <span>▼</span>
+            </div>
+            <div class="panel-section-body" id="productionLinesPanel">
+              <button class="btn" id="btnBuildLines" style="width:100%;font-size:11px;margin-bottom:8px;">Auto Build Lines</button>
+              <div id="productionLinesList" style="font-size:10px;color:#666;">No lines generated</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CENTER: Canvas -->
+        <div class="canvas-container" id="canvasContainer">
+          <canvas id="factoryCanvas"></canvas>
+          <div class="minimap-container" id="minimapContainer">
+            <canvas id="minimapCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- RIGHT: Properties -->
+        <div class="layout-right-panel" id="rightPanel">
+          <div class="panel-section">
+            <div class="panel-section-title">
+              <span>📋 Properties</span>
+              <span></span>
+            </div>
+            <div class="panel-section-body" id="propertiesContent">
+              <div style="font-size:11px;color:#888;text-align:center;padding:20px 8px;">
+                Select a machine or zone<br>to view properties
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <div class="panel-section-title">
+              <span>📊 Live Stats</span>
+              <span></span>
+            </div>
+            <div class="panel-section-body" id="liveStatsContent">
+              <div style="font-size:11px;color:#888;text-align:center;padding:20px 8px;">
+                Select a linked machine<br>to view live stats
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── STATUS BAR ── -->
+      <div class="layout-statusbar">
+        <div class="statusbar-item">📐 Objects: <strong id="sbObjects">0</strong></div>
+        <div class="statusbar-item">🔗 Connections: <strong id="sbConnections">0</strong></div>
+        <div class="statusbar-item">📏 Zones: <strong id="sbZones">0</strong></div>
+        <div class="statusbar-item">🌐 Sync: <strong id="sbSyncState">Connecting...</strong></div>
+        <div class="statusbar-item">🕒 Last Sync: <strong id="sbLastSync">-</strong></div>
+        <div class="statusbar-item">🧭 View: <strong id="sbViewMode">2D</strong></div>
+        <div class="statusbar-item">🖱️ Cursor: <strong id="sbCursor">0, 0</strong></div>
+        <div class="statusbar-item">🔧 Tool: <strong id="sbTool">Select</strong></div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ═══════════ SAVE MODAL ═══════════ -->
+  <div class="modal hidden" id="saveModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>💾 Save Layout</span>
+        <button class="modal-close" onclick="document.getElementById('saveModal').classList.add('hidden')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <label>Layout Name</label>
+          <input type="text" id="saveLayoutName" placeholder="e.g. Production Floor - Main">
+        </div>
+        <div class="form-row">
+          <label>Save Mode</label>
+          <select id="saveMode">
+            <option value="new">Save as new layout</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="document.getElementById('saveModal').classList.add('hidden')">Cancel</button>
+        <button class="btn" id="confirmSaveBtn" style="background:#000080;color:#fff;">💾 Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ ZONE MODAL ═══════════ -->
+  <div class="modal hidden" id="zoneModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>📐 Zone Properties</span>
+        <button class="modal-close" onclick="document.getElementById('zoneModal').classList.add('hidden')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <label>Zone Name</label>
+          <input type="text" id="zoneNameInput" placeholder="e.g. Production Line A">
+        </div>
+        <div class="form-row">
+          <label>Zone Color</label>
+          <input type="color" id="zoneColorInput" value="#0a6ed1" class="prop-color" style="width:100%;height:32px;">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="document.getElementById('zoneModal').classList.add('hidden')">Cancel</button>
+        <button class="btn" id="confirmZoneBtn" style="background:#000080;color:#fff;">✓ Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ CONTEXT MENU ═══════════ -->
+  <div class="context-menu" id="contextMenu">
+    <div class="context-menu-item" data-action="properties">📋 Properties</div>
+    <div class="context-menu-item" data-action="link">🔗 Link to DB Machine</div>
+    <div class="context-menu-sep"></div>
+    <div class="context-menu-item" data-action="duplicate">📄 Duplicate</div>
+    <div class="context-menu-item" data-action="bringFront">⬆️ Bring to Front</div>
+    <div class="context-menu-item" data-action="sendBack">⬇️ Send to Back</div>
+    <div class="context-menu-sep"></div>
+    <div class="context-menu-item" data-action="delete" style="color:#bb0000;">🗑️ Delete</div>
+  </div>
+
+  <div class="modal hidden" id="viewer3DModal">
+    <div class="modal-content modal-3d">
+      <div class="modal-header">
+        <span>🧊 3D Factory Viewer</span>
+        <button class="modal-close" id="close3DModalBtn">✕</button>
+      </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0;">
+        <div style="font-size:11px;color:#223;">
+          Orbit: left-drag · Pan: right-drag · Zoom: wheel · Double click a machine in 2D to open details.
+        </div>
+        <div id="factory3DViewport"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three-orbitcontrols@2.110.3/OrbitControls.min.js"></script>
+  <script src="/static/js/app.js"></script>
+  <script src="/static/js/factory-layout.js"></script>
+</body>
+
+</html>
